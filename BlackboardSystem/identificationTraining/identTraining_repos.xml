@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<requirements>
+<TwoEarsPart sub="src" branch="initOnConstruction" startup="startBinauralSimulator" >binaural-simulator</TwoEarsPart>
+<TwoEarsPart branch="SignalBufferDvlp" startup="startAuditoryFrontEnd" >auditory-front-end</TwoEarsPart>
+<TwoEarsPart sub="src" branch="SignalBufferDvlp" >auditory-front-end</TwoEarsPart>
+<TwoEarsPart sub="src" branch="master" startup="startTools" >tools</TwoEarsPart>
+<TwoEarsPart sub="src" branch="idTraining_feature_refactor" startup="startBlackboardSystem">blackboard-system</TwoEarsPart>
+<TwoEarsPart sub-all="third_party_software/libsvm-3.17/twoEars" branch="idTraining_feature_refactor" >blackboard-system</TwoEarsPart>
+<TwoEarsPart sub-all="third_party_software/glmnet_matlab" branch="idTraining_feature_refactor" >blackboard-system</TwoEarsPart>
+<TwoEarsPart sub="src" branch="id_refactoring" startup="startData" >data</TwoEarsPart>
+<TwoEarsPart sub-all="sound_databases/generalSoundsNI" branch="id_refactoring">data</TwoEarsPart>
+</requirements>

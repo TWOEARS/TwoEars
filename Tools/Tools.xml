@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Configure dependency of the Two!Ears Tools module  -->
+
+<!-- Start the Two!Ears Data module with
+     startTwoEars('Tools.xml'); -->
+
+<requirements>
+    <TwoEarsPart startup="startTools">tools</TwoEarsPart>
+</requirements>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Configure dependency of Two!Ears modules for the Binaural Simulator -->
+
+<!-- Start the Two!Ears Binaural Simulator with
+     startTwoEars('BinauralSimulator.xml'); -->
+
+<requirements>
+  <TwoEarsPart  startup="startBinauralSimulator">binaural-simulator</TwoEarsPart>
+  <TwoEarsPart  startup="startTools" >tools</TwoEarsPart>
+</requirements>

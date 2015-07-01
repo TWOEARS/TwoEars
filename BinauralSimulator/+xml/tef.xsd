@@ -1,0 +1,448 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="tef.xsl"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+
+  <xs:annotation>
+    <xs:documentation>
+      This is the first draft for a XML format to describe a virtual
+      audio-visual scene in the context of the TWO!EARS audio-visual simulation
+      tool. The format is based on the ideas for the "audio scene description"-
+      file of the SoundScape Renderer
+      (https://github.com/SoundScapeRenderer/ssr/blob/master/data/asdf.xsd).
+    </xs:documentation>
+    <xs:documentation>
+      Fiete Winter, August 2014
+    </xs:documentation>
+  </xs:annotation>
+
+  <!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  <b>XML-Elements</b>
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+  <xs:element name="scene">
+    <xs:annotation>
+      <xs:documentation xml:lang="short">
+      root element of scene description
+      </xs:documentation>
+      <xs:documentation>
+      The scene element contains an ORDERED list of xml elements which define
+      the scene objects. You first have to define the sources, than the sinks,
+      ... . Messing up the order will result in an error while validating your
+      xml file. Further, simulation parameters can be defined via the attributes
+      of the scene element.
+      </xs:documentation>
+      <xs:documentation xml:lang="matlab">
+      simObject = simulator.SimulatorConvexRoom();
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="source" minOccurs="1" maxOccurs="unbounded"/>
+        <xs:element ref="sink" minOccurs="1"/>
+        <xs:element ref="room" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="dynamic" minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+      <xs:attribute name="BlockSize" type="xs:positiveInteger" default="8192">
+        <xs:annotation>
+          <xs:documentation xml:lang="short">
+      number of samples inside one processing frame
+          </xs:documentation>
+          <xs:documentation>
+      The blocksize should be a power of 2
+          </xs:documentation>
+          <xs:documentation xml:lang="matlab">
+      simObject.BlockSize = 2^12;
+          </xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="SampleRate" type="xs:positiveInteger" default="44100">
+        <xs:annotation><xs:documentation xml:lang="short">
+      sample rate in hertz
+        </xs:documentation>
+        <xs:documentation xml:lang="matlab">
+      simObject.SampleRate = 48000;
+        </xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="NumberOfThreads" type="xs:positiveInteger" default="1">
+        <xs:annotation>
+          <xs:documentation xml:lang="short">
+      number of threads used for processing
+          </xs:documentation>
+          <xs:documentation>
+      Multithreading is only supported on LINUX and MAC OS.
+          </xs:documentation>
+          <xs:documentation xml:lang="matlab">
+      simObject.NumberOfThreads = 3;
+          </xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="MaximumDelay" type="nonNegativeDecimal" default="0.0">
+        <xs:annotation>
+          <xs:documentation xml:lang="short">
+      maximum delay in seconds caused by distance and finite sound velocity
+          </xs:documentation>
+          <xs:documentation xml:lang="matlab">
+      simObject.MaximumDelay = 0.04
+          </xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="PreDelay" type="nonNegativeDecimal" default="0.0">
+        <xs:annotation>
+          <xs:documentation xml:lang="short">
+      predelay in seconds to handle non-causality
+          </xs:documentation>
+          <xs:documentation>
+      Due to the physical properties of plane wave sources, shifting or rotating
+      the source position may result in a non-causal (negative) delay of the
+      source signal. If you are not using any plane wave source or don't want to
+      shift the sources' position away from the reference point
+      (head position) leave the value at 0.0.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="Renderer" type="renderer_t" default="ssr_binaural">
+        <xs:annotation>
+          <xs:documentation xml:lang="short">
+      mex function which is used for rendering.
+          </xs:documentation>
+          <xs:documentation>
+      "ssr_binaural" will render the scene using the HRTF dataset
+      specified by "HRIRs". The Renderer distinguishes between different
+      source types and enables the simulation of reverberant rooms via the
+      image source model (ISM). All sources with Type="ism" will be
+      considered for the ISM. Distributed, multi channel sources
+      (Type="pwd") are enabled.
+      <!--  Type for Renderers: -->
+          </xs:documentation>
+          <xs:documentation>
+      "ssr_brs" will ignore any type, position or orientation specified for
+      the sources. Defining "ism" or "pwd" sources will result in an ERROR.
+      Walls are also ignored. The specification of "MaximumDelay" will have NO
+      effect. Instead, a BRIR Dataset has to be defined using  the "IRs"
+      attribute for each source. This BRIR dataset contains binaural impulse
+      responses for several head rotations. Translatory movement of the  head
+      is IGNORED. This renderer does ONLY take head rotations into account.
+          </xs:documentation>
+          <xs:documentation xml:lang="matlab">
+      simObject.Renderer = @ssr_binaural;
+          </xs:documentation>
+          <xs:documentation xml:lang="see">
+      source
+          </xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="HRIRs" type="xs:token">
+        <xs:annotation>
+          <xs:documentation xml:lang="short">
+      name of hrir file
+          </xs:documentation>
+          <xs:documentation xml:lang="matlab">
+      simObject.HRIRDataset = simulator.DirectionalIR('/cool/HRIRs.sofa');
+          </xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="LengthOfSimulation" type="nonNegativeDecimal">
+        <xs:annotation>
+          <xs:documentation xml:lang="short">
+      temporal length of simulation in seconds
+          </xs:documentation>
+          <xs:documentation>
+      The simulation is finished if either the LengthOfSimulation is reached or
+      all source input buffers are empty.
+          </xs:documentation>
+          <xs:documentation xml:lang="matlab">
+      simObject.LengthOfSimulation = 5.2;
+          </xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="Verbose" type="xs:boolean" default="true">
+        <xs:annotation>
+          <xs:documentation xml:lang="short">
+      additional information for debugging
+          </xs:documentation>
+          <xs:documentation>
+      If set to true, additional information will be plotting via stdout
+          </xs:documentation>
+          <xs:documentation xml:lang="matlab">
+      simObject.Verbose = false;
+          </xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="source" type="source_t">
+    <xs:annotation><xs:documentation xml:lang="short">
+      source object
+    </xs:documentation>
+    <xs:documentation xml:lang="matlab">
+      simObject.Sources{2} = simulator.source.PlaneWave();
+          </xs:documentation>
+    <xs:documentation xml:lang="see">
+      source_t object_t
+    </xs:documentation></xs:annotation>
+  </xs:element>
+  <xs:element name="sink" type="sink_t">
+    <xs:annotation><xs:documentation xml:lang="short">
+      sink object (head)
+    </xs:documentation>
+    <xs:documentation>
+      At the moment only one Sink object is supported. It represents the
+      head/torso and must have two input channels for the two
+      ears signals.
+    </xs:documentation>
+    <xs:documentation xml:lang="matlab">
+      simObject.Sinks = simulator.AudioSink(2);  % 2 channels
+    </xs:documentation>
+    <xs:documentation xml:lang="see">
+      sink_t object_t
+    </xs:documentation></xs:annotation>
+  </xs:element>
+  <xs:element name="room" type="room_t">
+    <xs:annotation><xs:documentation xml:lang="short">
+      room object
+    </xs:documentation>
+    <xs:documentation>
+      The ISM only supports shoebox rooms.
+    </xs:documentation>
+    <xs:documentation xml:lang="matlab">
+      simObject.Room = simulator.room.Shoebox;
+    </xs:documentation>
+    <xs:documentation xml:lang="see">
+      room_t object_t
+    </xs:documentation></xs:annotation>
+  </xs:element>
+  <xs:element name="dynamic">
+    <xs:annotation>
+      <xs:documentation xml:lang="short">
+        object for dynamic aspects of the scene
+      </xs:documentation>
+      <xs:documentation xml:lang="matlab">
+        simObject.EventHandler = simulator.dynamic.SceneEventHandler(simObject);
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="event" type="event_t" minOccurs="1" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  TYPE-DEFINITIONS
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+  <!-- Base-Type for Scene Objects: -->
+  <xs:complexType name="object_t">
+    <xs:annotation><xs:documentation xml:lang="en">
+      Base type for scene objects (sources, sinks, walls).
+      Every scene object has to have a unique Name.
+    </xs:documentation></xs:annotation>
+    <xs:attribute name="Position" type="coord3D_t" use="optional"/>
+    <xs:attribute name="Radius" type="nonNegativeDecimal" use="optional"/>
+    <xs:attribute name="UnitX" type="coord3D_t" use="optional"/>
+    <xs:attribute name="UnitZ" type="coord3D_t" use="optional"/>
+    <xs:attribute name="Name" type="xs:ID" use="required"/>
+    <xs:attribute name="Labels" type="stringList" use="optional"/>
+    <!-- Attributes for visual simulation: -->
+    <xs:attribute name="RootPath" type="xs:token" use="optional"/>
+    <xs:attribute name="MeshFile" type="xs:token" use="optional"/>
+  </xs:complexType>
+
+  <!-- Types for Sources: -->
+  <xs:complexType name="source_t">
+    <xs:complexContent>
+      <xs:extension base="object_t">
+        <xs:sequence>
+          <xs:element name="buffer" type="buffer_t" />
+        </xs:sequence>
+        <xs:attribute name="Mute" type="xs:boolean" use="optional"/>
+        <xs:attribute name="Type" type="source_model_t" use="required"/>
+        <xs:attribute name="Volume" type="nonNegativeDecimal" default="1.0"/>
+        <xs:attribute name="IRs" type="xs:token"/>
+        <xs:attribute name="Directions" type="coord3Darray_t" use="optional"/>
+        <xs:attribute name="Azimuths" type="decimalList" use="optional"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:simpleType name="source_model_t">
+    <xs:restriction base="xs:token">
+      <xs:enumeration value="plane"/>
+      <xs:enumeration value="point"/>
+      <xs:enumeration value="direct"/>
+      <xs:enumeration value="pwd"/>
+      <xs:enumeration value="ism"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Types for Sinks: -->
+  <xs:complexType name="sink_t">
+    <xs:complexContent>
+      <xs:extension base="object_t">
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <!-- Types for Walls: -->
+  <xs:complexType name="room_t">
+    <xs:complexContent>
+      <xs:extension base="object_t">
+        <xs:attribute name="ReverberationMaxOrder" type="nonNegativeInteger" default="0">
+            <xs:annotation>
+              <xs:documentation xml:lang="short">
+            number of subsequent reflections in image source model
+              </xs:documentation>
+              <xs:documentation>
+            Determines the number of images source. Due to the computional complexity
+            a value higher than 8 is NOT recommended.
+              </xs:documentation>
+              <xs:documentation xml:lang="see">
+
+              </xs:documentation>
+            </xs:annotation>
+            </xs:attribute>
+        <xs:attribute name="ReflectionCoeffs" type="reflectionList" default="1.0"/>
+        <xs:attribute name="AbsorptionCoeffs" type="absorptionList" use="optional"/>
+        <xs:attribute name="RT60" type="nonNegativeDecimal" use="optional"/>
+        <xs:attribute name="LengthX" type="nonNegativeDecimal" use="optional"/>
+        <xs:attribute name="LengthY" type="nonNegativeDecimal" use="required"/>
+        <xs:attribute name="LengthZ" type="nonNegativeDecimal" use="required"/>
+        <xs:attribute name="Mode" type="room_mode_t" default="2D"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:simpleType name="reflection_t">
+    <xs:restriction base="xs:decimal">
+      <xs:minInclusive value="-1"/>
+      <xs:maxInclusive value="1"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="reflectionList">
+    <xs:list itemType="reflection_t"/>
+  </xs:simpleType>
+
+  <xs:simpleType name="absorption_t">
+    <xs:restriction base="positiveDecimal">
+      <xs:maxInclusive value="1"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="absorptionList">
+    <xs:list itemType="absorption_t"/>
+  </xs:simpleType>
+
+  <xs:simpleType name="room_mode_t">
+    <xs:restriction base="xs:token">
+      <xs:enumeration value="2D"/>
+      <xs:enumeration value="3D"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Type for Coordinates -->
+  <xs:simpleType name="coord2D_t">
+    <xs:restriction base="decimalList">
+      <xs:length value="2"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="coord3D_t">
+    <xs:restriction base="decimalList">
+      <xs:length value="3"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Types for Coordinate Arrays: -->
+  <xs:simpleType name="coord2Darray_t">
+    <xs:restriction base="xs:token">
+      <xs:pattern value="(\s?\-?\d+(.\d+)?\s\-?\d+(.\d+)?\s?;)*(\s?\-?\d+(.\d+)?\s\-?\d+(.\d+)?\s?)"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="coord3Darray_t">
+    <xs:restriction base="xs:token">
+      <xs:pattern value="(\s?\-?\d+(.\d+)?\s\-?\d+(.\d+)?\s\-?\d+(.\d+)?\s?;)*(\s?\-?\d+(.\d+)?\s\-?\d+(.\d+)?\s\-?\d+(.\d+)?\s?)"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Types for Events: -->
+  <xs:complexType name="event_t">
+    <xs:attribute name="Name" type="xs:IDREF" use="required"/>
+    <xs:attribute name="Attribute" type="event_attr_t" use="required"/>
+    <xs:attribute name="Value" type="xs:token" use="required"/>
+    <xs:attribute name="Start" type="nonNegativeDecimal" use="required"/>
+    <xs:attribute name="End" type="nonNegativeDecimal" use="optional"/>
+  </xs:complexType>
+
+  <xs:simpleType name="event_attr_t">
+    <xs:restriction base="xs:token">
+      <xs:enumeration value="Position" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!--  Types for Buffers: -->
+  <xs:complexType name="buffer_t">
+    <xs:attribute name="Type" type="buffer_model_t"/>
+    <xs:attribute name="ChannelMapping" type="positiveIntegerList" default="1"/>
+    <xs:attribute name="File" type="xs:token" use="optional"/>
+    <xs:attribute name="Variance" type="nonNegativeDecimal" default="1.0"/>
+    <xs:attribute name="Mean" type="xs:decimal" default="0.0"/>
+    <xs:attribute name="StartPointer" type="positiveIntegerList" use="optional"/>
+  </xs:complexType>
+
+  <xs:simpleType name="buffer_model_t">
+    <xs:restriction base="xs:token">
+      <xs:enumeration value="fifo"/>
+      <xs:enumeration value="ring"/>
+      <xs:enumeration value="noise"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!--  Type for Renderers: -->
+  <xs:simpleType name="renderer_t">
+    <xs:restriction base="xs:token">
+      <xs:enumeration value="ssr_binaural"/>
+      <xs:enumeration value="ssr_brs"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!--  Type for Reverberation Model -->
+  <xs:simpleType name="reverb_t">
+    <xs:restriction base="xs:token">
+      <xs:enumeration value="shoebox"/>
+      <xs:enumeration value="convex"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!--  numerical Types  -->
+  <xs:simpleType name="positiveDecimal">
+    <xs:restriction base="xs:decimal">
+      <xs:minExclusive value="0.0"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="nonNegativeDecimal">
+    <xs:restriction base="xs:decimal">
+      <xs:minInclusive value="0.0"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="nonNegativeInteger">
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="0"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="decimalList">
+    <xs:list itemType="xs:decimal"/>
+  </xs:simpleType>
+  <xs:simpleType name="integerList">
+    <xs:list itemType="xs:integer"/>
+  </xs:simpleType>
+  <xs:simpleType name="positiveIntegerList">
+    <xs:list itemType="xs:positiveInteger"/>
+  </xs:simpleType>
+  <xs:simpleType name="stringList">
+    <xs:list itemType="xs:string"/>
+  </xs:simpleType>
+</xs:schema>

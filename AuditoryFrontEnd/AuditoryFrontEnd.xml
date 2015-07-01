@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Configure dependency of the Two!Ears Auditory Front-End module -->
+
+<!-- Start the Two!Ears Auditory Front-End with
+     startTwoEars('AuditoryFrontEnd.xml'); -->
+
+<requirements>
+    <TwoEarsPart startup="startAuditoryFrontEnd">auditory-front-end</TwoEarsPart>
+    <TwoEarsPart startup="startTools" >tools</TwoEarsPart>
+</requirements>
