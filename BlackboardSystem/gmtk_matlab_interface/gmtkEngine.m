@@ -66,7 +66,18 @@ classdef gmtkEngine < handle
             end
 
             % Check if gmtk binaries can be found
-            isargfile(obj.gmtkTri, obj.gmtkTrain, obj.gmtkJT);
+            if ~exist(obj.gmtkTri, 'file')
+                error(['Your gmtkTriangulate binary couldn''t be found under its ', ...
+                       'specified path: %s.'], obj.gmtkTri);
+            end
+            if ~exist(obj.gmtkTrain, 'file')
+                error(['Your gmtkEMtrain binary couldn''t be found under its ', ...
+                    'specified path: %s.'], obj.gmtkTrain);
+            end
+            if ~exist(obj.gmtkJT, 'file')
+                error(['Your gmtkJT binary couldn''t be found under its ', ...
+                    'specified path: %s.'], obj.gmtkJT);
+            end
             obj.gmName = gmName;
             obj.dimFeatures = dimFeatures;
             obj.gmtkPath = gmtkPath;
