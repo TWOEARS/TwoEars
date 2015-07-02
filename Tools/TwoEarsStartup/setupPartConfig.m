@@ -3,8 +3,17 @@ function setupPartConfig( configFileName )
 [reposNeeded, subsNeeded, recursiveSubsNeeded, branchesNeeded, startupNeeded] = getPartRequirements( configFileName );
 
 for k = 1:length(reposNeeded)
+    % Get path where TwoEarsPaths.xml is stored in order to handle relative
+    % pathes
+    rootPath = fileparts(which('TwoEarsPaths.xml'));
     % Get path of TwoEars part (repository)
     repoPath = readPathConfig( 'TwoEarsPaths.xml', reposNeeded{k} );
+    % Check if we have a relative or absolute path
+    if exist(fullfile(rootPath, repoPath), 'dir')
+        repoPath = fullfile(rootPath, repoPath);
+    elseif ~exist(repoPath, 'dir')
+        error('%s no such directory.', repoPath)
+    end
     % Check if the correct branch is checked out. Note, this is only executed if
     % you specify a branch in the config file.
     if length(branchesNeeded{k})>0
