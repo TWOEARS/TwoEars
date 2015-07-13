@@ -295,7 +295,9 @@ classdef SimulatorConvexRoom < simulator.SimulatorInterface & simulator.RobotInt
       % function [sig, timeIncSec, timeIncSamples] = getSignal(obj, timeIncSec)
       %
       % See also: simulator.RobotInterface.getSignal
-
+      if nargin < 1
+        timeIncSec = inf;
+      end      
       blocks = ceil(timeIncSec*obj.SampleRate/obj.BlockSize);
 
       idx = 0;
