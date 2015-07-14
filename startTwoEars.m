@@ -2,11 +2,10 @@ function startTwoEars(configFile)
 %STARTTWOEARS sets up the whole Two!Ears model parts
 
 TwoEarsPath = fileparts(mfilename('fullpath'));
-TwoEarsPath = [TwoEarsPath, filesep];
 
 addpath(TwoEarsPath);
-addpath([TwoEarsPath, 'Tools']);
-addpath([TwoEarsPath, 'Tools', filesep, 'TwoEarsStartup']);
+addpath(fullfile(TwoEarsPath, 'Tools'));
+addpath(fullfile(TwoEarsPath, 'Tools', 'TwoEarsStartup'));
 
 if nargin>0
     if exist(configFile,'file')
@@ -15,5 +14,5 @@ if nargin>0
         error('Config file %s is not a valid file.',configFile);
     end
 else
-    setupPartConfig([TwoEarsPath, 'TwoEars.xml']);
+    setupPartConfig(fullfile(TwoEarsPath, 'TwoEars.xml'));
 end
