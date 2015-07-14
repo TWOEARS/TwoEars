@@ -10,5 +10,9 @@ basePath = fileparts(mfilename('fullpath'));
 addpath(fullfile(basePath, 'src'));
 addpath(fullfile(basePath, 'src', 'mex'));
 
+% Add SOFA HRTF handling
+addpath(fullfile(basePath, 'src', 'sofa'));
+SOFAstart(0);
+
 % Clear used variables
 clear basePath;
