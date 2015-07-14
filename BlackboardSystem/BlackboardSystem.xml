@@ -5,8 +5,8 @@
      startTwoEars('BlackboardSystem.xml'); -->
 
 <requirements>
-    <TwoEarsPart startup="startBinauralSimulator">binaural-simulator</TwoEarsPart>
-    <TwoEarsPart startup="startAuditoryFrontEnd">auditory-front-end</TwoEarsPart>
-    <TwoEarsPart startup="startBlackboardSystem">blackboard-system</TwoEarsPart>
-    <TwoEarsPart startup="startTools" >tools</TwoEarsPart>
+    <TwoEarsPart sub="src" startup="startBinauralSimulator">binaural-simulator</TwoEarsPart>
+    <TwoEarsPart sub="src" startup="startAuditoryFrontEnd">auditory-front-end</TwoEarsPart>
+    <TwoEarsPart sub="src" startup="startBlackboardSystem">blackboard-system</TwoEarsPart>
+    <TwoEarsPart           startup="startTools" >tools</TwoEarsPart>
 </requirements>
