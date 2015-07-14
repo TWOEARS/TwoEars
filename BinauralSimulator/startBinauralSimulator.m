@@ -5,12 +5,12 @@ ones(10)*ones(10);
 % Workaround for Bug related to fftw library
 fftw('swisdom');
 
-basePath = [fileparts(mfilename('fullpath')) filesep];
+basePath = fileparts(mfilename('fullpath'));
 
-addpath([basePath 'mex']);
+addpath(fullfile(basePath, 'src', 'mex'));
 
 % Add SOFA HRTF handling
-addpath([basePath 'sofa']);
+addpath(fullfile(basePath, 'src', 'sofa'));
 SOFAstart(0);
 
 % Clear used variables
