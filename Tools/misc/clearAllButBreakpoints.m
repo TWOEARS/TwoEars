@@ -1,10 +1,11 @@
 %# store breakpoints
-tmp = dbstatus;
+tmp = dbstatus('-completenames');
 save('tmp.mat','tmp')
 
 %# clear all
 close all
 clear classes %# clears even more than clear all
+clear functions
 clc
 
 %# reload breakpoints
