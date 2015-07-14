@@ -27,57 +27,68 @@ import xml.*;
 narginchk(1,2);
 isargchar(filename);
 if nargin < 2
-    bVerbose = 0;
+  bVerbose = 0;
 end
 
 try
-    % try relative path
-    isargfile(fullfile(pwd,filename));
-    if bVerbose
-        fprintf(strcat('INFO: relative local file (%s) found, will not ', ...
-            'search in database\n'), filename);
-    end
-    filename = fullfile(pwd,filename);
-    return;
+  % try relative path to current working directory
+  isargfile(fullfile(pwd,filename));
+  if bVerbose
+    fprintf(strcat('INFO: relative local file (%s) found, will not ', ...
+      'search in database\n'), filename);
+  end
+  filename = fullfile(pwd,filename);
+  return;  
 catch
-    try
-        % try absolute path
-        isargfile(filename);
-        if bVerbose
-            fprintf(strcat('INFO: absolute local file (%s) found, will not ', ...
-                'search in database\n'), filename);
-        end
-        return;
-    catch
-        try
-            % try local database
-            isargfile(fullfile(dbPath(),filename));
-            if bVerbose
-                fprintf('INFO: file (%s) found in local database\n', filename);
-            end
-            filename = fullfile(dbPath(),filename);
-            return;
-        catch
-            if bVerbose
-                fprintf(strcat('INFO: file (%s) not found in local database ', ...
-                    '(dbPath=%s), trying remote database\n'), filename, dbPath());
-            end
-            % try cache of remote database
-            try
-                tmppath = xml.dbTmp();
-                isargfile(fullfile(tmppath,filename));
-                if bVerbose
-                    fprintf('INFO: file (%s) found in cache of remote database\n', ...
-                        filename);
-                end
-                filename = fullfile(tmppath,filename);
-                return;
-            catch
-                % try download from remote database
-                filename = dbDownloadFile(filename);
-            end
-        end
+  try
+    % search inside paths added by addpath
+    isargfile(which(filename));
+    if bVerbose
+      fprintf(strcat('INFO: relative local file (%s) found, will not ', ...
+        'search in database\n'), filename);
     end
+    filename = which(filename);
+    return;
+  catch
+    try
+      % try absolute path
+      isargfile(filename);
+      if bVerbose
+        fprintf(strcat('INFO: absolute local file (%s) found, will not ', ...
+          'search in database\n'), filename);
+      end
+      return;
+    catch
+      try
+        % try local database
+        isargfile(fullfile(dbPath(),filename));
+        if bVerbose
+          fprintf('INFO: file (%s) found in local database\n', filename);
+        end
+        filename = fullfile(dbPath(),filename);
+        return;
+      catch
+        if bVerbose
+          fprintf(strcat('INFO: file (%s) not found in local database ', ...
+            '(dbPath=%s), trying remote database\n'), filename, dbPath());
+        end
+        % try cache of remote database
+        try
+          tmppath = xml.dbTmp();
+          isargfile(fullfile(tmppath,filename));
+          if bVerbose
+            fprintf('INFO: file (%s) found in cache of remote database\n', ...
+              filename);
+          end
+          filename = fullfile(tmppath,filename);
+          return;
+        catch
+          % try download from remote database
+          filename = dbDownloadFile(filename);
+        end
+      end
+    end
+  end
 end
 
 % vim: set sw=4 ts=4 expandtab textwidth=90 :
