@@ -299,6 +299,8 @@ classdef modulationProc < Processor
         
         function prepareForProcessing(pObj)
             
+            fs = pObj.FsHzIn;
+            
             % Instantiate a down-sampler if needed
             if pObj.dsRatio > 1
                 pObj.dsProc = downSamplerProc(fs,pObj.dsRatio,1);

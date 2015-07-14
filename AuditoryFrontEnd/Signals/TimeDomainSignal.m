@@ -192,7 +192,7 @@ classdef TimeDomainSignal < Signal
             if nargin<5; channel = []; end
             if nargin<4; label = []; end
             if nargin<3; name = []; end
-            if nargin<2; bufferSize = []; end
+            if nargin<2||isempty(bufferSize); bufferSize = 10; end
             if nargin<1; fs = []; end
             
             % Create a structure that contains all the info needed with correct formating

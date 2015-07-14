@@ -447,6 +447,8 @@ classdef drnlProc < Processor
         
         function prepareForProcessing(pObj)
            
+            fs = pObj.FsHzIn;
+            
             % Compute internal parameters and instantiate filters
             
             % mocIpsi, mocContra can be a scalar or vector with the same

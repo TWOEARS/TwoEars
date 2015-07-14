@@ -306,6 +306,8 @@ classdef preProc < Processor
         
         function prepareForProcessing(pObj)
             
+            fs = pObj.FsHzIn;
+            
             % Filter instantiation (if needed)
             if pObj.bRemoveDC
                 pObj.dcFilter_l = bwFilter(fs,4,pObj.cutoffHzDC,[],'high');

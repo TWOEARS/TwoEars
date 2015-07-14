@@ -170,9 +170,6 @@ classdef downSamplerProc < Processor
             
         end
         
-        function verifyParameters(pObj)
-            % Do nothing, this is only to implement an abstract method
-        end
         
     end
    

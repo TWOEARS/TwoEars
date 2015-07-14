@@ -147,7 +147,7 @@ classdef offsetMapProc < Processor
         function prepareForProcessing(pObj)
             
             % Compute internal parameter
-            pObj.fuseWithinSamples = ceil(pObj.fuseWithinSec*fs);
+            pObj.fuseWithinSamples = ceil(pObj.fuseWithinSec*pObj.FsHzIn);
             
         end
         

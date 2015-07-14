@@ -14,9 +14,6 @@ classdef TimeFrequencySignal < Signal
     end
        
     properties (GetAccess = protected)
-%         isSigned    % True for representations that are multi-channel 
-                    % waveforms (e.g., a filterbank output) as opposed to
-                    % spectrograms. Used for plotting only.
         scaling
     end
     
@@ -72,7 +69,6 @@ classdef TimeFrequencySignal < Signal
             
         end
         
-
         function h = plot(sObj,h0,p,varargin)
             %plot       This method plots the data from a time-frequency
             %           domain signal object
@@ -259,6 +255,33 @@ classdef TimeFrequencySignal < Signal
     
     methods (Static)
        
+        function sObj = construct(fs,bufferSize,name,label,cfHz,channel,data)
+            %construct
+            %
+            %
+            
+            if nargin<7; data = []; end
+            if nargin<6; channel = []; end
+            if nargin<5; cfHz = []; end
+            if nargin<4; label = []; end
+            if nargin<3; name = []; end
+            if nargin<2||isempty(bufferSize); bufferSize = 10; end
+            if nargin<1; fs = []; end
+            
+            % Create a dummy structure with that information to emulate a processor and
+            % correctly call the class constructor
+            dummyStruct = struct;
+            dummyStruct.FsHzOut = fs;
+            dummyStruct.getProcessorInfo.requestName = name;
+            dummyStruct.getProcessorInfo.requestLabel = label;
+            dummyStruct.getDependentParameter = containers.Map;
+            dummyStruct.getDependentParameter('fb_cfHz') = cfHz;
+            
+            % Instantiate the signal
+            sObj = TimeFrequencySignal(dummyStruct,bufferSize,channel,data);
+            
+        end
+        
         function [names, defaultValues, descriptions] = getPlottingParameterInfo()
             %GETPLOTTINGPARAMETERINFO   Stores plot parameters that are common to all
             %signals.
