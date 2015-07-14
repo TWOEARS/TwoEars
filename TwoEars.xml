@@ -7,8 +7,8 @@ Config.xml, including only those parts and then start the model with
 startTwoEars('Config.xml'). -->
 
 <requirements>
-    <TwoEarsPart startup="startBinauralSimulator">binaural-simulator</TwoEarsPart>
-    <TwoEarsPart startup="startTools">tools</TwoEarsPart>
-    <TwoEarsPart startup="startAuditoryFrontEnd">auditory-front-end</TwoEarsPart>
-    <TwoEarsPart startup="startBlackboardSystem">blackboard-system</TwoEarsPart>
+    <TwoEarsPart sub="src" startup="startBinauralSimulator">binaural-simulator</TwoEarsPart>
+    <TwoEarsPart           startup="startTools">tools</TwoEarsPart>
+    <TwoEarsPart sub="src" startup="startAuditoryFrontEnd">auditory-front-end</TwoEarsPart>
+    <TwoEarsPart sub="src" startup="startBlackboardSystem">blackboard-system</TwoEarsPart>
 </requirements>
