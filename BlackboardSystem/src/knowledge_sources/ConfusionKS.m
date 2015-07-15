@@ -38,7 +38,7 @@ classdef ConfusionKS < AbstractKS
             % Generates location hypotheses if posterior > threshold
             locIdx = locHyp.posteriors > obj.postThreshold;
             numLoc = sum(locIdx);
-            if numLoc > 1 & obj.bSolveConfusion
+            if numLoc > 1 && obj.bSolveConfusion
                 % Assume there is a confusion when there are more than 1
                 % valid location
                 % cf = ConfusionHypothesis(locHyp.blockNo, locHyp.headOrientation, ...

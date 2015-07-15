@@ -10,6 +10,7 @@ classdef Blackboard < handle
         currentSoundTimeIdx = 0;        % the current "sound time". 
                                         % Has to be set when a new signal
                                         % chunk arrives
+        headOrientation = 0;            % Current head orientation
     end
     
     methods
@@ -120,6 +121,11 @@ classdef Blackboard < handle
             sndTimeIdxs = sort( cell2mat( keys( obj.data ) ) );
             sndTimeIdxs = sndTimeIdxs( sndTimeIdxs(end) - sndTimeIdxs >= blockSize_s );
             requestedData = obj.getData( dataLabel, sndTimeIdxs );
+        end
+        
+        %% Set absolute head orientation
+        function setHeadOrientation(obj, angle)
+            obj.headOrientation = angle;
         end
         
     end
