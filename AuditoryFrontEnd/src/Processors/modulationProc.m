@@ -85,29 +85,23 @@ classdef modulationProc < Processor
     methods
         
         function pObj = modulationProc(fs,parObj)
-%         function pObj = modulationProc(fs,nChan,cfHz,nFilters,lowFreqHz,highFreqHz,win,blockSec,stepSec,fbType,downSamplingRatio)
-            %modulationProc     Instantiate an amplitude modulation
-            %                   extractor
-            %
-            %USAGE:
-            %  pObj = modulationProc(fs,nChan,cfHz,nFilters,lowFreqHz,highFreqHz,win,blockSec,stepSec,fbType,dsRatio)
-            %
-            %INPUT ARGUMENTS:
-            %         fs : Sampling frequency of the input (Hz)
-            %      nChan : Number of audio frequency channels
-            %       cfHz : Vector of modulation center frequencies (Hz)
-            %   nFilters : Number of modulation frequency bins
-            %  lowFreqHz : Lowest modulation center frequency (Hz)
-            % highFreqHz : Highest modulation center frequency (Hz)
-            %        win : Window shape used for framing
-            %   blockSec : Block size of AMS features (s)
-            %    stepSec : Step size of AMS features (s)
-            %     fbType : Type of modulation filterbank, 'lin' for
-            %              FFT-based, or 'log' for filter-based implementation
-            %    dsRatio : Downsampling ratio 
-            %
-            %OUTPUT ARGUMENT:
-            %       pObj : Processor instance
+		%modualationProc   Construct an amplitude modulation extraction processor
+        %
+        % USAGE:
+        %   pObj = modulationProc(fs, parObj)
+        %
+        % INPUT ARGUMENTS:
+        %     fs : Input sampling frequency (Hz)
+        % parObj : Parameter object instance
+        %
+        % OUTPUT ARGUMENTS:
+        %   pObj : Processor instance
+        %
+        % NOTE: Parameter object instance, parObj, can be generated using genParStruct.m
+        % User-controllable parameters for this processor and their default values can be
+        % found by browsing the script parameterHelper.m
+        %
+        % See also: genParStruct, parameterHelper, Processor
             
             
             % TODO:

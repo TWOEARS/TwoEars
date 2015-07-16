@@ -18,29 +18,21 @@ classdef CorrelationSignal < Signal
     
     methods
         function sObj = CorrelationSignal(procHandle,bufferSize,channel,data)
-%         function sObj = CorrelationSignal(fs,bufferSize_s,name,cfHz,lags,label,data,channel)
-            %CorrelationSignal  Constructor for the correlation children
-            %                   signal class
+            %CorrelationSignal  Class constructor
             %
             %USAGE
-            %    sObj = CorrelationSignal(fs,name)
-            %    sObj = CorrelationSignal(fs,name,cfHz,lags,label,data,channel)
+            %     sObj = CorrelationSignal(procHandle)
+            %     sObj = CorrelationSignal(procHandle,bufferSize,channel,data)
             %
             %INPUT ARGUMENTS
-            %       fs : Sampling frequency (Hz)
-            %     name : Name tag of the signal, should be compatible with
-            %            variable name syntax.
-            %     cfHz : Center frequencies of the channels in Hertz.
-            %     lags : Vector of lag values (s)
-            %    label : Label for the signal, to be used in e.g. figures
-            %            (default: label = name)
-            %     data : Data matrix to construct an object from existing 
-            %            data. Time should span the first dimension,
-            %            frequency the second dimension, and lags the third
-            %  channel : Flag indicating 'left', 'right', or 'mono'
-            %            (default: channel = 'mono')
+            % procHandle : Handle to the processor generating this signal as output
+            % bufferSize : Size of the ring buffer in s (default: bufferSize = 10)
+            %    channel : Flag indicating 'left', 'right', or 'mono' (default: 
+            %              channel = 'mono')
+            %       data : Array of amplitudes to construct an object from existing data
+            %
             %OUTPUT ARGUMENT
-            %     sObj : Correlation signal object inheriting the signal class
+            %  sObj : Correlation signal object inheriting the signal class
             
             if nargin<4; data = []; end
             if nargin<3||isempty(channel); channel = 'mono'; end

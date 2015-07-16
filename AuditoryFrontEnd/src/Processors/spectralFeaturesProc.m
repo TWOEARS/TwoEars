@@ -61,38 +61,23 @@ classdef spectralFeaturesProc < Processor
     
     methods
         function pObj = spectralFeaturesProc(fs,parObj)
-%         function pObj = spectralFeaturesProc(fs,cfHz,requests,brCF,roPerc)
-            %spectralFeaturesProc   Instantiate a processor for spectral
-            %                       features extraction
-            %
-            %USAGE:
-            %   pObj = spectralFeaturesProc(fs,cfHz)
-            %   pObj = spectralFeaturesProc(fs,cfHz,requests)
-            %
-            %INPUT ARGUMENTS:
-            %       fs : Sampling frequency of the input signal (ratemap)
-            %     cfHz : Vector of audio center frequencies (Hz)
-            % requests : Cell array of requests, valid requests as follow
-            %            - 'all'          : All of the following (default)
-            %            - 'centroid'     : Spectral centroid
-            %            - 'crest'        : Spectral crest measure
-            %            - 'spread'       : Spectral spread
-            %            - 'entropy'      : Spectral entropy
-            %            - 'brightness'   : Spectral brightness
-            %            - 'hfc'          : Spectral high-frequency content
-            %            - 'decrease'     : Spectral decrease
-            %            - 'flatness'     : Spectral flatness
-            %            - 'flux'         : Spectral flux
-            %            - 'kurtosis'     : Spectral kurtosis
-            %            - 'skewness'     : Spectral skewness
-            %            - 'irregularity' : Spectral irregularity
-            %            - 'rolloff'      : Spectral rolloff
-            %            - 'variation'    : Spectral variation
-            %
-            %OUTPUT ARGUMENT:
-            %     pObj : Processor instance
-            %
-            %TODO: update h1, error messages to be changed to warnings
+		%spectralFeaturesProc   Construct a spectral features extraction processor
+        %
+        % USAGE:
+        %   pObj = spectralFeaturesProc(fs, parObj)
+        %
+        % INPUT ARGUMENTS:
+        %     fs : Input sampling frequency (Hz)
+        % parObj : Parameter object instance
+        %
+        % OUTPUT ARGUMENTS:
+        %   pObj : Processor instance
+        %
+        % NOTE: Parameter object instance, parObj, can be generated using genParStruct.m
+        % User-controllable parameters for this processor and their default values can be
+        % found by browsing the script parameterHelper.m
+        %
+        % See also: genParStruct, parameterHelper, Processor
             
             % Checking input parameter
             if nargin<2||isempty(parObj); parObj = Parameters; end

@@ -43,15 +43,12 @@ classdef filterObj < handle
                 help(mfilename);
                 error('Wrong number of input arguments!')
             end
-% 
-%             % Unpack and check filter objects 
-%             fObj = unpackFilterObj(fObj);
 
             % Set default frequency resolution
             if nargin < 2 || isempty(nfft); 
                 if ~isempty(fObj.FsHz); 
                     % Sampling frequency is known
-                    nfft = 2^nextpow2(fObj.FsHz * 50e-3); % TO DO: Ask Tobias about this "default", seems not to work when sampling frequency is one
+                    nfft = 2^nextpow2(fObj.FsHz * 50e-3); 
                 else
                     nfft = 512; 
                 end
@@ -78,7 +75,6 @@ classdef filterObj < handle
                 end
             else
                 % Calculate frequency response of ii-th filter
-                % TO DO: Do we need that case?
                 [hLin(:),f] = freqz(fObj.b,fObj.a,nfft);
             end
         end

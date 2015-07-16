@@ -75,18 +75,23 @@ classdef preProc < Processor
     
     methods
         function pObj = preProc(fs,parObj)
-            %preProc    Instantiates a pre-processor
-            %
-            %USAGE:
-            %   pObj = preProc(fs);
-            %   pObj = preProc(fs,p);
-            %
-            %INPUT ARGUMENTS:
-            %   fs : Sampling frequency (Hz)
-            %    p : Structure of non-default parameters
-            %
-            %OUTPUT ARGUMENTS:
-            % pObj : Pre-processor instance
+		%preProc   Construct a pre-processor
+        %
+        % USAGE:
+        %   pObj = preProc(fs, parObj)
+        %
+        % INPUT ARGUMENTS:
+        %     fs : Input sampling frequency (Hz)
+        % parObj : Parameter object instance
+        %
+        % OUTPUT ARGUMENTS:
+        %   pObj : Processor instance
+        %
+        % NOTE: Parameter object instance, parObj, can be generated using genParStruct.m
+        % User-controllable parameters for this processor and their default values can be
+        % found by browsing the script parameterHelper.m
+        %
+        % See also: genParStruct, parameterHelper, Processor
             
             if nargin<2||isempty(parObj); parObj = Parameters; end
             if nargin<1; fs = []; end

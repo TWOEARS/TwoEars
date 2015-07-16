@@ -119,6 +119,9 @@ classdef Processor < handle
             %     fsOut : Output sampling frequency (Hz)
             %  procName : Name of children processor to implement
             %    parObj : Parameters instance to use for this processor
+            %
+            % OUTPUT ARGUMENTS:
+            %      pObj : Processor instance
             
             if nargin>0
             
@@ -199,6 +202,9 @@ classdef Processor < handle
             % propValue : Value for that property. Returns an empty output
             %             if no property with the provided name was 
             %             found in the list of dependent processors.
+            
+            % TODO: Will have to be adjusted for processors with multiple lower
+            % dependencies
             
             if nargin<2 || isempty(propName)
                 propValue = [];
@@ -342,7 +348,7 @@ classdef Processor < handle
     methods (Access=protected)
         
         function extendParameters(pObj)
-            %extendParameters   Add missing parameters in a processor
+            %extendParameters   Add default value to missing parameters in a processor
             
             if ~isprop(pObj,'parameters') || isempty(pObj.parameters)
                 pObj.parameters = Parameters;
@@ -362,9 +368,19 @@ classdef Processor < handle
     end
     
     methods (Hidden = true)
+        % The following methods are made "Hidden" as they need public access but are
+        % called internally by the AFE, and typically not by the user.
         
         function addUpperDependencies(pObj,dependentProcs)
             %ADDUPPERDEPENDENCIES   Populate link to higher processors relying on this one
+            %
+            % USAGE:
+            %  pObj.addUpperDependencies(dependentProcs)
+            %
+            % INPUT ARGUMENTS:
+            %           pObj : Processor instance
+            % dependentProcs : Cell array of (correctly ordered) processors dependent on
+            %                  this processor
             
             pObj.UpperDependencies = [pObj.UpperDependencies dependentProcs];
             
@@ -372,6 +388,13 @@ classdef Processor < handle
         
         function removeUpperDependency(pObj,upperProc)
             %REMOVEUPPERDEPENDENCY   Removes a processor from the upper dependency list
+            %
+            % USAGE:
+            %    pObj.removeUpperDependency(upperProc)
+            %
+            % INPUT ARGUMENTS:
+            %       pObj : Processor instance
+            %  upperProc : Processor depending on pObj to remove from the dependency list
             
             for ii = 1:size(pObj.UpperDependencies,2)
                 if pObj.UpperDependencies{ii} == upperProc
@@ -387,10 +410,18 @@ classdef Processor < handle
         
         function addLowerDependencies(pObj,dependentProcs)
             %ADDLOWERDEPENDENCIES   Populate link to lower processors this one relies on.
-            % Likewise, will will add the current processor as an upper dependency in
-            % those processors.
-            % This method will also attach a listener to the current processor that
-            % listens to changes in the lower-dependent processor.
+            % Likewise, will add the current processor as an upper dependency in
+            % those processors. This method will also attach a listener to the current 
+            % processor that listens to changes in the lower-dependent processor.
+            %
+            % USAGE: 
+            %    pObj.addLowerDependencies(dependentProcs)
+            %
+            % INPUT ARGUMENTS:
+            %           pObj : Processor instance
+            % dependentProcs : Cell array of processors pObj depends on
+            
+            % TODO: Will need to be updated for processors with multiple dependencies
             
             pObj.LowerDependencies = [pObj.LowerDependencies dependentProcs];
             for ii = 1:size(dependentProcs,2)
@@ -404,13 +435,14 @@ classdef Processor < handle
             pObj.listenToModify = addlistener(proc,'hasChanged',@pObj.update);
             pObj.listenToModify = addlistener(proc,'isDeleted',@pObj.remove);
             
-            
-            
         end
         
         function removeHandleInLowerDependencies(pObj)
             %REMOVEHANDLEINLOWERDEPENDENCY  Removes the processor from the upper
             %dependencies list of its dependencies
+            %
+            % USAGE:
+            %  pObj.removeHandleInLowerDependencies
             
             try
                 for ii = 1:size(pObj.LowerDependencies,2)
@@ -433,10 +465,10 @@ classdef Processor < handle
             % 1- single dependency with single output
             % 2- two dependencies (left and right channels) with each single output
             % 3- single dependency with left and right outputs (e.g., pre-processor)
-            
+            %
             % Should the input attribution works in any other way for a given processor,
             % this method should be overloaded for that specific children processor.
-            
+            %
             % NB: 'dependency' should be a cell array with a handle to a single processor,
             % with a single output, or maximally one output per channel.
             
@@ -454,24 +486,10 @@ classdef Processor < handle
                     
                 elseif size(dependency{1}.Output,2) == 2
                     % Case 3: Dependency is a multi-channel processor
-                    % TODO: They should be already be ordered, the following check should be
-                    % removed after testing and is here for debugging only.
                     if strcmp(pObj.Channel,'left')
                         pObj.Input{1} = dependency{1}.Output{1};
                     else
                         pObj.Input{1} = dependency{1}.Output{2};
-                    
-%                     if strcmp(dependency{1}.Output{1}.Channel,'left') && ...
-%                             strcmp(dependency{1}.Output{2}.Channel,'right')
-%                         pObj.Input{1,1} = dependency{1}.Output{1};
-%                         pObj.Input{1,2} = dependency{1}.Output{2};
-%                     elseif strcmp(dependency{1}.Output{1}.Channel,'right') && ...
-%                             strcmp(dependency{1}.Output{2}.Channel,'left')
-%                         pObj.Input{1,1} = dependency.Output{2};
-%                         pObj.Input{1,2} = dependency.Output{1};
-%                         warning('Outputs of dependent processors were incorrectly ordered, consider investigating.')
-%                     else
-%                         error('Something is wrong with the outputs of the dependent processor, investigate.')
                     end
                     
                 else
@@ -479,13 +497,8 @@ classdef Processor < handle
                 end
             elseif size(dependency,2) == 2
                 % Case 2: Binaural input processor
-                % TODO: Remove the following check once tested
-                if numel(dependency{1}.Output) == 1 && numel(dependency{2}.Output) == 1
-                    pObj.Input{1,1} = dependency{1}.Output{1};
-                    pObj.Input{1,2} = dependency{2}.Output{1};
-                else
-                    error('Something is wrong with the outputs of the dependent processor, investigate.')
-                end
+                pObj.Input{1,1} = dependency{1}.Output{1};
+                pObj.Input{1,2} = dependency{2}.Output{1};
             else
                 returnError = 1;
             end
@@ -496,36 +509,18 @@ classdef Processor < handle
                     'definition.'])
             end
             
-%             % Number of already existing inputs
-%             ii = size(pObj.Input,2);
-%             
-%             if size(dependency.Output,2) == 1
-%                 % Then it is a single output -> single input scenario
-%                 pObj.Input{ii+1,1} = dependency.Output{1};
-%                 
-%             else
-%                 % Then the dependency has two outputs corresponding to two channels
-%                 
-%                 % TODO: They should be already be ordered, the following check should be
-%                 % removed after testing and is here for debugging only.
-%                 if strcmp(dependency.Output{1}.Channel,'left') && ...
-%                         strcmp(dependency.Output{2}.Channel,'right')
-%                     pObj.Input{ii+1,1} = dependency.Output{1};
-%                     pObj.Input{ii+1,2} = dependency.Output{2};
-%                 elseif strcmp(dependency.Output{1}.Channel,'right') && ...
-%                         strcmp(dependency.Output{2}.Channel,'left')
-%                     pObj.Input{ii+1,1} = dependency.Output{2};
-%                     pObj.Input{ii+1,2} = dependency.Output{1};
-%                     warning('Outputs of dependent processors were incorrectly ordered, consider investigating.')
-%                 else
-%                     error('Something is wrong with the outputs of the dependent processor, investigate.')
-%                 end
-%             end
-            
         end
         
         function addOutput(pObj,sObj)
             %ADDOUTPUT  Adds a signal to the list of output of the processor
+            %
+            % USAGE:
+            %   pObj.addOutput(sObj)
+            %
+            % INPUT ARGUMENTS:
+            %   pObj : Processor instance
+            %   sObj : Single instance or cell array of left and right channel instances
+            %          of signal objects
             
             if iscell(sObj)
                 % Then there are multiple outputs, pseudo-recursive call
@@ -551,25 +546,6 @@ classdef Processor < handle
                     error(['Cannot add multiple output to this processor. Consider ' ...
                         'overloading the addOutput method in that case'])
                 end
-                
-%                 % Which column in the cell array should the signal go?
-%                 if strcmp(sObj.Channel,'right')
-%                     jj = 2;
-%                 elseif strcmp(sObj.Channel,'left') || strcmp(sObj.Channel,'mono')
-%                     jj = 1;
-%                 else    % NB: Will be removed after testing
-%                     error('Need to specify a channel for output signal')
-%                 end
-% 
-%                 ii = max(size(pObj.Output,1),1);
-% 
-%                 if isempty(pObj.Output) || size(pObj.Output,2)<jj ...
-%                                         || isempty(pObj.Output{ii,jj})
-%                     pObj.Output{ii,jj} = sObj;
-%                 else
-%                     % Then sObj is an additional output and should be put on another line
-%                     pObj.Output{ii+1,jj} = sObj;
-%                 end
             end
             
         end
@@ -577,9 +553,19 @@ classdef Processor < handle
         function output = instantiateOutput(pObj,dObj)
             %INSTANTIATEOUTPUT  Instantiate the output signal for this processor
             %
-            %NB: This method can be overloaded in children processor where output differs
-            %from standard (e.g., multiple output or additional inputs to the signal
-            %constructor).
+            % USAGE:
+            %  sObj = pObj.instantiateOutput(dObj)
+            %
+            % INPUT ARGUMENTS:
+            %  pObj : Processor instance
+            %  dObj : Data object instance
+            %
+            % OUTPUT ARGUMENTS:
+            %  sObj : Handle to the instantiated output signal 
+            %
+            % NB: This method should be overridden in children processor where output 
+            % differs from standard (e.g., multiple output or additional inputs to the 
+            % signal constructor).
             
             sig = feval(pObj.getProcessorInfo.outputType, ...
                         pObj, ...
@@ -596,10 +582,16 @@ classdef Processor < handle
             %INITIATEPROCESSING    Wrapper calling the processChunk method and routing I/O
             % Main purpose is to allow overloading of I/O routing in processors with
             % "unusual" number of input/outputs.
-            
+            %
             % Two cases considered here, monaural and binaural processors producing single
             % outputs. In other cases, the method should be overloaded in the particular
             % processor.
+            %
+            % USAGE:
+            %   pObj.initiateProcessing
+            %
+            % INPUT ARGUMENT:
+            %   pObj : Processor instance
             
             if size(pObj.Input,1) > 1 || numel(pObj.Output) > 1
                 % Then it is a multiple-input processor, return an error
@@ -714,6 +706,9 @@ classdef Processor < handle
        
         function pList = processorList()
             %Processor.processorList    Returns a list of valid processor names
+            % This method scans the "\Processors" folder and tries to instantiate classes
+            % named after each of the files in the folder. It returns a list of names of
+            % successfully, non-hidden, instantiated processor children.
             %
             %USAGE:
             %  pList = Processor.processorList
@@ -770,6 +765,8 @@ classdef Processor < handle
                 pInfo = feval([procList{ii} '.getProcessorInfo']);
                 list{ii} = pInfo.requestName;
             end
+            
+            list = sort(unique(list));
             
         end
         
@@ -922,6 +919,8 @@ classdef Processor < handle
            %    depList : List of lower dependencies needed for that processor
            
            depList = cell(0);
+           
+           if nargin<2||isempty(parObj); parObj = Parameters; end
            
            if iscell(procName)
                % Multiple processor are possible for that request, find a suitable one

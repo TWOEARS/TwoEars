@@ -43,40 +43,23 @@ classdef gammatoneProc < Processor
         
     methods
         function pObj = gammatoneProc(fs,parObj)
-            %gammatoneProc      Construct a gammatone filterbank inheriting
-            %                   the "processor" class
-            %
-            %USAGE
-            % -Minimal usage, either (in order of priority)
-            %   pObj = gammatoneProc(fs,[],[],[],[],cfHz)
-            %   pObj = gammatoneProc(fs,flow,fhigh,[],nChan)
-            %   pObj = gammatoneProc(fs,flow,fhigh,nERBs)
-            %   pObj = gammatoneProc(fs,flow,fhigh)
-            %
-            % -Additional arguments:
-            %   pObj = gammatoneProc(...,irType,bAlign,n,bw,dur)
-            %
-            %INPUT ARGUMENTS
-            %     fs : Sampling frequency (Hz)
-            %   flow : Lowest center frequency for the filterbank (in Hz)
-            %  fhigh : Highest center frequency for the filterbank (in Hz)
-            %  nERBs : Distance in ERBS between neighboring center
-            %          frequencies (default: nERBS = 1)
-            %  nChan : Number of channels
-            %   cfHz : Vector of channels center frequencies
-            %
-            % irType : 'FIR' to generate finite impulse response Gammatone
-            %          filters or 'IIR' for infinite (default: 'FIR')
-            % bAlign : Set to true for phase correction and time alignment
-            %          between channels (default: bAlign = false)
-            %      n : Filter order (default: n = 4)
-            %     bw : Bandwidth of the filters in ERBS 
-            %          (default: bw = 1.08 ERBS)
-            %    dur : Duration of the impulse response in seconds 
-            %          (default: dur = 0.128)
-            %
-            %OUTPUT ARGUMENTS
-            %   pObj : Processor object
+        %gammatoneProc   Construct a Gammatone filterbank processor
+        %
+        % USAGE:
+        %   pObj = gammatoneProc(fs, parObj)
+        %
+        % INPUT ARGUMENTS:
+        %     fs : Input sampling frequency (Hz)
+        % parObj : Parameter object instance
+        %
+        % OUTPUT ARGUMENTS:
+        %   pObj : Processor instance
+        %
+        % NOTE: Parameter object instance, parObj, can be generated using genParStruct.m
+        % User-controllable parameters for this processor and their default values can be
+        % found by browsing the script parameterHelper.m
+        %
+        % See also: genParStruct, parameterHelper, Processor
             
             % TODO: 
             %  - Implement solution to allow for different impulse response

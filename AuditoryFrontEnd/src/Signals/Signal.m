@@ -56,10 +56,10 @@ classdef Signal < handle
             %Signal     Super-constructor for the signal class
             %
             %USAGE:
-            %   sObj = Signal(fs,bufferSize_s,bufferElemSize)
+            %   sObj = Signal(procHandle,bufferSize_s,bufferElemSize)
             %
             %INPUT ARGUMENTS:
-            %             fs : Sampling frequency (Hz)
+            %     procHandle : Handle to the processor generating this signal
             %   bufferSize_s : Buffer duration in s
             % bufferElemSize : Additional dimensions of the buffer
             %                  [dim2,dim3,...]

@@ -17,32 +17,21 @@ classdef ModulationSignal < Signal
     methods
         
         function sObj = ModulationSignal(procHandle,bufferSize,channel,data)
-%         function sObj = ModulationSignal(fs,bufferSize_s,name,cfHz,modCfHz,label,data,channel)
-            %ModulationSignal   Constructor for the modulation signal class
+            %ModulationSignal  Class constructor
             %
-            %USAGE:
-            %   sObj = ModulationSignal(fs,name)
-            %   sObj = ModulationSignal(fs,name,cfHz,modCfHz,label,data,channel)
+            %USAGE
+            %     sObj = ModulationSignal(procHandle)
+            %     sObj = ModulationSignal(procHandle,bufferSize,channel,data)
             %
-            %INPUT ARGUMENTS:
-            %      fs : Sampling frequency (Hz)
-            %    name : Name tag for the signal, shouldl be compatible with
-            %           variable name syntax.
-            %    cfHz : Audio channel center frequencies (Hz)
-            % modCfHz : Modulation channel center frequencies (Hz)
-            %   label : Label for the signal, to be used e.g. in figures
-            %           (default: label = name)
-            %    data : Data matrix to construct an object from existing
-            %           data. Time should span the first dimension, audio
-            %           frequency the second dimension, and modulation
-            %           frequency the third. Alternatively, audio and
-            %           modulation frequencies can be interleaved in the
-            %           second dimension.
-            %  channel : Flag indicating 'left', 'right', or 'mono'
-            %           (default: channel = 'mono')
+            %INPUT ARGUMENTS
+            % procHandle : Handle to the processor generating this signal as output
+            % bufferSize : Size of the ring buffer in s (default: bufferSize = 10)
+            %    channel : Flag indicating 'left', 'right', or 'mono' (default: 
+            %              channel = 'mono')
+            %       data : Array of amplitudes to construct an object from existing data
             %
-            %OUTPUT ARGUMENT:
-            %    sObj : Instance of modulation signal object
+            %OUTPUT ARGUMENT
+            %  sObj : Modulation signal object inheriting the signal class
             
             if nargin<4; data = []; end
             if nargin<3||isempty(channel); channel = 'mono'; end

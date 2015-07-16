@@ -23,18 +23,23 @@ classdef gaborProc < Processor
     
     methods
         function pObj = gaborProc(fs,parObj)
-            %gaborProc    Constructs an Gabor features extractor
-            %
-            %USAGE
-            %   pObj = gaborProc(fs,p,nChanIn)
-            %
-            %INPUT PARAMETERS
-            %      fs : Sampling frequency in Hz
-            %       p : Structure of non-default parameters
-            % nChanIn : Number of channels in input ratemap
-            %
-            %OUTPUT PARAMETER
-            % pObj : Processor object
+        %gaborProc   Construct a Gabor feature extraction processor
+        %
+        % USAGE:
+        %   pObj = gaborProc(fs, parObj)
+        %
+        % INPUT ARGUMENTS:
+        %     fs : Input sampling frequency (Hz)
+        % parObj : Parameter object instance
+        %
+        % OUTPUT ARGUMENTS:
+        %   pObj : Processor instance
+        %
+        % NOTE: Parameter object instance, parObj, can be generated using genParStruct.m
+        % User-controllable parameters for this processor and their default values can be
+        % found by browsing the script parameterHelper.m
+        %
+        % See also: genParStruct, parameterHelper, Processor
             
             % Checking input parameter
             if nargin<2||isempty(parObj); parObj = Parameters; end

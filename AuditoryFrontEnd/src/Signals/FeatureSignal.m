@@ -17,26 +17,22 @@ classdef FeatureSignal < Signal
     methods
         
         function sObj = FeatureSignal(procHandle,bufferSize,channel,data,fList)
-%         function sObj = FeatureSignal(fs,fList,bufferSize_s,name,label,channel)
-            %SpectralFeaturesSignal     Constructor for the spectral
-            %                           features signal class
+            %FeatureSignal  Class constructor
             %
-            %USAGE:
-            %   sObj = SpectralFeaturesSignal(fs,fList)
-            %   sObj = SpectralFeaturesSignal(fs,fList,name,label,channel)
+            %USAGE
+            %     sObj = FeatureSignal(procHandle)
+            %     sObj = FeatureSignal(procHandle,bufferSize,channel,data,fList)
             %
             %INPUT ARGUMENTS
-            %     fs : Sampling frequency (Hz) of the spectral features
-            %  fList : Ordered cell array of features names. fList{ii} is
-            %          the name of the feature containted in the ii-th 
-            %          column of the signal's data.
-            %   name : Name tag of the signal, should be compatible with
-            %          the global request name syntax.
-            %  label : Label for the signal
-            % channel : Flag indicating 'left', 'right', or 'mono' (default)
+            % procHandle : Handle to the processor generating this signal as output
+            % bufferSize : Size of the ring buffer in s (default: bufferSize = 10)
+            %    channel : Flag indicating 'left', 'right', or 'mono' (default: 
+            %              channel = 'mono')
+            %       data : Array of amplitudes to construct an object from existing data
+            %      fList : Cell array of feature names
             %
-            %OUTPUT ARGUMENT:
-            %   sObj : Instant of the signal object
+            %OUTPUT ARGUMENT
+            %  sObj : Feature signal object inheriting the signal class
             
             if nargin<5; fList = []; end
             if nargin<4; data = []; end

@@ -37,18 +37,23 @@ classdef ratemapProc < Processor
     
     methods
         function pObj = ratemapProc(fs,parObj,do_mex)
-            %ratemapProc    Constructs a ratemap processor
-            %
-            %USAGE
-            %  pObj = ratemapProc(fs)
-            %  pObj = ratemapProc(fs,p)
-            %
-            %INPUT PARAMETERS
-            %   fs : Sampling frequency (Hz)
-            %    p : Structure of non-default parameters
-            %
-            %OUTPUT PARAMETERS
-            % pObj : Processor object
+		%ratemapProc   Construct a rate-map extraction processor
+        %
+        % USAGE:
+        %   pObj = ratemapProc(fs, parObj)
+        %
+        % INPUT ARGUMENTS:
+        %     fs : Input sampling frequency (Hz)
+        % parObj : Parameter object instance
+        %
+        % OUTPUT ARGUMENTS:
+        %   pObj : Processor instance
+        %
+        % NOTE: Parameter object instance, parObj, can be generated using genParStruct.m
+        % User-controllable parameters for this processor and their default values can be
+        % found by browsing the script parameterHelper.m
+        %
+        % See also: genParStruct, parameterHelper, Processor
             
             % Checking input parameter
             if nargin<3||isempty(do_mex);do_mex = 1; end

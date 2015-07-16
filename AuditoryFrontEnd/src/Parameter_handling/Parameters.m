@@ -1,7 +1,39 @@
 classdef Parameters < dynamicprops & Hashable
-    % Help on this class is a work in progress..
+%PARAMETERS Class used for storing parameter values used by processors and plot routines.
+%   This class is used in place of a more traditional Matlab "struct" as it allows to
+%   define custom methods for parameter handling.
+%
+%   PARAMETERS properties are dynamically generated. Each of the property will correspond
+%   to a parameter currently inside the parameter object as well as its value.
+%
+%   Actual parameter values and their descriptions are stored in the hidden properties:
+%     map         - Matlab's map container indexed by parameters name tags and containing
+%                   corresponding values
+%     description - Matlab's map container indexed by parameters name tags and containing
+%                   corresponding descriptions
+%   
+%   PARAMETERS public methods:
+%     Parameters             - Class constructor
+%     getProcessorParameters - Extracts parameters used by a specific processor
+%     updateWithRequest      - Adds parameters from a user request to a parameter object
+%     updateWithDefault      - Adds default values to missing parameters of a processor
+%     appendParameters       - Appends values in a second parameter object to an existing
+%                              one
+%     replaceParameters      - Appends a second parameter object to an existing one,
+%                              replacing existing values with new ones.
+%     copy                   - Create a new instance of an existing parameter object
+%     eq                     - Overrides the "a = b" function to compare two parameter
+%                              objects.
+%
+%   PARAMETERS static methods:
+%     getProcessorDefault      - Returns the default parameters for a given processor
+%     getPlottingParameters    - Returns the default plotting parameters for a signal
+%     readParameterDescription - Finds and read the description of a given parameter
+%
+%   See also: parameterHelper, genParStruct
+
     
-    properties (GetAccess = public, Hidden = true) % Private?
+    properties (GetAccess = public, Hidden = true)
         map             % Map container for the parameter values
     end
     
@@ -13,7 +45,19 @@ classdef Parameters < dynamicprops & Hashable
     methods
         
         function parObj = Parameters(keys,values)
-            %Parameters   Constructor for the parameter object class
+            %PARAMETERS   Constructor for the parameter object class
+            %
+            % USAGE:
+            %  parObj = Parameters(keys,value)
+            %
+            % INPUT ARGUMENTS:
+            %    keys : Cell array of parameter name tags
+            %  values : Cell array of corresponding parameter values
+            %
+            % OUTPUT ARGUMENTS:
+            %  parObj : Parameter object instance
+            %
+            % See also: parameterHelper, genParStruct
             
             if nargin<2; values = []; end
             if nargin<1; keys = []; end
@@ -159,7 +203,8 @@ classdef Parameters < dynamicprops & Hashable
         function appendParameters(parObj,newParObj)
             %appendParameters   Appends new parameter properties to an existing object
             %
-            %
+            % USAGE: 
+            %  parObj.appendParameters(newParObj)
             
             % Get a list of keyvalues to append
             keyList = newParObj.map.keys;
