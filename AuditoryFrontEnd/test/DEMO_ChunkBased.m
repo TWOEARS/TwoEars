@@ -11,7 +11,7 @@ sIn = earSignals;
 clear earSignals
 
 L = size(sIn,1);    % Number of samples in the input signal
-request = 'ild';
+request = 'innerhaircell';
 
 
 % Boundaries for arbitrary chunk size

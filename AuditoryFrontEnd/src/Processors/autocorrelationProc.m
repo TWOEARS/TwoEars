@@ -46,19 +46,25 @@ classdef autocorrelationProc < Processor
     
     methods
         function pObj = autocorrelationProc(fs,parObj,do_mex)
-            %autocorrelationProc    Constructs an auto-correlation
-            %                       processor
-            %
-            %USAGE
-            %  pObj = autocorrelation(fs)
-            %  pObj = autocorrelation(fs,p)
-            %
-            %INPUT PARAMETERS
-            %    fs : Sampling frequency (Hz)
-            %     p : Structure of non-default parameters
-            %
-            %OUTPUT PARAMETERS
-            %  pObj : Processor Object
+        %autocorrelationProc   Construct an autocorrelation processor
+        %
+        % USAGE:
+        %   pObj = autocorrelationProc(fs, parObj)
+        %   pObj = autocorrelationProc(fs, parObj, do_mex)
+        %
+        % INPUT ARGUMENTS:
+        %     fs : Input sampling frequency (Hz)
+        % parObj : Parameter object instance
+        % do_mex : Set to 0 to disable use of pre-compiled mex file in the computation
+        %
+        % OUTPUT ARGUMENTS:
+        %   pObj : Processor instance
+        %
+        % NOTE: Parameter object instance, parObj, can be generated using genParStruct.m
+        % User-controllable parameters for this processor and their default values can be
+        % found by browsing the script parameterHelper.m
+        %
+        % See also: genParStruct, parameterHelper, Processor
             
             % Checking input parameter
             if nargin<3||isempty(do_mex);do_mex = 1; end

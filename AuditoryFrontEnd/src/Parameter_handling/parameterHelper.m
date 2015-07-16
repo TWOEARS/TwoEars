@@ -140,6 +140,14 @@ else
         val_size = max(val_size,size(valueStr{ii},2));
     end
     
+    % Display the processor name
+    pInfo = feval([procName '.getProcessorInfo']);
+    if ~isempty(names)
+        fprintf([pInfo.label ' parameters:\n\n'])
+    else
+        fprintf([pInfo.label ' has no parameters.\n\n'])
+    end
+    
     % Display a header
     if ~isempty(names)
         fprintf(['  %-' int2str(name_size+2) 's  %-' int2str(val_size+1) 's  %-s\n'],'Name','Default','Description')

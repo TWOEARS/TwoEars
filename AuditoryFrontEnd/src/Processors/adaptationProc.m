@@ -42,19 +42,25 @@ classdef adaptationProc < Processor
         function pObj = adaptationProc(fs,parObj)
         %adaptationProc   Construct an adaptation loop processor
         %
-        %USAGE
-        %   pObj = adaptationProc(fs, model)
-        %   pObj = adaptationProc(fs, lim, mindB, taus)
-        %   pObj = adaptationProc(fs, lim, mindB)
-        %   pObj = adaptationProc(fs, lim)
+        % USAGE:
+        %   pObj = adaptationProc(fs, parObj)
         %
-        %INPUT ARGUMENTS
-        %   fs    : Sampling frequency (Hz)
-        %   lim   : limit to the overshoot of the output, default: 10
-        %   mindB : the lowest audible threshhold of the signal 
-        %           (dB SPL), default: 0
-        %   taus  : time constants of adaptation loops, 
-        %           default: [0.005 0.050 0.129 0.253 0.500]
+        % INPUT ARGUMENTS:
+        %     fs : Input sampling frequency (Hz)
+        % parObj : Parameter object instance
+        %
+        % OUTPUT ARGUMENTS:
+        %   pObj : Processor instance
+        %
+        % NOTE: Parameter object instance, parObj, can be generated using genParStruct.m
+        % User-controllable parameters for this processor and their default values can be
+        % found by browsing the script parameterHelper.m
+        %
+        % See also: genParStruct, parameterHelper, Processor
+        
+        % TODO: Restore the ability to choose parameters from documented models.
+        % Corresponding code with kept here and commented out
+        %
         %   model : implementation model as in various related studies
         %
         %     'adt_dau'        Choose the parameters as in the Dau 1996 and 1997

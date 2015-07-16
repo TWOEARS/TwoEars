@@ -34,18 +34,23 @@ classdef offsetMapProc < Processor
     
     methods
         function pObj = offsetMapProc(fs,parObj)
-            %transientMapProc    Constructs an transient mapping processor
-            %
-            %USAGE
-            %  pObj = transientMapProc(fs)
-            %  pObj = transientMapProc(fs,p)
-            %
-            %INPUT PARAMETERS
-            %    fs : Sampling frequency (Hz)
-            %     p : Structure of non-default parameters
-            %
-            %OUTPUT PARAMETERS
-            %  pObj : Processor Object
+		%offsetMapProc   Construct an offset mapping processor
+        %
+        % USAGE:
+        %   pObj = offsetMapProc(fs, parObj)
+        %
+        % INPUT ARGUMENTS:
+        %     fs : Input sampling frequency (Hz)
+        % parObj : Parameter object instance
+        %
+        % OUTPUT ARGUMENTS:
+        %   pObj : Processor instance
+        %
+        % NOTE: Parameter object instance, parObj, can be generated using genParStruct.m
+        % User-controllable parameters for this processor and their default values can be
+        % found by browsing the script parameterHelper.m
+        %
+        % See also: genParStruct, parameterHelper, Processor
     
             % Checking input parameter
             if nargin<2||isempty(parObj); parObj = Parameters; end

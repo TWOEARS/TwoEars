@@ -8,20 +8,25 @@ classdef ihcProc < Processor
          IHCFilter     % Filter involved in the extraction, if any
      end
      
-     methods
-         function pObj = ihcProc(fs,parObj)
-             %ihcProc   Construct a inner haircell (IHC) envelope
-             %                  extractor
-             %
-             %USAGE
-             %   pObj = ihcProc(fs,p)
-             %
-             %INPUT ARGUMENTS
-             %     fs : Sampling frequency (Hz)
-             %      p : Parameter object
-             %
-             %N.B: The constructor does not instantiate the lowpass filters
-             %needed for some of the methods.
+    methods
+        function pObj = ihcProc(fs,parObj)
+		%ihcProc   Construct an inner hair-cell envelope extractor processor
+        %
+        % USAGE:
+        %   pObj = ihcProc(fs, parObj)
+        %
+        % INPUT ARGUMENTS:
+        %     fs : Input sampling frequency (Hz)
+        % parObj : Parameter object instance
+        %
+        % OUTPUT ARGUMENTS:
+        %   pObj : Processor instance
+        %
+        % NOTE: Parameter object instance, parObj, can be generated using genParStruct.m
+        % User-controllable parameters for this processor and their default values can be
+        % found by browsing the script parameterHelper.m
+        %
+        % See also: genParStruct, parameterHelper, Processor
              
              
              if nargin<2||isempty(parObj); parObj = Parameters; end
@@ -30,7 +35,7 @@ classdef ihcProc < Processor
              % Call super-constructor
              pObj = pObj@Processor(fs,fs,'ihcProc',parObj);
              
-         end
+        end
          
          function out = processChunk(pObj,in)
                         

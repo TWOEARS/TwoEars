@@ -121,10 +121,29 @@ classdef drnlProc < Processor
     end
         
     methods
-%         function pObj = drnlProc(cf, fs, mocIpsi, mocContra, model)
-%         function pObj = drnlProc(fs, flow, fhigh, nERBs, nChan, cfHz, ...
-%                 mocIpsi, mocContra, model)
+
         function pObj = drnlProc(fs,parObj)
+        %drnlProc   Construct a dual-resonnance, non-linear filterbank processor
+        %
+        % USAGE:
+        %   pObj = drnlProc(fs, parObj)
+        %
+        % INPUT ARGUMENTS:
+        %     fs : Input sampling frequency (Hz)
+        % parObj : Parameter object instance
+        %
+        % OUTPUT ARGUMENTS:
+        %   pObj : Processor instance
+        %
+        % NOTE: Parameter object instance, parObj, can be generated using genParStruct.m
+        % User-controllable parameters for this processor and their default values can be
+        % found by browsing the script parameterHelper.m
+        %
+        % See also: genParStruct, parameterHelper, Processor
+            
+            % TODO: Restore the ability to pick parameters according to a given model.
+            % Former code is left here commented out for this purpose
+            %
             % drnlProc      Construct a DRNL filterbank inheriting
             %                   the "processor" class
             %

@@ -30,18 +30,23 @@ classdef ildProc < Processor
     
     methods
         function pObj = ildProc(fs,parObj)
-            %ildProc    Constructs an ILD extraction processor
-            %
-            %USAGE
-            %   pObj = ildProc(fs)
-            %   pObj = ildProc(fs,p)
-            %
-            %INPUT PARAMETERS
-            %   fs : Sampling frequency in Hz
-            %    p : Parameter object
-            %
-            %OUTPUT PARAMETER
-            % pObj : Processor object
+		%ildProc   Construct an inter-aural level differences extractor processor
+        %
+        % USAGE:
+        %   pObj = ildProc(fs, parObj)
+        %
+        % INPUT ARGUMENTS:
+        %     fs : Input sampling frequency (Hz)
+        % parObj : Parameter object instance
+        %
+        % OUTPUT ARGUMENTS:
+        %   pObj : Processor instance
+        %
+        % NOTE: Parameter object instance, parObj, can be generated using genParStruct.m
+        % User-controllable parameters for this processor and their default values can be
+        % found by browsing the script parameterHelper.m
+        %
+        % See also: genParStruct, parameterHelper, Processor
             
             % Checking input parameter
             if nargin<2||isempty(parObj); parObj = Parameters; end
@@ -208,7 +213,7 @@ classdef ildProc < Processor
             pInfo = struct;
             
             pInfo.name = 'ILD Extractor';
-            pInfo.label = 'ILD Extractor';
+            pInfo.label = 'Inter-aural Level Difference Extractor';
             pInfo.requestName = 'ild';
             pInfo.requestLabel = 'Inter-aural level difference';
             pInfo.outputType = 'TimeFrequencySignal';
