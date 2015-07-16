@@ -279,7 +279,7 @@ classdef gmtkEngine < handle
                     fprintf(fid, '\n');
                     fclose(fid);
                     unix(['chmod a+x ' cmdfn]);
-                    [s,cmdout = unix(cmdfn);
+                    [s,cmdout] = unix(cmdfn);
                     if s ~= 0
                         error('Failed to infer GM %s: %s', obj.gmStruct, cmdout);
                     end
