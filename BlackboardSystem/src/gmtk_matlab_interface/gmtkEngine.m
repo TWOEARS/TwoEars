@@ -185,7 +185,7 @@ classdef gmtkEngine < handle
 
                     s = system(cmdfn);
                     if s ~= 0
-                        error('Failed to infer GM %s', obj.gmStruct);
+                        error('Failed to triangulate GM %s', obj.gmStruct);
                     end
 
                     % Also triangulate training structure if exists
@@ -197,7 +197,7 @@ classdef gmtkEngine < handle
 
                         s = system(cmdfn);
                         if s ~= 0
-                            error('Failed to infer GM %s', obj.gmStruct);
+                            error('Failed to triangulate GM %s', obj.gmStructTrainable);
                         end
                     end
                 otherwise
@@ -279,9 +279,9 @@ classdef gmtkEngine < handle
                     fprintf(fid, '\n');
                     fclose(fid);
                     unix(['chmod a+x ' cmdfn]);
-                    s = unix(cmdfn);
+                    [s,cmdout = unix(cmdfn);
                     if s ~= 0
-                        error('Failed to infer GM %s', obj.gmStruct);
+                        error('Failed to infer GM %s: %s', obj.gmStruct, cmdout);
                     end
                 case 'PCWIN64'
                     % Write command function
@@ -300,9 +300,9 @@ classdef gmtkEngine < handle
                         ' -verbosity 0', ...
                         ' -cliquePrintFormat ascii"'];
 
-                    s = system(cmdfn);
+                    [s,cmdout] = system(cmdfn);
                     if s ~= 0
-                        error('Failed to infer GM %s', obj.gmStruct);
+                        error('Failed to infer GM %s: %s', obj.gmStruct, cmdout);
                     end
                 otherwise
                     error('Current OS is not supported.');
