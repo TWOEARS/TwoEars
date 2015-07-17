@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<scene
+  Renderer="ssr_brs"
+  BlockSize="4096"
+  SampleRate="44100"
+  LengthOfSimulation="5.0">
+  <source Type="point"
+          Name="SoundSource"
+          IRs="impulse_responses/qu_kemar_rooms/auditorium3/QU_KEMAR_Auditorium3_src2_xs+4.30_ys+3.42.sofa">
+    <buffer ChannelMapping="1"
+        Type="noise"/>
+  </source>
+  <sink Name="Head"
+        Position="0 0 0"
+        UnitX="0 1 0"
+        UnitZ="0 0 1"/>
+</scene>

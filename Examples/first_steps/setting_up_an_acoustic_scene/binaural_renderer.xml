@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<scene
+  Renderer="ssr_binaural"
+  BlockSize="4096"
+  SampleRate="44100"
+  HRIRs="impulse_responses/qu_kemar_anechoic/QU_KEMAR_anechoic_3m.sofa">
+  <source Name="Cello"
+          Type="point"
+          Position="1 2 1.75">
+    <buffer ChannelMapping="1"
+            Type="fifo"
+            File="stimuli/anechoic/instruments/anechoic_cello.wav"/>
+  </source>
+  <sink Name="Head"
+        Position="0 0 1.75"
+        UnitX="1 0 0"
+        UnitZ="0 0 1"/>
+</scene>
