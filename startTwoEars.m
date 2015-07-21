@@ -22,7 +22,7 @@ end
 % Add current folder and the startup folder
 TwoEarsPath = fileparts(mfilename('fullpath'));
 addpath(TwoEarsPath);
-addpath(fullfile(TwoEarsPath, 'TwoEarsStartup'));
+addpath(fullfile(TwoEarsPath, 'Tools', 'TwoEarsStartup'));
 
 % Display version information and finish if asked to do so
 if strcmp('info', configFile)
