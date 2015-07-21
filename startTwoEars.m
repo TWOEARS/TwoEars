@@ -37,7 +37,7 @@ if exist('SOFAstart')
     warning(['Trying to remove your current SOFA installation from Matlab ', ...
              'paths as the official SOFA version is not compatible with ', ...
              'Two!Ears.']);
-    warning('off', 'all');
+    warning('off', 'MATLAB:rmpath:DirNotFound');
     sofaPath = fileparts(which('SOFAstart'));
     rmpath(sofaPath);
     rmpath(fullfile(sofaPath, 'helper'));
@@ -45,7 +45,7 @@ if exist('SOFAstart')
     rmpath(fullfile(sofaPath, 'converters'));
     rmpath(fullfile(sofaPath, 'demos'));
     rmpath(fullfile(sofaPath, 'netcdf'));
-    warning('on', 'all');
+    warning('on', 'MATLAB:rmpath:DirNotFound');
 end
 
 if exist(configFile,'file')
