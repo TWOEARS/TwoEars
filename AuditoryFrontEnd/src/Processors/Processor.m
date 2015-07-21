@@ -650,6 +650,9 @@ classdef Processor < handle
             % Update usually means reset
             pObj.reset;
             
+            % Output a message to the command window for testing purpose
+%             disp([pObj.Type ' processor was updated after receiving feedback.'])
+            
             % Notify possible listeners that there was a modification
             notify(pObj,'hasChanged');
             
@@ -932,7 +935,7 @@ classdef Processor < handle
                        break
                    end
                end
-               if iscell(procName)
+               if iscell(procName) && ~isempty(procName)
                    error(['Processors ' strjoin(procName.',' and ') ' are conflicting.'...
                        ' Check their isSuitableForRequest methods.'])
                end

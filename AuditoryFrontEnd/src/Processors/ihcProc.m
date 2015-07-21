@@ -4,7 +4,7 @@ classdef ihcProc < Processor
          method        % Label for the IHC model used
      end
      
-     properties (GetAccess = private)
+     properties %(GetAccess = private)
          IHCFilter     % Filter involved in the extraction, if any
      end
      
@@ -110,12 +110,12 @@ classdef ihcProc < Processor
                          'breebart',...
                          'bernstein'};
              
-             if ~ismember(pObj.parameters.map('IHCMethod'),validMeth)
+             if ~ismember(pObj.parameters.map('ihc_method'),validMeth)
                  [~,defaultMethod] = ihcProc.getParameterInfo;
                  warning(['''%s'' is an invalid name for envelope extraction method. '...
                           'Setting it to the default value, ''%s'''],...
-                          pObj.parameters.map('IHCMethod'),defaultMethod)
-                 pObj.parameters.map('IHCMethod') = defaultMethod;
+                          pObj.parameters.map('ihc_method'),defaultMethod)
+                 pObj.parameters.map('ihc_method') = defaultMethod;
              end
              
          end
@@ -164,7 +164,7 @@ classdef ihcProc < Processor
             %  descriptions : Parameter descriptions
             
             
-            names = {'IHCMethod'};
+            names = {'ihc_method'};
             
             descriptions = {['Inner hair-cell envelope extraction method (''none'', ' ...
                             '''halfwave'', ''fullwave'', ''square'', ''hilbert'', '...
@@ -192,7 +192,7 @@ classdef ihcProc < Processor
      % "Getter" methods
      methods
          function method = get.method(pObj)
-             method = pObj.parameters.map('IHCMethod');
+             method = pObj.parameters.map('ihc_method');
          end
      end
      
@@ -215,7 +215,7 @@ classdef ihcProc < Processor
                      case 'breebart'
                          % First order butterworth filter @ 2000Hz cascaded 5
                          % times
-                         pObj.IHCFilter = bwFilter(pObj.FsHzIn,1,2000,[],5);
+                         pObj.IHCFilter = bwFilter(pObj.FsHzIn,1,2000,5,[]);
 
                      case 'bernstein'
                          % Second order butterworth filter @ 425Hz
