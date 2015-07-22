@@ -298,9 +298,7 @@ classdef gmtkEngine < handle
                         ' -cliqueOutputFileName ', makeUnixPath(obj.outputCliqueFile), ...
                         ' -cliqueListFileName ', makeUnixPath(obj.outputCliqueFile), ...
                         ' -verbosity 0', ...
-                        ' -cliquePrintFormat ascii"'];
-
-fprintf('\n%s\n', cmdfn);
+                        ' -cliquePrintFormat ascii > /dev/null"'];
                     s = system(cmdfn);
                     if s ~= 0
                         error('Failed to infer GM %s', obj.gmStruct);
