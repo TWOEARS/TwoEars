@@ -39,7 +39,9 @@ classdef ConfusionSolvingKS < AbstractKS
             currentHeadOrientation = obj.blackboard.getLastData('headOrientation').data;
             headRotation = currentHeadOrientation - confHyp.headOrientation;
             newLocHyp = obj.blackboard.getLastData('locationHypotheses').data;
-            idxDelta = int16(headRotation / ...
+            % Changed int16 to round here, which seems to cause problem
+            % with circshift in the next line
+            idxDelta = round(headRotation / ...
                 (newLocHyp.locations(2) - newLocHyp.locations(1)));
             predictedPosteriors = circshift(newLocHyp.posteriors,[0 idxDelta]);
             % Take the average of the posterior distribution before head
