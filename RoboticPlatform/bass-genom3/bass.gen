@@ -42,14 +42,6 @@ component bass {
     /* ---Task declaration--- */
     task capture;
 
-    task socket {
-        period      5ms;
-        priority    200;
-        stack       4000;
-
-        codel <start>   sInitModule() yield ether;
-    };
-
     /* ---Services declaration--- */
     function ListDevices() {
         doc     "Print available devices for sound capture on standard output";
@@ -81,17 +73,5 @@ component bass {
     function Stop() {
         doc         "Stop acquisition of audio data";
         interrupts  Acquire;
-    };
-
-    activity DedicatedSocket() {
-        codel <start>           initModule(port out Audio) yield ether, recv;
-        async codel <recv>      Transfer(port out Audio) yield recv, ether;
-
-        task    socket;
-	};
-
-    activity CloseSocket(){
-        codel <start>           closeSocket() yield ether;
-        task socket;
     };
 };

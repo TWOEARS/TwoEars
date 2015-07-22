@@ -25,13 +25,10 @@ lib_LTLIBRARIES = libbass_codels.la
 libbass_codels_la_SOURCES=	bass_c_types.h
 libbass_codels_la_SOURCES+=	bass_codels.c
 libbass_codels_la_SOURCES+=	bass_capture_codels.c
-libbass_codels_la_SOURCES+=	bass_socket_codels.c
 libbass_codels_la_SOURCES+=     Ports.h
 libbass_codels_la_SOURCES+=     Ports.c
 libbass_codels_la_SOURCES+=     AudioCapture.h
 libbass_codels_la_SOURCES+=     AudioCapture.c
-libbass_codels_la_SOURCES+=     Sockets.h
-libbass_codels_la_SOURCES+=     Sockets.c
 
 
 libbass_codels_la_CPPFLAGS=	$(requires_CFLAGS)
