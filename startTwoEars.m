@@ -34,9 +34,6 @@ end
 % added to your Matlab paths and removes it as the official SOFA version is not
 % compatible with the one needed by Two!Ears
 if exist('SOFAstart')
-    warning(['Trying to remove your current SOFA installation from Matlab ', ...
-             'paths as the official SOFA version is not compatible with ', ...
-             'Two!Ears.']);
     warning('off', 'MATLAB:rmpath:DirNotFound');
     sofaPath = fileparts(which('SOFAstart'));
     rmpath(sofaPath);
@@ -46,6 +43,9 @@ if exist('SOFAstart')
     rmpath(fullfile(sofaPath, 'demos'));
     rmpath(fullfile(sofaPath, 'netcdf'));
     warning('on', 'MATLAB:rmpath:DirNotFound');
+    warning(['Your current SOFA installation has been removed from Matlab ', ...
+             'paths as the official SOFA version is not compatible with ', ...
+             'Two!Ears.']);
 end
 
 if exist(configFile,'file')
