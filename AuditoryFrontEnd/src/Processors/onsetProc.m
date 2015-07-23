@@ -72,6 +72,11 @@ classdef onsetProc < Processor
             %  out : Output signal
             
             % Initialize a buffer if empty
+            if isempty( in )
+                out = [];
+                return;
+            end
+            
             if isempty(pObj.buffer)
                 pObj.buffer = 10*log10(in(1,:));
             end

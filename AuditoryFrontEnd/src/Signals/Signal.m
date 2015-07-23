@@ -1,4 +1,4 @@
-classdef Signal < handle
+classdef Signal < matlab.mixin.Copyable
 %SIGNAL Superclass for all signals involved in the auditory front-end (AFE) framework.
 %   All signals involved in the AFE are inheriting this class, which defines properties
 %   and methods shared among all signals.
@@ -80,7 +80,22 @@ classdef Signal < handle
             % Populate name and label
             sObj.Name = procHandle.getProcessorInfo.requestName;
             sObj.Label = procHandle.getProcessorInfo.requestLabel;
+        end
+        
+        function setBufferSize( sObj, newBufferSize_s )
+            %setBufferSize  This method sets the buffer to a new size,
+            %               erasing all data previously stored.
+            %USAGE:
+            %   sObj.setBufferSize( newBufferSize_s )
+            %
+            %INPUT ARGUMENTS:
+            %   newBufferSize_s : new size of the buffer in seconds. The
+            %                     dimensionality of the individual elements
+            %                     remains the same
             
+            bufferSizeSamples = ceil( newBufferSize_s * sObj.FsHz );
+            sObj.Buf = circVBuf( bufferSizeSamples, sObj.Buf.matSz );
+            sObj.Data = circVBufArrayInterface( sObj.Buf );
         end
         
         function appendChunk(sObj,data)
@@ -132,6 +147,39 @@ classdef Signal < handle
             sObj.Buf.clear();
         end
         
+        function newSobj = cutSignalCopy( sObj, blocksize_s, backOffset_s )
+            %cutSignalCopy  This method copies the Signal object into a new
+            %               instance, cutting out the specified data block.
+            %
+            %USAGE:
+            %   cutSignalCopy = sObj.cutSignalCopy( blockSize_s, backOffset_s )
+            %
+            %INPUT ARGUMENTS:
+            %  blocksize_s : Length of the required data block in seconds
+            % backOffset_s : Offset from the end of the signal to the 
+            %                requested block's end in seconds (default: 0s)
+            newSobj = sObj.copy();
+            newSobj.setBufferSize( ceil( blocksize_s ) );
+            dataBlock = sObj.getSignalBlock( blocksize_s, backOffset_s );
+            newSobj.setData( dataBlock );
+        end
+        
+        function reduceBufferToArray( sObj )
+            %reduceBufferToArray    This method converts the
+            %                       buffer+interface combination into a
+            %                       native matlab array. The object should
+            %                       not be used for adding new data any
+            %                       more.
+            %
+            %USAGE:
+            %   sObj.reduceBufferToArray
+            %
+            data = sObj.Data(:);
+            delete( sObj.Data );
+            sObj.Data = data;
+            delete( sObj.Buf );
+        end
+        
         function sb = getSignalBlock(sObj,blocksize_s,backOffset_s)
             %getSignalBlock   Returns this Signal object's signal data
             %truncated to the last blocksize_s seconds. In case of too
@@ -170,11 +218,11 @@ classdef Signal < handle
                 blocksize_samples - offset_samples + 1 );
             
             % Extract the data block
-            sb = sObj.Data(blockStart:end-offset_samples);
+            sb = sObj.Data(blockStart:end-offset_samples,:,:,:,:,:,:);
             
             % Zero-pad the data if not enough samples are available
             if size( sb, 1 ) < blocksize_samples
-                sb = [zeros( blocksize_samples - size(sb,1), size(sb,2) ); sb];
+                sb = [zeros( blocksize_samples - size(sb,1), size(sb,2), size(sb,3) ); sb];
             end
             
         end

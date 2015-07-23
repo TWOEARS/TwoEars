@@ -138,18 +138,22 @@ classdef ratemapProc < Processor
                     
                     % Frame the data in that channel
                     frames = frameData(in(:,jj),pObj.wSize,pObj.hSize,pObj.win,false);
-                    
-                    % Average the samples in the frame
-                    switch pObj.scaling
-                        
-                        case 'magnitude'
-                            % Average magnitude in the frame
-                            out(:,jj) = mean(frames,1);
+
+                    % modified by I.T.: There has to be a handling of the case of an
+                    % empty frames-matrix.
+                    if ~isempty( frames )
+                        % Average the samples in the frame
+                        switch pObj.scaling
                             
-                        case 'power'
-                            % Average energy in the frame
-                            out(:,jj) = mean(frames.^2,1);
-                            
+                            case 'magnitude'
+                                % Average magnitude in the frame
+                                out(:,jj) = mean(frames,1);
+                                
+                            case 'power'
+                                % Average energy in the frame
+                                out(:,jj) = mean(frames.^2,1);
+                                
+                        end
                     end
                     
                 end
