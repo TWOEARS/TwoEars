@@ -37,10 +37,10 @@ classdef AuditoryFrontEndDepKS < AbstractKS
     methods (Access = protected)
         
         function afeSignals = getAFEdata( obj )
-            afeSignals = containers.Map( 'KeyType', 'char', 'ValueType', 'any' );
+            afeSignals = containers.Map( 'KeyType', 'int32', 'ValueType', 'any' );
             for ii = 1 : length( obj.requests )
                 reqHash = AuditoryFrontEndKS.getRequestHash( obj.requests{ii} );
-                afeSignals(obj.requests{ii}.name) = obj.blackboard.signals(reqHash);
+                afeSignals(ii) = obj.blackboard.signals(reqHash);
             end
         end
         %% -------------------------------------------------------------------------------

@@ -6,11 +6,11 @@ classdef Blackboard < handle
         KSs = {};                       % List of all KSs
         signals = [];                   % Layer 1a-2: _handles_ to  requested signals from Two!Ears Auditory Front-End
         data = [];                      % general data storage Map, with currentSoundTimeIdx as key
+        dataLabels = {};                % list of data labels
         verbosity = 0;                  % Verbosity of 0 switches off screen output
         currentSoundTimeIdx = 0;        % the current "sound time". 
                                         % Has to be set when a new signal
                                         % chunk arrives
-        headOrientation = 0;            % Current head orientation
     end
     
     methods
@@ -66,7 +66,11 @@ classdef Blackboard < handle
                 curData.(dataLabel) = data;
             end
             obj.data(tmIdx) = curData;
+            if ~any( strcmp( obj.dataLabels, dataLabel ) )
+                obj.dataLabels{end+1} = dataLabel;
+            end
         end
+        
         
         %% get data from blackboard
         %   dataLabel:  the label of the data needed
@@ -121,11 +125,6 @@ classdef Blackboard < handle
             sndTimeIdxs = sort( cell2mat( keys( obj.data ) ) );
             sndTimeIdxs = sndTimeIdxs( sndTimeIdxs(end) - sndTimeIdxs >= blockSize_s );
             requestedData = obj.getData( dataLabel, sndTimeIdxs );
-        end
-        
-        %% Set absolute head orientation
-        function setHeadOrientation(obj, angle)
-            obj.headOrientation = angle;
         end
         
     end

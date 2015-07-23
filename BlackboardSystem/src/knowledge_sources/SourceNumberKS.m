@@ -29,7 +29,7 @@ classdef SourceNumberKS < AuditoryFrontEndDepKS
 
         function [bExecute, bWait] = canExecute(obj)
             afeData = obj.getAFEdata();
-            timeSObj = afeData('time');
+            timeSObj = afeData(2);
             bExecute = hasSignalEnergy(timeSObj, obj.blocksize_s, obj.timeSinceTrigger);
             bWait = false;
         end

@@ -23,7 +23,7 @@ classdef RotationKS < AbstractKS
         end
 
         function execute(obj)
-          
+
             % Workout the head rotation angle so that the head will face
             % the most likely source location.
 %             locHyp = obj.blackboard.getData('confusionHypotheses', ...
@@ -42,9 +42,10 @@ classdef RotationKS < AbstractKS
             % is already facing the most dominant source or has reached the
             % Surrey head orientation boundary), a minimal 10 degree rotation
             % will be applied
-            headOrientation = obj.blackboard.headOrientation;
-            locHyp = obj.blackboard.getData('confusionHypotheses', ...
-                obj.trigger.tmIdx).data;
+            headOrientation = obj.blackboard.getData( ...
+                'headOrientation', obj.trigger.tmIdx).data;
+            locHyp = obj.blackboard.getData( ...
+                'confusionHypotheses', obj.trigger.tmIdx).data;
             [~,idx] = max(locHyp.posteriors);
             mlAngle = locHyp.locations(idx);
             % Make sure a minimal head rotation
@@ -83,10 +84,7 @@ classdef RotationKS < AbstractKS
             elseif headRotateAngle > 180
                 headRotateAngle = headRotateAngle - 360;
             end
-            
-            % Update head orientation in the blackboard
-            obj.blackboard.setHeadOrientation(mod(headOrientation+headRotateAngle,360));
-            
+
             % Rotate head with a relative angle
             obj.robot.rotateHead(headRotateAngle);
 

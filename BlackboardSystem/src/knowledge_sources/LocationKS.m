@@ -66,19 +66,19 @@ classdef LocationKS < AuditoryFrontEndDepKS
 
         function [bExecute, bWait] = canExecute(obj)
             afeData = obj.getAFEdata();
-            timeSObj = afeData('time');
+            timeSObj = afeData(3);
             bExecute = hasSignalEnergy(timeSObj, obj.blocksize_s, obj.timeSinceTrigger);
             bWait = false;
         end
 
         function execute(obj)
             afeData = obj.getAFEdata();
-            ildsSObj = afeData('ild');
+            ildsSObj = afeData(1);
             ilds = ildsSObj.getSignalBlock(obj.blocksize_s, obj.timeSinceTrigger)';
-            itdsSObj = afeData('itd');
+            itdsSObj = afeData(2);
             itds = itdsSObj.getSignalBlock(obj.blocksize_s, obj.timeSinceTrigger)' .* ...
                 1000;
-            icsSObj = afeData('ic');
+            icsSObj = afeData(4);
             ics = icsSObj.getSignalBlock(obj.blocksize_s, obj.timeSinceTrigger)';
 
             % Check if the trained data has the correct angular resolution

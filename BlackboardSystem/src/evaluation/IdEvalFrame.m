@@ -99,9 +99,10 @@ classdef IdEvalFrame < handle
     methods (Static)
         
         function eventClass = readEventClass( soundFileName )
-            fileSepPositions = strfind( soundFileName, filesep );
+            fileSepPositions = sort([strfind( soundFileName, '/' ) ...
+                                     strfind( soundFileName, '\' )]);
             if isempty( fileSepPositions )
-                error( 'Cannot infer sound event class - possibly because "%s" is not a path or using "\" instead of "/".', soundFileName );
+                error( 'Cannot infer sound event class - possibly because "%s" is not a path.', soundFileName );
             end
             classPos1 = fileSepPositions(end-1);
             classPos2 = fileSepPositions(end);
@@ -119,7 +120,7 @@ classdef IdEvalFrame < handle
                 end
                 fclose( annotFid );
             else
-                warning( sprintf( 'label annotation file not found: %s.txt. Assuming no events.', soundFileName ) );
+%                 warning( sprintf( 'label annotation file not found: %s.txt. Assuming no events.', soundFileName ) );
                 onsetOffsets = zeros(0,2);
             end
         end
