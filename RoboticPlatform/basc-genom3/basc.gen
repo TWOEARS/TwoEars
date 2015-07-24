@@ -38,7 +38,7 @@ component basc {
     activity GetBlocks(
       inout unsigned long nBlocks = 1 : "Amount of blocks, 0 for unlimited",
       in unsigned long nFramesPerBlock = 12000 : "Blocks size in frames",
-      in long startOffs = -12000 : "Starting offset ('past' < 0, 'future' > 0)"
+      in long startOffs = -12000 : "Starting offset (past < 0, future > 0)"
       ) {
         doc         "Get consecutive blocks of audio data from bass";
         task        read;
