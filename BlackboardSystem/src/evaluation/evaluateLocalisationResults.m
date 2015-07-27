@@ -29,7 +29,7 @@ else
     % Calculate mean perceived location over those time blocks
     idx = idx(1:nBlocks);
 end
-predictedAzimuth = mean(relativeLocation(idx+1));
+predictedAzimuth = angleMean(relativeLocation(idx+1));
 localisationError = localisationErrors(sourceAzimuth, predictedAzimuth);
 
 % vim: set sw=4 ts=4 et tw=90:

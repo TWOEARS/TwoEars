@@ -123,7 +123,7 @@ classdef Blackboard < handle
         %                   ends at the current time.
         function requestedData = getDataBlock( obj, dataLabel, blockSize_s )
             sndTimeIdxs = sort( cell2mat( keys( obj.data ) ) );
-            sndTimeIdxs = sndTimeIdxs( sndTimeIdxs(end) - sndTimeIdxs >= blockSize_s );
+            sndTimeIdxs = sndTimeIdxs( sndTimeIdxs(end) - sndTimeIdxs <= blockSize_s );
             requestedData = obj.getData( dataLabel, sndTimeIdxs );
         end
         

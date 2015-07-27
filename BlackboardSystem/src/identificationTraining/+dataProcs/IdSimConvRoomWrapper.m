@@ -5,6 +5,7 @@ classdef IdSimConvRoomWrapper < dataProcs.BinSimProcInterface
         convRoomSim;
         sceneConfig;
         reverberationMaxOrder = 5;
+        silenceLength_s = 0.5; % have some silence before and after sound
     end
     
     %% --------------------------------------------------------------------
@@ -76,6 +77,7 @@ classdef IdSimConvRoomWrapper < dataProcs.BinSimProcInterface
                 hrirHash = calcDataHash( audioread( hrirFName ) );
             end
             outputDeps.hrir = hrirHash;
+            outputDeps.silenceLength_s = obj.silenceLength_s;
         end
         %% ----------------------------------------------------------------
         
@@ -191,11 +193,10 @@ classdef IdSimConvRoomWrapper < dataProcs.BinSimProcInterface
         %% ----------------------------------------------------------------
 
         function [sounds, sigOnOffs] = loadSounds( obj, sceneConfig, wavFile )
-            silenceLength_s = 0.25; % have some silence before the actual sound starts
             sounds{1} = getPointSourceSignalFromWav( ...
-                wavFile, obj.convRoomSim.SampleRate, silenceLength_s );
+                wavFile, obj.convRoomSim.SampleRate, obj.silenceLength_s );
             sigOnOffs = ...
-                IdEvalFrame.readOnOffAnnotations( wavFile ) + silenceLength_s;
+                IdEvalFrame.readOnOffAnnotations( wavFile ) + obj.silenceLength_s;
             sigClass = IdEvalFrame.readEventClass( wavFile );
             for kk = 1:sceneConfig.numOverlays
                 ovrlFile = sceneConfig.fileOverlays(kk).value;

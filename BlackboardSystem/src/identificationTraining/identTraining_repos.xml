@@ -3,14 +3,14 @@
 <TwoEarsPart sub="src" branch="master" startup="startBinauralSimulator" >binaural-simulator</TwoEarsPart>
 <TwoEarsPart branch="master" startup="startAuditoryFrontEnd" >auditory-front-end</TwoEarsPart>
 <TwoEarsPart sub="src" branch="master" startup="startTools" >tools</TwoEarsPart>
-<TwoEarsPart branch="towardsIdentBbsRelease" startup="startBlackboardSystem">blackboard-system</TwoEarsPart>
-<TwoEarsPart sub-all="src/identificationTraining" branch="towardsIdentBbsRelease" >blackboard-system</TwoEarsPart>
-<TwoEarsPart sub-all="third_party_software/libsvm-3.17/twoEars" branch="towardsIdentBbsRelease" >blackboard-system</TwoEarsPart>
-<TwoEarsPart sub-all="third_party_software/glmnet_matlab" branch="towardsIdentBbsRelease" >blackboard-system</TwoEarsPart>
-<TwoEarsPart sub-all="third_party_software/GMM" branch="towardsIdentBbsRelease" >blackboard-system</TwoEarsPart>
-<TwoEarsPart sub-all="third_party_software/mfa" branch="towardsIdentBbsRelease" >blackboard-system</TwoEarsPart>
-<TwoEarsPart sub-all="third_party_software/vbgm" branch="towardsIdentBbsRelease" >blackboard-system</TwoEarsPart>
-<TwoEarsPart sub-all="third_party_software/vbmfa" branch="towardsIdentBbsRelease" >blackboard-system</TwoEarsPart>
+<TwoEarsPart branch="master" startup="startBlackboardSystem">blackboard-system</TwoEarsPart>
+<TwoEarsPart sub-all="src/identificationTraining" branch="master" >blackboard-system</TwoEarsPart>
+<TwoEarsPart sub-all="third_party_software/libsvm-3.17/twoEars" branch="master" >blackboard-system</TwoEarsPart>
+<TwoEarsPart sub-all="third_party_software/glmnet_matlab" branch="master" >blackboard-system</TwoEarsPart>
+<TwoEarsPart sub-all="third_party_software/GMM" branch="master" >blackboard-system</TwoEarsPart>
+<TwoEarsPart sub-all="third_party_software/mfa" branch="master" >blackboard-system</TwoEarsPart>
+<TwoEarsPart sub-all="third_party_software/vbgm" branch="master" >blackboard-system</TwoEarsPart>
+<TwoEarsPart sub-all="third_party_software/vbmfa" branch="master" >blackboard-system</TwoEarsPart>
 <TwoEarsPart sub="src" startup="startData" branch="master" >data</TwoEarsPart>
 <TwoEarsPart sub-all="sound_databases/generalSoundsNI" branch="master" >data</TwoEarsPart>
 <TwoEarsPart sub-all="sound_databases/IEEE_AASP" branch="master" >data</TwoEarsPart>

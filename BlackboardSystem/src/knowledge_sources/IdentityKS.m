@@ -40,7 +40,7 @@ classdef IdentityKS < AuditoryFrontEndDepKS
             afeData = obj.featureCreator.cutDataBlock( afeData, obj.timeSinceTrigger );
             
             x = obj.featureCreator.makeDataPoint( afeData );
-            [~, score] = obj.model.applyModel( x );
+            [d, score] = obj.model.applyModel( x );
             
             if obj.blackboard.verbosity > 0
                 fprintf( 'Identity Hypothesis: %s with %i%% probability.\n', ...

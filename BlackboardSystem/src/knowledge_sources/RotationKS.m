@@ -26,71 +26,45 @@ classdef RotationKS < AbstractKS
 
             % Workout the head rotation angle so that the head will face
             % the most likely source location.
-%             locHyp = obj.blackboard.getData('confusionHypotheses', ...
-%                 obj.trigger.tmIdx).data;
-%             [~,idx] = max(locHyp.posteriors);
-%             maxAngle = locHyp.locations(idx);
-%             if maxAngle <= 180
-%                 headRotateAngle = maxAngle;
-%             else
-%                 headRotateAngle = maxAngle - 360;
-%             end
-
-            % Head will rotate towards the most dominant source while making
-            % sure head orientation never stays out of [-30 30] so that Surrey 
-            % database can be used. When the head cannot be rotated (either
-            % is already facing the most dominant source or has reached the
-            % Surrey head orientation boundary), a minimal 10 degree rotation
-            % will be applied
-            headOrientation = obj.blackboard.getData( ...
-                'headOrientation', obj.trigger.tmIdx).data;
-            locHyp = obj.blackboard.getData( ...
-                'confusionHypotheses', obj.trigger.tmIdx).data;
+            % For some impulse responses like BRIR the possible head rotations might be
+            % limited. Those maximum values of possible head rotation are accessable from
+            % the robot.
+            %
+            % Set head rotation to the point of most likely perceived source direction
+            locHyp = obj.blackboard.getData('confusionHypotheses', ...
+                obj.trigger.tmIdx).data;
             [~,idx] = max(locHyp.posteriors);
-            mlAngle = locHyp.locations(idx);
-            % Make sure a minimal head rotation
-            minAngle = 5;
-            if mlAngle == 0
-                headRotateAngle = minAngle * sign(randn(1));
-            elseif mlAngle < minAngle
-                headRotateAngle = minAngle;
-            elseif mlAngle > 360 - minAngle
-                headRotateAngle = -minAngle;
+            perceivedAngle = locHyp.locations(idx);
+            if perceivedAngle <= 180
+                headRotateAngle = perceivedAngle;
             else
-                if mlAngle <= 180
-                    if mlAngle > 60
-                        mlAngle = 60;
-                    end
-                    headRotateAngle = mlAngle;
-                else
-                    if mlAngle < 300
-                        mlAngle = 300;
-                    end
-                    headRotateAngle = mlAngle - 360;
-                end
+                headRotateAngle = perceivedAngle - 360;
             end
-
-            newHO = mod(headOrientation + headRotateAngle, 360);
-            if newHO > 30 && newHO <= 180
-                headRotateAngle = 30 - headOrientation;
-            elseif newHO < 330 && newHO > 180
-                headRotateAngle = 330 - headOrientation;
+            % Ensure minimal head rotation
+            minAngle = 3;
+            if abs(headRotateAngle)<minAngle
+                headRotateAngle = sign(randn(1)) * minAngle;
             end
-
-            if headRotateAngle >= 0 && (headOrientation == 30 || headOrientation == 25)
-                headRotateAngle = -minAngle;
-            elseif headRotateAngle <= 0 && (headOrientation == 330 || headOrientation == 335)
-                headRotateAngle = minAngle;
-            elseif headRotateAngle > 180
-                headRotateAngle = headRotateAngle - 360;
+            % Ensure head rotation is possible and add some jitter if maximum is
+            % approached
+            headOrientation = obj.blackboard.getData( ...
+               'headOrientation', obj.trigger.tmIdx).data;
+            maxLimitHeadRotation = obj.robot.AzimuthMax - headOrientation;
+            minLimitHeadRotation = obj.robot.AzimuthMin - headOrientation;
+            if headRotateAngle > maxLimitHeadRotation
+                headRotateAngle = round(maxLimitHeadRotation - 5*rand);
+            elseif headRotateAngle < minLimitHeadRotation
+                headRotateAngle = round(minLimitHeadRotation + 5*rand);
             end
 
             % Rotate head with a relative angle
-            obj.robot.rotateHead(headRotateAngle);
+            obj.robot.rotateHead(headRotateAngle, 'relative');
 
             if obj.blackboard.verbosity > 0
-                fprintf('Commanded head to rotate about %d degrees. New head orientation: %.0f degrees\n', ...
-                    headRotateAngle, obj.robot.getCurrentHeadOrientation);
+                fprintf(['--%05.2fs [Rotation KS:] Commanded head to rotate about ', ...
+                         '%d degrees. New head orientation: %.0f degrees\n'], ...
+                        obj.trigger.tmIdx, headRotateAngle, ...
+                        obj.robot.getCurrentHeadOrientation);
             end
             obj.rotationScheduled = false;
         end
