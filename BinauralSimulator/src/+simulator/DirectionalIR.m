@@ -2,18 +2,26 @@ classdef DirectionalIR < hgsetget
   % Class for HRIRs-Datasets
 
   properties (SetAccess=private)
-    % Number of directions of HRIR-Dataset
+    % Number of directions of IR-Dataset
     % @type integer
     % @default 0
     NumberOfDirections = 0;
-    % Number of samples of HRIR-Dataset
+    % Number of samples of IR-Dataset
     % @type integer
     % @default 0
     NumberOfSamples = 0;
-    % Angular Resolution of HRIR-Dataset
+    % Angular Resolution of IR-Dataset
     % @type double
     % @default inf
     AzimuthResolution = inf;
+    % Maximum Azimuth of IR-Dataset
+    % @type double
+    % @default inf
+    AzimuthMax = inf;
+    % Minimum Azimuth of IR-Dataset
+    % @type double
+    % @default -inf
+    AzimuthMin = -inf;
     % Sample Rate of HRIR-Dataset in Hz
     % @type double
     SampleRate;
@@ -52,6 +60,10 @@ classdef DirectionalIR < hgsetget
       %   filename: name of WAV- or SOFA-file @type char[]
       filename = xml.dbGetFile(filename);
 
+      % reset maximum and minimum azimuth angle
+      obj.AzimuthMax = inf;
+      obj.AzimuthMin = -inf;
+      
       [~,name,ext] = fileparts(filename);
       if strcmp('.wav', ext)
         [d, fs] = audioread(filename);
@@ -140,9 +152,7 @@ classdef DirectionalIR < hgsetget
       set(gca,'CLim',[-50 0]);
       colorbar;
     end
-  end
-  methods (Static)
-    function [d, fs] = convertSOFA(filename)
+    function [d, fs] = convertSOFA(obj,filename)
 
       header = SOFAload(filename, 'nodata');
 
@@ -168,6 +178,9 @@ classdef DirectionalIR < hgsetget
           select = find( abs( header.ListenerView(:,2) ) < 0.01 );
           % sort remaining with respect to azimuth angle
           [azimuths, ind] = sort(header.ListenerView(select,1));
+          % reset maximum and minimum azimuth angle
+          obj.AzimuthMax = azimuths(end);
+          obj.AzimuthMin = azimuths(1);          
         otherwise
           error('SOFA Conventions (%s) not supported', ...
             header.GLOBAL_SOFAConventions);
@@ -209,6 +222,9 @@ classdef DirectionalIR < hgsetget
       d = permute(d,[3 2 1]);
       d = reshape(d,size(d,1),[]);
     end
+  end
+
+  methods (Static)   
     function res = angularDistanceMeasure(a, b)
       res = abs(mod(abs(a - b) + 180, 360) - 180);
     end

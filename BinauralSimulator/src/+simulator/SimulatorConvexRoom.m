@@ -9,10 +9,19 @@ classdef SimulatorConvexRoom < simulator.SimulatorInterface & simulator.RobotInt
     SSRMute;
     SSRGain;
     SSRReferencePosXY;
-    SSRReferenceOriXY;
-
-    Time = 0.0;
+    SSRReferenceOriXY;    
   end
+  
+  properties (SetAccess=private)
+    Time = 0.0;
+    % Maximum Azimuth of head orientation
+    % @type double
+    AzimuthMax = inf;
+    % Minimum Azimuth of head orientation
+    % @type double
+    AzimuthMin = -inf;
+  end
+  
   %% Constructor
   methods
     function obj = SimulatorConvexRoom(xmlfile, init)
@@ -36,6 +45,18 @@ classdef SimulatorConvexRoom < simulator.SimulatorInterface & simulator.RobotInt
       % function init(obj)
       % initialize Simulator
 
+      % initialize head rotation limits  
+      obj.AzimuthMax = inf;
+      obj.AzimuthMin = -inf;
+      if strcmp(func2str(obj.Renderer), 'ssr_brs')
+        for idx=1:length(obj.Sources)
+          obj.AzimuthMax = min( obj.Sources{idx}.IRDataset.AzimuthMax, ...
+            obj.AzimuthMax );
+          obj.AzimuthMin = max( obj.Sources{idx}.IRDataset.AzimuthMin, ...
+            obj.AzimuthMin);
+        end
+      end
+      
       % initialize Room
       if ~isempty(obj.Room)
         obj.Room.init();
@@ -269,7 +290,13 @@ classdef SimulatorConvexRoom < simulator.SimulatorInterface & simulator.RobotInt
       % function rotateHeadRelative(obj, angleIncDeg)
       %
       % See also: simulator.RobotInterface.rotateHeadRelative
-      obj.Sinks.rotateAroundZ(angleIncDeg);
+      
+      % get current XY-Orientation
+      azi = obj.Sinks.OrientationXY;
+      % consider limits of head orientation      
+      angleDeg = max( min( azi+angleIncDeg, obj.AzimuthMax ), obj.AzimuthMin );      
+      % rotate Head around z-axis
+      obj.Sinks.rotateAroundAxis([0; 0; 1], angleDeg - azi)
     end
     function rotateHeadAbsolute(obj, angleDeg)
       % function rotateHeadAbsolute(obj, angleDeg)
@@ -278,6 +305,8 @@ classdef SimulatorConvexRoom < simulator.SimulatorInterface & simulator.RobotInt
 
       % get current XY-Orientation
       azi = obj.Sinks.OrientationXY;
+      % consider limits of head orientation  
+      angleDeg = max( min( angleDeg, obj.AzimuthMax ), obj.AzimuthMin );
       % rotate Head around z-axis
       obj.Sinks.rotateAroundAxis([0; 0; 1], angleDeg - azi);
     end
