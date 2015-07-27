@@ -24,7 +24,7 @@ narginchk(1,1);
 fileList = xml.dbGetFile(fileList);
 fid = fopen(fileList);
 tmp = textscan(fid, '%s');
-fileNames = strcat(xml.dbPath,tmp{1});
+fileNames = tmp{1};
 nFiles = length(fileNames);
 
 % Clean up
