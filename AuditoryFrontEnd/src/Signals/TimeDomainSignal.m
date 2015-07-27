@@ -138,6 +138,7 @@ classdef TimeDomainSignal < Signal
                 
                 % Center the waveform
                 m = max(abs(data));
+                if m == 0, m = 1; end;
                 set(gca,'XLim',[t(1) t(end)],'YLim',[-1.1*m 1.1*m])
             
             else
