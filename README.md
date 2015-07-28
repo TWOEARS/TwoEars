@@ -24,15 +24,13 @@ The model is being developed by the partners of the EU project [Two!Ears](http:/
 * [Assessment of IP-based Applications Group, TU Berlin, Germany](http://www.aipa.tu-berlin.de/menue/assessment_of_ip-based_applications/parameter/en/)  
 * [Neural Information Processing Group, TU Berlin, Germany](http://www.ni.tu-berlin.de/)  
 * [Department of Electrical Engineering-Hearing Systems, Technical University of Denmark](http://www.hea.elektro.dtu.dk/)  
-* [Institute of Communication Acoustics, Ruhr University Bochum, Germany](http://www.ika.ruhr-uni-bochum.de/index_en.html)  
+* [Institute of Communication Acoustics, Ruhr University Bochum, Germany](http://www.ruhr-uni-bochum.de/ika/)  
 * [The Institute for Intelligent Systems and Robotics, UPMC, France](http://www.isir.upmc.fr/)  
 * [Robotics, Action and Perception Group, LAAS, France](https://www.laas.fr/public/en/rap)  
 * [Institute of Communications Engineering, University Rostock, Germany](http://www.int.uni-rostock.de/)  
-* [Department of Computer Science, University of Sheffield, UK](http://www.sheffield.ac.uk/dcs/computer-science-home)  
+* [Department of Computer Science, University of Sheffield, UK](http://www.shef.ac.uk/dcs)  
 * [Human-Technology Interaction Group, Eindhoven University of Technology, Netherlands](http://hti.ieis.tue.nl/)  
 * [The Center for Cognition, Communication, and Culture, Rensselaer, USA](http://ccc-rpi.org/)  
-
-See [map showing partners](doc/partner-locations.geojson).
 
 ## Publications
 
