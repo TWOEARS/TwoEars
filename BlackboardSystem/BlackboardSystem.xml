@@ -6,7 +6,6 @@
 
 <requirements>
     <TwoEarsPart sub="src" startup="startBinauralSimulator">binaural-simulator</TwoEarsPart>
-    <TwoEarsPart sub="src" startup="startAuditoryFrontEnd">auditory-front-end</TwoEarsPart>
-    <TwoEarsPart sub="src" startup="startBlackboardSystem">blackboard-system</TwoEarsPart>
-    <TwoEarsPart           startup="startTools" >tools</TwoEarsPart>
+    <TwoEarsPart           startup="startAuditoryFrontEnd">auditory-front-end</TwoEarsPart>
+    <TwoEarsPart           startup="startBlackboardSystem">blackboard-system</TwoEarsPart>
 </requirements>

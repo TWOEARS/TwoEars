@@ -239,9 +239,9 @@ classdef LocationKS < AuditoryFrontEndDepKS
                 baseFileName = fullfile(obj.gmtkLoc.workPath, 'data', ...
                       sprintf('spatial_cues_angle%05.1f', obj.angles(n)));
                 featureFileName = sprintf('%s.%s', baseFileName, featureExt);
-                fprintf(fidObsList, '%s\n', featureFileName);
+                fprintf(fidObsList, '%s\n', fullfile(pwd, featureFileName));
                 labelFileName = sprintf('%s.%s', baseFileName, labelExt);
-                fprintf(fidLabList, '%s\n', labelFileName);
+                fprintf(fidLabList, '%s\n', fullfile(pwd, labelFileName));
                 % Generate and save feature labels for each angle
                 ftr = readhtk(featureFileName);
                 fid = fopen(labelFileName, 'w');

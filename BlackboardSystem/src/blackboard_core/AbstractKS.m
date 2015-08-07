@@ -1,4 +1,4 @@
-classdef AbstractKS < handle
+classdef AbstractKS < handle & matlab.mixin.Heterogeneous
 
     properties (SetAccess = protected)
         blackboard;
@@ -81,6 +81,13 @@ classdef AbstractKS < handle
             s =  mcobj.Name;
         end
         
+    end
+    
+    methods (Sealed)
+        
+        function e = eq( a, b )
+            e = eq@handle( a, b );
+        end
     end
     
 end

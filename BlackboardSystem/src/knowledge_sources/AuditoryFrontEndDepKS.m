@@ -4,6 +4,7 @@ classdef AuditoryFrontEndDepKS < AbstractKS
     %% -----------------------------------------------------------------------------------
     properties (SetAccess = private)
         requests;       
+        reqHashs;
     end
     
     %% -----------------------------------------------------------------------------------
@@ -12,6 +13,9 @@ classdef AuditoryFrontEndDepKS < AbstractKS
         function obj = AuditoryFrontEndDepKS( requests )
             obj = obj@AbstractKS();
             obj.requests = requests;
+            for ii = 1 : length( obj.requests )
+                obj.reqHashs{ii} = AuditoryFrontEndKS.getRequestHash( obj.requests{ii} );
+            end
             %           example:
             %             requests{1}.name = 'modulation';
             %             requests{1}.params = genParStruct( ...
@@ -39,8 +43,7 @@ classdef AuditoryFrontEndDepKS < AbstractKS
         function afeSignals = getAFEdata( obj )
             afeSignals = containers.Map( 'KeyType', 'int32', 'ValueType', 'any' );
             for ii = 1 : length( obj.requests )
-                reqHash = AuditoryFrontEndKS.getRequestHash( obj.requests{ii} );
-                afeSignals(ii) = obj.blackboard.signals(reqHash);
+                afeSignals(ii) = obj.blackboard.signals(obj.reqHashs{ii});
             end
         end
         %% -------------------------------------------------------------------------------
