@@ -2,7 +2,9 @@ function bbs = localise()
 %LOCALISE localises a source positioned at 0 deg and return the blackboard object
 
 warning('off', 'all');
-startTwoEars();
+
+% Initialize Two!Ears model and check dependencies
+startTwoEars('Config.xml');
 
 % Source angle
 direction = 0;

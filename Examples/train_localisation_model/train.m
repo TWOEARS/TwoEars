@@ -11,7 +11,9 @@ function train(name, sceneDescription, angularResolution)
 %                          learning
 
 warning('off','all');
-startTwoEars();
+
+% Initialize Two!Ears model and check dependencies
+startTwoEars('Config.xml');
 
 % Check input parameters
 narginchk(3,3)
