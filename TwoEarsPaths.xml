@@ -8,5 +8,5 @@
     <binaural-simulator>./BinauralSimulator</binaural-simulator>
     <auditory-front-end>./AuditoryFrontEnd</auditory-front-end>
     <blackboard-system>./BlackboardSystem</blackboard-system>
-    <tools>./Tools</tools>
+    <identification-training>./IdentificationTraining</identification-training>
 </repoPaths>

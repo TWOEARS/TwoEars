@@ -8,7 +8,6 @@ startTwoEars('Config.xml'). -->
 
 <requirements>
     <TwoEarsPart startup="startBinauralSimulator">binaural-simulator</TwoEarsPart>
-    <TwoEarsPart startup="startTools">tools</TwoEarsPart>
     <TwoEarsPart startup="startAuditoryFrontEnd">auditory-front-end</TwoEarsPart>
     <TwoEarsPart startup="startBlackboardSystem">blackboard-system</TwoEarsPart>
 </requirements>

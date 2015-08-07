@@ -27,7 +27,7 @@ classdef (HandleCompatible) Parameterized
         %% -------------------------------------------------------------------------------
         
         function obj = addParameterDefinition( obj, pd )
-            obj.inParser.addParameter( pd.name, pd.default, pd.valFun );
+            obj.inParser.addOptional( pd.name, pd.default, pd.valFun );
             if isfield( pd, 'setCallback' )
                 obj.setCallbacks.(pd.name) = pd.setCallback;
             end
