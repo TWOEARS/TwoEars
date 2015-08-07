@@ -154,6 +154,9 @@ classdef DirectionalIR < hgsetget
     end
     function [d, fs] = convertSOFA(obj,filename)
 
+      % Disable SOFA updagre conventions warnings
+      warning('off', 'SOFA:upgrade')
+
       header = SOFAload(filename, 'nodata');
 
       switch header.GLOBAL_SOFAConventions

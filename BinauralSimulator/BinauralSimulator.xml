@@ -5,6 +5,5 @@
      startTwoEars('BinauralSimulator.xml'); -->
 
 <requirements>
-  <TwoEarsPart  sub="src" startup="startBinauralSimulator">binaural-simulator</TwoEarsPart>
-  <TwoEarsPart            startup="startTools" >tools</TwoEarsPart>
+  <TwoEarsPart  startup="startBinauralSimulator">binaural-simulator</TwoEarsPart>
 </requirements>
