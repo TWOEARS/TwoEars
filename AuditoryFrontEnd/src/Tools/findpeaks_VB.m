@@ -1,4 +1,4 @@
-function [k,v]=findpeaks(x,m,w)
+function [k,v]=findpeaks_VB(x,m,w)
 %FINDPEAKS finds peaks with optional quadratic interpolation [K,V]=(X,M,W)
 %
 %  Inputs:  X        is the input signal (does not work with UInt datatype)

@@ -413,26 +413,40 @@ classdef dataObject < dynamicprops
             set(gca,'fontname',p.map('ftype'),'fontsize',p.map('fsize_label'))
             
         end
-            
+        
     end
     
     methods (Hidden = true)
        
-% NB: following was moved to Procesor.m to allow overloading in particular cases of
-% processors
-%         function newSignal(dObj,pObj)
-%             %NEWSIGNAL Instantiate and integrate the output signal of a processor
-%             
-%             % NB: Do something about the channel here
-% %             sig = {feval(mObj.Processors{ii,1}.getProcessorInfo.outputType,...
-% %                             mObj.Processors{ii,1},...
-% %                             mObj.Data.bufferSize_s,...
-% %                             'mono')};
-%             sig = feval(pObj.getProcessorInfo.outputType,pObj,dObj.bufferSize_s,'mono');
-%             
-%             dObj.addSignal(sig);
-%             
-%         end
+        function replaceInputSignal(dObj,s)
+            %REPLACEINPUTSIGNAL    Clears out all data and appends a new input signal
+            %
+            %USAGE:
+            %  dObj.replaceInputSignal(s)
+            %
+            %INPUT ARGUMENTS:
+            %  dObj : Data object instance
+            %     s : New input signal
+            
+            if size(s,2)-1 ~= dObj.isStereo
+                warning(['Cannot replace input signal: number of channels in data ' ...
+                    'object and new input signal do not match. Consider instanciating ' ...
+                    'a new data object.'])
+                return
+            end
+            
+            % Clear all data
+            dObj.clearData;
+            
+            % Append new input
+            dObj.input{1}.appendChunk(s(:,1));
+            
+            if size(s,2) == 2
+                % Stereo signal
+                dObj.input{2}.appendChunk(s(:,2));
+            end
+            
+        end
         
     end
     

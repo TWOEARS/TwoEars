@@ -5,6 +5,5 @@
      startTwoEars('AuditoryFrontEnd.xml'); -->
 
 <requirements>
-    <TwoEarsPart sub="src" startup="startAuditoryFrontEnd">auditory-front-end</TwoEarsPart>
-    <TwoEarsPart           startup="startTools" >tools</TwoEarsPart>
+    <TwoEarsPart startup="startAuditoryFrontEnd">auditory-front-end</TwoEarsPart>
 </requirements>

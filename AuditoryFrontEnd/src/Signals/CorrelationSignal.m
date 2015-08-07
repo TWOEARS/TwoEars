@@ -41,9 +41,9 @@ classdef CorrelationSignal < Signal
             
             % TODO: Might have to change how lags are accessed to prevent error when
             % instantiating empty processor
+            numChannel = max(length(procHandle.getDependentParameter('fb_cfHz')),1);
             sObj = sObj@Signal( procHandle, bufferSize, ...
-                                [length(procHandle.getDependentParameter('fb_cfHz')) ...
-                                length(procHandle.lags)]);
+                                            [numChannel length(procHandle.lags)]);
             
             if nargin>0     % Safeguard for Matlab empty calls
                 

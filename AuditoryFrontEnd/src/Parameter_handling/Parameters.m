@@ -224,7 +224,9 @@ classdef Parameters < dynamicprops & Hashable
             if any(parObj.map.isKey(keyList))
                 warning('Cannot append already existing parameters')
             else
-                parObj.map = [parObj.map ; newParObj.map];
+                for ii = 1:size(keyList,2)
+                    parObj.map(keyList{ii}) = newParObj.map(keyList{ii});
+                end
             end
             
             % Update dynamic properties

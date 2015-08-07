@@ -725,28 +725,39 @@ classdef Processor < handle
             % Get file information
             fileList = listFiles(processorDir(1:end-10),'*.m',-1);
             
-            % Extract name only
-            pList = cell(size(fileList));
-            for ii = 1:size(fileList)
-                % Get file name
-                [~,fName] = fileparts(fileList(ii).name);
-                
-                % Check if it is a valid processor
-                try
-                    p = feval(str2func(fName));
-                    if isa(p,'Processor') && ~p.bHidden
-                        pList{ii} = fName;
-                    else
+            persistent pListStore;
+            if isempty(pListStore)
+                pListStore = containers.Map('KeyType','char','ValueType','any');
+            end
+            fileListKey = strcat(fileList.name);
+            if isKey(pListStore,fileListKey)
+                pList = pListStore(fileListKey);
+            else
+                % Extract name only
+                pList = cell(size(fileList));
+                for ii = 1:size(fileList)
+                    % Get file name
+                    [~,fName] = fileparts(fileList(ii).name);
+                    
+                    % Check if it is a valid processor
+                    try
+                        p = feval(str2func(fName));
+                        if isa(p,'Processor') && ~p.bHidden
+                            pList{ii} = fName;
+                        else
+                            pList{ii} = [];
+                        end
+                    catch   % In case fName is not executable without inputs
                         pList{ii} = [];
                     end
-                catch   % In case fName is not executable without inputs
-                    pList{ii} = [];
+                    
                 end
                 
-            end
+                % Remove empty elements
+                pList = pList(~cellfun('isempty',pList));
                 
-            % Remove empty elements
-            pList = pList(~cellfun('isempty',pList));
+                pListStore(fileListKey) = pList;
+            end
              
         end
         
