@@ -1,0 +1,50 @@
+	Variational Bayesian Mixtures of Factor Analysers
+			   (version 1)
+		    (C) Matthew J. Beal, 2000
+
+		    www.gatsby.ucl.ac.uk/~beal
+		     m.beal@gatsby.ucl.ac.uk
+
+VBMFA is a variational approximation to a full* Bayesian implementation
+of Mixtures of Factor Analysers. Included in this tar file are
+
+  o the NIPS'99 paper (Ghahramani & Beal) which explains the model theory
+    and has the parameter optimisation equations in the Appendix.
+
+  o a jpg of the newer graphical model implemented in this code.
+
+  o the VBMFA functions written in MATLAB, most of which have help lines.
+
+DEMO:	load ueda_spiral; Y = Y(:,1:2:end);
+	[Y ppp] = preprocess(Y);
+	net = vbmfa(Y,1,0,0,10);
+	
+PLOT OPTION: after every accepted epoch, plots:
+	a) 1sd ellipses of analysers,
+	b) 3sd ellipses of analyser means (a distribution over each mean),
+	c) history of F, and
+	d) component mixing proportions.
+
+The code should work, but is by no means perfect and is both redundant
+and buggy in places. I shall fix it up in good time.
+
+Please email with your comments/suggestions/bugs, but please check for
+recent versions before doing so!
+
+Enjoy
+
+-Matt Beal
+
+
+* Full means that we place distributions over all those parameters whos
+cardinality increases with model complexity, and are as such integrated
+out to form the marginal likelihood, or Evidence.
+
+Undesirables:-
+
+1) Certain combinations of death moves within epochs screw up the
+component ordering. I haven't got around to fixing this.
+2) There is a version of this code that *focuses* on only those components
+that are in responsibility flux. This dramatically speeds up the search,
+but is not needed to demonstrate the algorithm.
+3) Better versions exist and will be posted as soon as I have time.

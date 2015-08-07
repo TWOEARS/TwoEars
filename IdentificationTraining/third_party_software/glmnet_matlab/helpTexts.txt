@@ -1,0 +1,545 @@
+ --------------------------------------------------------------------------
+  glmnet.m: fit an GLM with lasso or elasticnet regularization
+ --------------------------------------------------------------------------
+ 
+  DESCRIPTION:
+     Fit a generalized linear model via penalized maximum likelihood. The  regularization path is computed for the lasso or elastic net penalty at a grid of values for the regularization parameter lambda. Can deal with all shapes of data, including very large sparse data matrices. Fits linear, logistic and multinomial, Poisson, and Cox regression models.
+ 
+  USAGE:
+     fit = glmnet(x, y)
+     fit = glmnet(x, y, family)
+     fit = glmnet(x, y, family, options)
+     (Use empty matrix [] to apply the default value, eg. fit = glmnet(x,
+     y, [], options))
+ 
+ 
+  EXTERNAL FUNCTIONS:
+  options         = glmnetSet;                  provided with glmnet.m
+ 
+  INPUT ARGUMENTS:
+  x           Input matrix, of dimension nobs x nvars; each row is an observation vector. Can be in sparse matrix format.
+  y           Response variable. Quantitative (column vector) for family = 'gaussian', or family = 'poisson'(non-negative counts). For family = 'binomial' should be either a column vector with two  levels, or a two-column matrix of counts or proportions. For family = 'multinomial', can be a column vector of nc>=2 levels, or a matrix with nc columns of counts or proportions. For family = 'cox', y should be a two-column matrix with the first column for time and the second for status. The latter is a binary variable, with 1 indicating death, and 0 indicating right censored. For family = 'mgaussian', y is a matrix of quantitative responses. 
+  family      Reponse type. (See above). Default is 'gaussian'.
+  options     A structure that may be set and altered by glmnetSet. Default values for some often used options:
+                 options.alpha = 1.0  (elastic-net mixing parameter)
+                 options.nlambda = 100  (number of lambda values)
+                 options.lambda depends on data, nlambda and
+                 lambda_min(user spplied lambda sequence) 
+                 options.standardize = true  (variable standardization)
+                 options.weights = all ones vector (observation weights)
+              For more details, type help glmnetSet.
+              
+  OUTPUT ARGUMENTS:
+  fit         A structure.
+  fit.a0      Intercept sequence of length length(fit.lambda).
+  fit.beta    For "elnet" and "lognet" models, a nvars x length(lambda) matrix of coefficients. For "multnet", a list of nc such matrices, one for each class.
+  fit.lambda  The actual sequence of lambda values used.
+  fit.dev     The fraction of (null) deviance explained (for "elnet", this is the R-square).
+  fit.nulldev Null deviance (per observation).
+  fit.df      The number of nonzero coefficients for each value of lambda. For "multnet", this is the number of variables with a nonzero coefficient for any class.
+  fit.dfmat   For "multnet" only. A matrix consisting of the number of nonzero coefficients per class.
+  fit.dim     Dimension of coefficient matrix (ices).
+  fit.npasses Total passes over the data summed over all lambda values.
+  fit.offset  a logical variable indicating whether an offset was included in the model.
+  fit.jerr    Error flag, for warnings and errors (largely for internal debugging).
+  fit.class   Type of regression - internal usage.
+  fit.call    a cell including the names of all the input variables in the parent environment.
+ 
+  DETAILS:
+     The sequence of models implied by lambda is fit by coordinate descent. For family='gaussian' this is the lasso sequence if alpha=1, else it is the elasticnet sequence. For the other families, this is a lasso or elasticnet regularization path for fitting the generalized linear regression paths, by maximizing the appropriate penalized log-likelihood (partial likelihood for the 'cox' model). Sometimes the sequence is truncated before nlambda values of lambda have been used, because of instabilities in the inverse link functions near a saturated fit. glmnet(...,family='binomial') fits a traditional logistic regression model for the log-odds. glmnet(...,family='multinomial') fits a symmetric multinomial model, where each class is represented by a linear model (on the log-scale). The penalties take care of redundancies. A two-class 'multinomial' model will produce the same fit as the corresponding 'binomial' model, except the pair of coefficient matrices will be equal in magnitude and opposite in sign, and half the 'binomial' values. Note that the objective function for 'gaussian' is
+ 
+                     1/2 RSS / nobs + lambda * penalty,
+ 
+     and for the logistic models it is
+ 
+                     -loglik / nobs + lambda * penalty.
+ 
+     Note also that for 'gaussian', glmnet standardizes y to have unit variance before computing its lambda sequence (and then unstandardizes the resulting coefficients); if you wish to reproduce/compare results with other software, best to supply a standardized y. The latest two features in glmnet are the family='mgaussian' family and the mtype='grouped' in options for multinomial fitting. The former allows a multi-response gaussian model to be fit, using a "group -lasso" penalty on the coefficients for each variable. Tying the responses together like this is called "multi-task" learning in some domains. The grouped multinomial allows the same penalty for the family='multinomial' model, which is also multi-responsed. For both of these the penalty on the coefficient vector for variable j is
+ 
+             (1-alpha)/2 * ||beta_j||_2^2 + alpha * ||beta_j||_2
+ 
+     When alpha=1 this is a group-lasso penalty, and otherwise it mixes with quadratic just like elasticnet. 
+ 
+  EXAMPLES:
+  % Gaussian
+     x=randn(100,20);
+     y=randn(100,1);
+     fit1 = glmnet(x,y);
+     glmnetPrint(fit1);
+     glmnetPredict(fit1,[],0.01,'coef')  %extract coefficients at a single value of lambda
+     glmnetPredict(fit1,x(1:10,:),[0.01,0.005]')  %make predictions
+ 
+  % Multivariate Gaussian:
+     y=randn(100,3);
+     fit1m=glmnet(x,y,'mgaussian');
+     glmnetPlot(fit1m,[],[],'2norm');
+ 
+  % Binomial:
+     g2=randsample(2,100,true);
+     fit2=glmnet(x,g2,'binomial');
+ 
+  % Multinomial:
+     g4=randsample(4,100,true);
+     fit3=glmnet(x,g4,'multinomial');
+     opts=struct('mtype','grouped');
+     fit3a=glmnet(x,g4,'multinomial',opts);
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+ --------------------------------------------------------------------------
+  glmnetCoef computes coefficients from a "glmnet" object.
+ --------------------------------------------------------------------------
+ 
+  DESCRIPTION:
+     This function extracts coefficients at certain lambdas if they are in the lambda sequence of a "glmnet" object or make predictions if they are not in that sequence.
+ 
+  USAGE:
+     glmnetCoef(object, s, exact)
+ 
+     Fewer input arguments(more often) are allowed in the call, but must come in the order listed above. To set default values on the way, use empty matrix [].  For example, ncoef = glmnetCoef(fit,[],false).
+ 
+  INPUT ARGUMENTS:
+  object      Fitted "glmnet" model object.
+  s           Value(s) of the penalty parameter lambda at which computation is required. Default is the entire sequence used to create the model.
+  exact       If exact=true, and computation is to be made at values of s  not included in the original fit, these values of s are merged with object.lambda, and the model is refit before predictions are made. If exact=false (default), then the function uses linear interpolation to make predictions for values of s that do not coincide with those used in the fitting algorithm. Note that exact=true is fragile when used inside a nested sequence of function calls. glmnetCoef() needs to update the model, and expects the data used to create it in the parent environment.
+ 
+  OUTPUT ARGUMENTS:
+  result      A (nvars+1) x length(s) matrix with each column being the  coefficients at an s. Note that the first row are the  intercepts (0 if no intercept in the original model).
+ 
+  EXAMPLES:
+     x=randn(100,20);
+     y=randn(100,1);
+     fit=glmnet(x,y);
+     ncoef=glmnetCoef(fit,0.01,true);
+ 
+
+
+
+
+
+
+
+
+>> help glmnetControl
+  DESCRIPTION:
+     View and/or change the factory default parameters in glmnet
+ 
+  USAGE:
+    glmnetControl; (with no input or output arguments)
+    displays all inner parameters and their current values.
+    glmnetControl(pars);
+    sets the internal parameters that appear in the fields of pars to the new values.
+ 
+  ARGUMENTS:
+  pars is a structure with the following fields.
+  fdev        minimum fractional change in deviance for stopping path; factory default = 1.0e-5.
+  devmax      maximum fraction of explained deviance for stopping path; factory default = 0.999.
+  eps         minimum value of lambda.min.ratio (see glmnet); factory default= 1.0e-6.
+  big         large floating point number; factory default = 9.9e35. Inf in definition of upper.limit is set to big.
+  mnlam       minimum number of path points (lambda values) allowed; factory default = 5.
+  pmin        minimum null probability for any class. factory default = 1.0e-5.
+  exmx        maximum allowed exponent. factory default = 250.0.
+  prec        convergence threshold for multi response bounds adjustment solution. factory default = 1.0e-10.
+  mxit  	  maximum iterations for multiresponse bounds adjustment solution. factory default = 100.
+  factory     If true, reset all the parameters to the factory default; default is false.
+ 
+  DETAILS:
+     If called with no arguments, glmnetControl() returns a structure with  the current settings of these parameters. Any arguments included in the fields of the input structure sets those parameters to the new values,  and then silently returns. The values set are persistent for the  duration of the Matlab session.
+ 
+  EXAMPLES:
+     pars = struct('fdev',0);
+     glmnetControl(pars);  %continue along path even though not much changes
+     glmnetControl();  %view current settings
+     pars = struct('factory',true);
+     glmnetControl(pars);  %reset all the parameters to their default
+
+
+
+
+
+
+
+
+ --------------------------------------------------------------------------
+  glmnetPlot.m: plot coefficients from a "glmnet" object
+ --------------------------------------------------------------------------
+ 
+  DESCRIPTION:
+     Produces a coefficient profile plot fo the coefficient paths for a fitted "glmnet" object.
+ 
+  USAGE:
+     glmnetPlot(fit);
+     glmnetPlot(fit, xvar);
+     glmnetPlot(fit, xvar, label);
+     glmnetPlot(fit, xvar, label, type);
+     glmnetPlot(fit, xvar, label, type, ...);
+     (Use empty matrix [] to apply the default value, eg. glmnetPlot(fit, [], [], type).)
+ 
+  INPUT ARGUMENTS:
+  x           fitted "glmnet" model.
+  xvar        What is on the X-axis. 'norm' plots against the L1-norm of the coefficients, 'lambda' against the log-lambda sequence, and 'dev' against the percent deviance explained.
+  label       If true, label the curves with variable sequence numbers.
+  type        If type='2norm' then a single curve per variable, else if type='coef', a coefficient plot per response.
+  varargin    Other graphical parameters to plot.
+ 
+  DETAILS:
+     A coefficient profile plot is produced. If x is a multinomial model, a coefficient plot is produced for each class.
+ 
+  EXAMPLES:
+     x=randn(100,20);
+     y=randn(100,1);
+     g2=randsample(2,100,true);
+     g4=randsample(4,100,true);
+     fit1=glmnet(x,y);
+     glmnetPlot(fit1);
+     glmnetPlot(fit1, 'lambda', true);
+     fit3=glmnet(x,g4,'multinomial');
+     glmnetPlot(fit3);
+ 
+
+
+
+
+ --------------------------------------------------------------------------
+  glmnetPredict.m: make predictions from a "glmnet" object.
+ --------------------------------------------------------------------------
+ 
+  DESCRIPTION:
+     Similar to other predict methods, this functions predicts fitted values, logits, coefficients and more from a fitted "glmnet" object.
+ 
+  USAGE:
+     glmnetPredict(object, newx, s, type, exact, offset)
+ 
+     Fewer input arguments(more often) are allowed in the call, but must come in the order listed above. To set default values on the way, use empty matrix [].  For example, pred=glmnetPredict(fit,[],[],'coefficients').
+    
+     To make EXACT prediction, the input arguments originally passed to  "glmnet" MUST be VARIABLES (instead of expressions, or fields extracted from some struct objects). Alternatively, users should manually revise the "call" field in "object" (expressions or variable names) to match the original call to glmnet in the parent environment.
+ 
+  INPUT ARGUMENTS:
+  object      Fitted "glmnet" model object.
+  s           Value(s) of the penalty parameter lambda at which predictions are required. Default is the entire sequence used to create the model.
+  newx        Matrix of new values for x at which predictions are to be made. Must be a matrix; can be sparse. This argument is not  used for type='coefficients' or type='nonzero'.
+  type        Type of prediction required. Type 'link' gives the linear predictors for 'binomial', 'multinomial', 'poisson' or 'cox' models; for 'gaussian' models it gives the fitted values. Type 'response' gives the fitted probabilities for 'binomial' or 'multinomial', fitted mean for 'poisson' and the fitted relative-risk for 'cox'; for 'gaussian' type 'response' is equivalent to type 'link'. Type 'coefficients' computes the coefficients at the requested values for s. Note that for 'binomial' models, results are returned only for the class corresponding to the second level of the factor response. Type 'class' applies only to 'binomial' or 'multinomial' models, and produces the class label corresponding to the maximum probability. Type 'nonzero' returns a matrix of logical values with each column for each value of s,  indicating if the corresponding coefficient is nonzero or not.
+  exact       If exact=true, and predictions are to made at values of s not included in the original fit, these values of s are merged with object.lambda, and the model is refit before predictions are made. If exact=false (default), then the predict function uses linear interpolation to make predictions for values of s that do not coincide with those used in the fitting algorithm. Note that exact=true is fragile when used inside a nested sequence of function calls. glmnetPredict() needs to update the model, and expects the data used to create it in the parent environment.
+  offset      If an offset is used in the fit, then one must be supplied for making predictions (except for type='coefficients' or type='nonzero')
+  
+  DETAILS:
+     The shape of the objects returned are different for "multinomial" objects. glmnetCoef(fit, ...) is equivalent to  glmnetPredict(fit,[],[],'coefficients").
+ 
+  EXAMPLES:
+     x=randn(100,20);
+     y=randn(100,1);
+     g2=randsample(2,100,true);
+     g4=randsample(4,100,true);
+     fit1=glmnet(x,y);
+     glmnetPredict(fit1,x(1:5,:),[0.01,0.005]') % make predictions
+     glmnetPredict(fit1,[],[],'coefficients')
+     fit2=glmnet(x,g2,'binomial');
+     glmnetPredict(fit2, x(2:5,:),[], 'response')
+     glmnetPredict(fit2, [], [], 'nonzero')
+     fit3=glmnet(x,g4,'multinomial');
+     glmnetPredict(fit3, x(1:3,:), 0.01, 'response')
+ 
+
+
+
+
+
+
+
+ --------------------------------------------------------------------------
+  glmnetPrint.m: print a glmnet object
+ --------------------------------------------------------------------------
+ 
+  DESCRIPTION:
+     Print a summary of the glmnet path at each step along the path.
+ 
+  USAGE: 
+     glmnetPrint(fit)
+ 
+  INPUT ARGUMENTS:
+  x         fitted glmnet object
+ 
+  DETAILS:
+     Three-column matrix with columns Df, %Dev and Lambda is printed. The Df column is the number of nonzero coefficients (Df is a reasonable name only for lasso fits). %Dev is the percent deviance explained (relative to the null deviance).
+  
+  EXAMPLES:
+     x=randn(100,20);
+     y=randn(100,1);
+     fit1=glmnet(x,y);
+     glmnetPrint(fit1);
+ 
+
+
+
+
+
+
+
+ --------------------------------------------------------------------------
+  glmnetSet creates or alters an options structure for glmnet.m.
+ --------------------------------------------------------------------------
+    options = glmnetSet; (with no input arguments) creates a structure with all fields set to their default values. Each field is an option (also called a parameter).
+ 
+    glmnetSet; (with no input or output arguments) displays all options and their default values.
+ 
+    options = glmnetSet(opts); 
+    creates a structure with all fields set to their default values, except valid fields in the structure "opts" replace the defaults.
+ 
+  options.alpha       The elasticnet mixing parameter, with 0 < alpha <= 1. The penalty is defined as
+                            (1-alpha)/2(||beta||_2)^2+alpha||beta||_1.
+                      Default is alpha = 1, which is the lasso penalty; Currently alpha = 0 the ridge penalty.
+  options.nlambda     The number of lambda values - default is 100.
+  options.lambda      A user supplied lambda sequence. Typical usage is to have the program compute its own lambda sequence based on nlambda and lambda_min. Supplying a value of lambda override this. WARNING: Use with care. Do not  supply a single value for lambda (for predictions  after CV use cvglmnetPredict() instead). Supply a  decreasing sequence of lambda values. glmnet relies on its warm starts for speed, and it's often faster to fit a whole path than compute a single fit.
+  options.standardize Logical flag for x variable standardization, prior to fitting the model sequence. The coefficients are always returned on the original scale. Default is standardize = true. If variables are in the same units already, you might not wish to standardize. See details below for y standardization with family='gaussian'.
+  options.weights     Observation weights. Can be total counts if responses are proportion matrices. Default is 1 for each observation.
+  options.intr        Should intercept(s) be fitted (default=true) or set to zero (false).
+  options.offset      A vector of length nobs that is included in the linear predictor (a nobs x nc matrix for the "multinomial" family). Useful for the "poisson" family (e.g. log of exposure time), or for refining a model by starting at a current fit. Default is []. If supplied, then values must also be supplied to the predict function.
+  options.lambda_min  Smallest value for lambda, as a fraction of lambda_max, the (data derived) entry value (i.e., the smallest value for which all coefficients are zero). The default depends on the sample size nobs relative to the number of variables nvars. If nobs > nvars, the default is 0.0001, close to zero. If nobs < nvars, the defaults is 0.01. A very small value of lambda_min will lead to a saturated fit. This is undefined for "binomial" and "multinomial" models, and glmnet will exit gracefully when the percentage deviance explained is almost 1.
+  options.thresh      Convergence threshold for coordinate descent. Each  inner coordinate-descent loop continues until the  maximum change in the objective after any coefficient  update is less than thresh times the null deviance.  Defaults value is 1E-4.
+  options.dfmax       Limit the maximum number of variables in the model.  Useful for very large nvars, if a partial path is desired. Default is nvars + 1.
+  options.pmax        Limit the maximum number of variables ever to be nonzero. Default is min(dfmax * 2 + 20, nvars).
+  options.exclude     Indices of variables to be excluded from the model.  Default is none. Equivalent to an infinite penalty factor (next item).
+  options.penalty_factor
+                      Separate penalty factors can be applied to each coefficient. This is a number that multiplies lambda to allow differential shrinkage. Can be 0 for some variables, which implies no shrinkage, and that variable is always included in the model. Default is 1 for all variables (and implicitly infinity for variables listed in exclude). Note: the penalty factors are internally rescaled to sum to nvars, and the lambda sequence will reflect this change.
+  options.maxit       Maximum number of passes over the data for all lambda values; default is 10^5.
+  options.cl          Two-row matrix with the first row being the lower  limits for each coefficient and the second the upper limits. Can be presented as a single column (which will then be replicated), else a matrix of nvars columns. Default [-Inf;Inf].
+  options.gtype       Two algorithm types are supported for (only) family = 'gaussian'. The default when nvar<500 is options.gtype = 'covariance', and saves all inner-products ever computed. This can be much faster than options.gtype='naive', which loops through nobs every time an inner-product is computed. The latter can be far more efficient for nvar >> nobs situations, or when nvar > 500.
+  options.ltype       If 'Newton' then the exact hessian is used (default), while 'modified.Newton' uses an upper-bound on the hessian, and can be faster.
+  options.standardize_resp
+                      This is for the family='mgaussian' family, and allows the user to standardize the response variables.
+  options.mtype       If 'grouped' then a grouped lasso penalty is used on the multinomial coefficients for a variable. This ensures they are all in our out together. The default is 'ungrouped'.  
+ 
+
+ 
+ 
+ 
+ 
+ 
+ --------------------------------------------------------------------------
+  cvglmnet.m: cross-validation for glmnet
+ --------------------------------------------------------------------------
+ 
+  DESCRIPTION:
+     Does k-fold cross-validation for glmnet, produces a plot, and returns a value for lambda.
+ 
+  USAGE:
+     CVerr = cvglmnet(x, y, family, options, type, nfolds, foldid, parallel, keep, grouped);
+ 
+     Fewer input arguments(more often) are allowed in the call, but must come in the order listed above. To set default values on the way, use empty matrix [].  For example, CVfit=cvglmnet(x,y,'multinomial',[],[],20).
+     
+ 
+  INPUT ARGUMENTS
+  x           x matrix as in glmnet.
+  y           Response y as in glmnet.
+  family      Response type as family in glmnet.
+  options     Options as in glmnet.
+  type        loss to use for cross-validation. Currently five options, not all available for all models. The default is type='deviance', which uses squared-error for Gaussian models (a.k.a type='mse' there), deviance for logistic and Poisson regression, and partial-likelihood for the Cox model. type='class' applies to binomial and multinomial logistic regression only, and gives misclassification error. type='auc' is for two-class logistic regression only, and gives area under the ROC curve. type='mse' or type='mae' (mean absolute error) can be used by all models except the 'cox'; they measure the deviation from the fitted mean to the response.  
+  nfolds      number of folds - default is 10. Although nfolds can be as large as the sample size (leave-one-out CV), it is not recommended for large datasets. Smallest value allowable is nfolds=3.
+  foldid      an optional vector of values between 1 and nfold identifying what fold each observation is in. If supplied, nfold can be missing.
+  parallel    If true, use parallel computation to fit each fold. If a worker pool is not open, it will open using the default cluster profile and close after the computation is over. 
+  keep        If keep=true, a prevalidated array is returned containing fitted values for each observation and each value of lambda. This means these fits are computed with this observation and the rest of its fold omitted. The foldid vector is also returned. Default is keep=false.   
+  grouped     This is an experimental argument, with default true, and can be ignored by most users. For all models except the 'cox', this refers to computing nfolds separate statistics, and then using their mean and estimated standard error to describe the CV curve. If grouped=false, an error matrix is built up at the observation level from the predictions from the nfold fits, and then summarized (does not apply to type='auc'). For the 'cox' family, grouped=true obtains the  CV partial likelihood for the Kth fold by subtraction; by subtracting the log partial likelihood evaluated on the full dataset from that evaluated on the on the (K-1)/K dataset. This makes more efficient use of risk sets. With grouped=FALSE the log partial likelihood is computed only on the Kth fold.
+ 
+  OUTPUT ARGUMENTS:
+  A structure is returned with the following fields.
+  lambda      the values of lambda used in the fits.
+  cvm         the mean cross-validated error - a vector of length length(lambda). 
+  cvsd        estimate of standard error of cvm.
+  cvup        upper curve = cvm+cvsd.
+  cvlo        lower curve = cvm-cvsd.
+  nzero       number of non-zero coefficients at each lambda.
+  name        a text string indicating type of measure (for plotting purposes). 
+  glmnet_fit  a fitted glmnet object for the full data.
+  lambda_min  value of lambda that gives minimum cvm.
+  lambda_1se  largest value of lambda such that error is within 1 standard error of the minimum. 
+  class       Type of regression - internal usage.
+  fit_preval  if keep=true, this is the array of prevalidated fits. Some entries can be NA, if that and subsequent values of lambda are not reached for that fold.
+  foldid      if keep=true, the fold assignments used.
+ 
+  DETAILS:
+     The function runs glmnet nfolds+1 times; the first to get the lambda sequence, and then the remainder to compute the fit with each of the  folds omitted. The error is accumulated, and the average error and  standard deviation over the folds is computed. Note that cv.glmnet  does NOT search for values for alpha. A specific value should be  supplied, else alpha=1 is assumed by default. If users would like to  cross-validate alpha as well, they should call cv.glmnet with a  pre-computed vector foldid, and then use this same fold vector in  separate calls to cv.glmnet with different values of alpha. 
+ 
+  EXAMPLES:
+     n=1000; p=100;
+     nzc=fix(p/10);
+     x=randn(n,p);
+     beta=randn(nzc,1);
+     fx=x(:,1:nzc) * beta;
+     eps=randn(n,1)*5;
+     y=fx+eps;
+     px=exp(fx);
+     px=px./(1+px);
+     ly=binornd(1,px,length(px),1);   
+     cvob1=cvglmnet(x,y);
+     cvglmnetPlot(cvob1);
+     cvglmnetCoef(cvob1)
+     cvglmnetPredict(cvob1,x(1:5,:),'lambda_min')
+  
+     cvobla=cvglmnet(x,y,[],[],'mae');
+     cvglmnetPlot(cvobla);
+     
+     cvob2=cvglmnet(x,ly,'binomial');
+     cvglmnetPlot(cvob2);
+     
+     figure;
+     cvob3=cvglmnet(x,ly,'binomial',[],'class');
+     cvglmnetPlot(cvob3);
+  
+     mu=exp(fx/10);
+     y=poissrnd(mu,n,1);
+     cvob4=cvglmnet(x,y,'poisson');
+     cvglmnetPlot(cvob4);
+     
+  % Multinomial
+     n=500; p=30;
+     nzc=fix(p/10);
+     x=randn(n,p);
+     beta3=randn(10,3);
+     beta3=cat(1,beta3,zeros(p-10,3));
+     f3=x*beta3;
+     p3=exp(f3);
+     p3=bsxfun(@rdivide,p3,sum(p3,2));
+     g3=mnrnd(1,p3);
+     g3=g3*(1:size(p3,2))';
+     cvfit=cvglmnet(x,g3,'multinomial');
+     cvglmnetPlot(cvfit);
+     
+  % Parallel
+     matlabpool;
+     x=randn(1e3,100);
+     y=randn(1e3,1);
+     tic;
+     cvglmnet(x,y);
+     toc;
+     tic;
+     cvglmnet(x,y,[],[],[],[],[],true);
+     toc;
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ --------------------------------------------------------------------------
+  cvglmnetCoef computes coefficients from a "cv.glmnet" object.
+ --------------------------------------------------------------------------
+ 
+  DESCRIPTION:
+     This function extracts coefficients at certain lambdas if they are in the lambda sequence of a "cv.glmnet" object or make predictions if they are not.
+ 
+  USAGE:
+     mcoef=cvglmnetCoef(object);
+     ncoef=cvglmnetCoef(object, s);
+ 
+  INPUT ARGUMENTS:
+  object      Fitted "glmnet" model object.
+  s           Value(s) of the penalty parameter lambda at which computation is required. Default is the value s='lambda_1se' stored on the CV object. Alternatively s='lambda_min' can be used. If s is numeric, it is taken as the value(s) of lambda to be used.
+ 
+  OUTPUT ARGUMENTS:
+  result      If s is 'lambda_1se' or 'lambda_min', the coefficients at  that s is returned. If s is numeric, a (nvars+1) x length(s)  matrix is returned with each column being the coefficients  at an s. Note that the first row are the intercepts (0 if no  intercept in the original model).
+ 
+  DETAILS:
+     The function uses linear interpolation to make predictions for values  of s that do not coincide with those used in the fitting algorithm.  Exact prediction is not supported currently.
+
+  EXAMPLES:
+     x=randn(100,20);
+     y=randn(100,1);
+     cvfit=cvglmnet(x,y);
+     ncoef=cvglmnetCoef(cvfit,'lambda_min');
+ 
+
+ 
+ 
+
+ --------------------------------------------------------------------------
+  cvglmnetPlot.m: plot the cross-validation curve produced by cvglmnet
+ --------------------------------------------------------------------------
+ 
+  DESCRIPTION:
+     Plots the cross-validation curve, and upper and lower standard deviation curves, as a function of the lambda values used. 
+ 
+  USAGE:
+     cvglmnetPlot(cvfit);
+     cvglmnetPlot(cvfit, sign_lambda);
+     cvglmnetPlot(cvfit, sign_lambda, varagin);
+     (Use empty matrix [] to apply the default value, eg.
+     cvglmnetPlot(cvfit, [], 'linewidth', 2)).
+ 
+  INPUT ARGUMENTS:
+  cvobject    fitted "cv.glmnet" object
+  sign_lambda Either plot against log(lambda) (default) or its negative if sign_lambda=-1. 
+  varargin    Other errorbar parameters.
+  
+  DETAILS:
+     A plot is produced, and nothing is returned.
+ 
+  EXAMPLES:
+     n=1000; p=100;
+     nzc=fix(p/10);
+     x=randn(n,p);
+     beta=randn(nzc,1);
+     fx=x(:,1:nzc) * beta;
+     eps=randn(n,1)*5;
+     y=fx+eps;
+     px=exp(fx);
+     px=px./(1+px);
+     ly=binornd(1,px,length(px),1);   
+     cvob1=cvglmnet(x,y);
+     cvglmnetPlot(cvob1);
+ 
+     cvob2=cvglmnet(x,ly,'binomial');
+     cvglmnetPlot(cvob2);
+     figure;
+ 
+     cvob3=cvglmnet(x,ly,'binomial',[],'class');
+     cvglmnetPlot(cvob3);   
+ 
+ 
+ 
+ 
+ --------------------------------------------------------------------------
+  cvglmnetPredict makes predictions from a "cv.glmnet" object.
+ --------------------------------------------------------------------------
+ 
+  DESCRIPTION:
+     This function makes predictions from a cross-validated glmnet model, using the stored "glmnet_fit" object, and the optimal value chosen for lambda.
+ 
+  USAGE:
+     pred = cvglmnetPredict(cvfit)
+     pred = cvglmnetPredict(cvfit, newx)
+     pred = cvglmnetPredict(cvfit, newx, s)
+     pred = cvglmnetPredict(cvfit, newx, s, ...)
+ 
+  INPUT ARGUMENTS:
+  object      Fitted "glmnet" model object.
+  newx        Matrix of new values for x at which predictions are to be made. Must be a matrix; can be sparse. See documentation for  glmnetPredict.
+  s           Value(s) of the penalty parameter lambda at which predictions are required. Default is the value s='lambda_1se' stored on the CV object. Alternatively s='lambda_min' can be used. If s is numeric, it is taken as the value(s) of lambda to be used.
+  varargin    Other arguments to predict.
+ 
+  OUTPUT ARGUMENTS:
+     If only the cv.glmnet is provided, the function returns the  coefficients at the default s = 'lambda_1se'. Otherwise, the object  returned depends the ... argument which is passed on to the  glmnetPredict for glmnet objects.
+              
+ 
+  DETAILS:
+     This function makes it easier to use the results of cross-validation to make a prediction. 
+ 
+  EXAMPLES:
+     x=randn(100,20);
+     y=randn(100,1);
+     cvfit=cvglmnet(x,y);
+     pred1 = cvglmnetPredict(cvfit,x(1:5,:));
+     pred2 = cvglmnetPredict(cvfit,x(1:5,:), [0.001;0.002]);
+ 
