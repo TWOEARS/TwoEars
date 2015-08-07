@@ -4,7 +4,7 @@ function bbs = localise()
 warning('off', 'all');
 
 % Initialize Two!Ears model and check dependencies
-startTwoEars('Config.xml');
+startTwoEars();
 
 % Source angle
 direction = 0;

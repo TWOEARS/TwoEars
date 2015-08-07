@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <requirements>
-<TwoEarsPart sub="src" branch="master" startup="startBinauralSimulator" >binaural-simulator</TwoEarsPart>
-<TwoEarsPart sub="API_MO" startup="SOFAstart">sofa</TwoEarsPart>
-<TwoEarsPart branch="master" startup="startAuditoryFrontEnd" >auditory-front-end</TwoEarsPart>
+<TwoEarsPart startup="startBinauralSimulator" >binaural-simulator</TwoEarsPart>
+<TwoEarsPart startup="startAuditoryFrontEnd" >auditory-front-end</TwoEarsPart>
+<TwoEarsPart startup="startIdentificationTraining">identification-training</TwoEarsPart>
 </requirements>

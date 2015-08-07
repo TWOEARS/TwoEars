@@ -2,7 +2,7 @@ function trainAndTestCleanModel( classname )
 
 if nargin < 1, classname = 'speech'; end;
 
-startTwoEars( 'Config.xml' );
+startTwoEars();
 
 pipe = TwoEarsIdTrainPipe();
 pipe.featureCreator = featureCreators.FeatureSet1Blockmean();

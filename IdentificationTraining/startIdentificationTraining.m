@@ -2,8 +2,6 @@
 % the Identification Training Pipeline of the Two!Ears Blackboard System
 % module
 
-startTwoEars( 'IdentificationTraining.xml' );
-
 basePath = fileparts(mfilename('fullpath'));
 
 % Add all relevant folders to the matlab search path
