@@ -33,6 +33,7 @@ classdef IdSimConvRoomWrapper < dataProcs.BinSimProcInterface
                 'Position' , [0; 0; 1.75], ...
                 'Name', 'Head' ...
                 );
+            set(obj.convRoomSim, 'Verbose', false);
         end
         %% ----------------------------------------------------------------
         
