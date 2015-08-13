@@ -19,7 +19,7 @@ classdef spectralFeaturesProc < Processor
 %             'variation'    : Spectral variation [1]
 %
 %   SPECTRALFEATURESPROC properties:
-%        requestList     - Cell array of requested spectral features
+%        requests        - Cell array of requested spectral features
 %        cfHz            - Row vector of audio center frequencies
 %
 %   See also: Processor, ratemapProc
@@ -42,7 +42,7 @@ classdef spectralFeaturesProc < Processor
 %       John Wiley & Sons, Hoboken, NJ, USA.
     
     properties (Dependent = true)
-        requestList     % Cell array of requested spectral features
+        requests        % Cell array of requested spectral features
     end
     
     properties (SetAccess = private)
@@ -111,7 +111,7 @@ classdef spectralFeaturesProc < Processor
             %it twice
             
             % Number of spectral features to extract
-            n_feat = size(pObj.requestList,2);
+            n_feat = size(pObj.requests,2);
             
             % Output initialization
             out = zeros(size(in,1),n_feat);
@@ -127,7 +127,7 @@ classdef spectralFeaturesProc < Processor
             for ii = 1:n_feat
                 
                 % Switch among the requested features
-                switch pObj.requestList{ii}
+                switch pObj.requests{ii}
                     
                     case 'centroid'     % Spectral centroid
                         % Spectral center of gravity of the spectrum
@@ -328,7 +328,7 @@ classdef spectralFeaturesProc < Processor
             %NB: This method is overloaded here from the master Processor class, as
             %feature signals need additional input argument to construct
             
-            featureNames = pObj.requestList;
+            featureNames = pObj.requests;
             
             sig = feval(pObj.getProcessorInfo.outputType, ...
                         pObj, ...
@@ -416,8 +416,8 @@ classdef spectralFeaturesProc < Processor
     
     % "Getter" methods
     methods
-        function requestList = get.requestList(pObj)
-            requestList = pObj.parameters.map('sf_requests');
+        function requests = get.requests(pObj)
+            requests = pObj.parameters.map('sf_requests');
         end
     end
     

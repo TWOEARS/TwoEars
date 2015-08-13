@@ -145,7 +145,9 @@ classdef Parameters < dynamicprops & Hashable
             % Overload equality between parameter objects
             
             % NB: Keys are naturally ordered in map containers, no need to do it here
-            if isequal(parObj1.map.keys,parObj2.map.keys)
+            if ~isa(parObj1, 'Parameters') || ~isa(parObj2, 'Parameters')
+                r = 0;
+            elseif isequal(parObj1.map.keys,parObj2.map.keys)
                 r = isequal(parObj1.map.values,parObj2.map.values);
             else
                 r = 0;

@@ -58,7 +58,7 @@ classdef BinaryMask < TimeFrequencySignal
             if ~bOverlay
                 % Plot the masked signal without colorbar
                 p.map('bColorbar') = 0;
-                h = sObj.maskedSignal.plot(h0,p);
+                h = sObj.maskedSignal.plot(h,p);
                 hold on
 
                 % Get x and y axis
