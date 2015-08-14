@@ -3,4 +3,4 @@ function version = getTwoEarsVersion()
 %
 %   USAGE
 %       version get TwoEarsVersion()
-version = '1.0-rc8';
+version = '1.0';
