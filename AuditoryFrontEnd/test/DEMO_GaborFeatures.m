@@ -7,7 +7,7 @@ clc
 % 
 % 
 % Load a signal
-load('AFE_earSignals_16kHz');
+load('Test_signals/AFE_earSignals_16kHz');
 
 % Create a data object based on parts of the right ear signal
 dObj = dataObject(earSignals(1:22495,2),fsHz);
@@ -53,7 +53,7 @@ mObj.processSignal();
 % Ratemap
 dObj.ratemap{1}.plot;
 set(gca,'YTick',5:5:20,'YTickLabel',num2str((5:5:20)'))
-ylabel('\# channels')
+ylabel('# channels')
 
 
 % Gabor features

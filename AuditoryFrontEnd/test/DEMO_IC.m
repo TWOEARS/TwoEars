@@ -7,13 +7,13 @@ clc
 % 
 % 
 % Load anechoic signal
-load('DEMO_Speech_Anechoic');
+load('Test_signals/DEMO_Speech_Anechoic');
 
 % Create a data object based on the ear signals
 dObj1 = dataObject(earSignals(1:22494,:),fsHz);
 
 % Load erverberant signal
-load('DEMO_Speech_Room_D');
+load('Test_signals/DEMO_Speech_Room_D');
 
 % Create a data object based on the ear signals
 dObj2 = dataObject(earSignals(1:22494,:),fsHz);

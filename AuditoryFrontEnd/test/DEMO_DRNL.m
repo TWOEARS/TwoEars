@@ -7,7 +7,7 @@ clc
 % 
 % 
 % Load a signal
-load('AFE_earSignals_16kHz');
+load('Test_signals/AFE_earSignals_16kHz');
 
 % Take single channel (1- Left or 2 - Right)
 earSignal = earSignals(:,2);

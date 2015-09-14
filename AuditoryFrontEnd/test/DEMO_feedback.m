@@ -3,8 +3,8 @@
 % This script demonstrates feedback capabilities by computing the ratemap of a pure sine
 % wave with an auditory filterbank of filters of increasing bandwidth 
 
-clear all
-close all
+clear;
+close all;
 
 
 % Request and parameters for feature extraction

@@ -50,7 +50,12 @@ end
 % 
 % Extract connected onset or offset fronts which spread across at least
 % 'minOnsetSpread' adjacent channels. 
-[L,nFragments] = bwlabel(bActivity,8);
+if ~license('test', 'image_toolbox')
+    error(['Sorry, but the Image Processing Toolbox is required to ',...
+        'extract coherent onsets and offsets.']);
+else
+    [L,nFragments] = bwlabel(bActivity,8);
+end
 
 % Loop over number of connected fragments
 for ii = 1 : nFragments

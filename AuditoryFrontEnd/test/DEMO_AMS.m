@@ -7,7 +7,7 @@ clc
 % 
 % 
 % Load a signal
-load('AFE_earSignals_16kHz');
+load('Test_signals/AFE_earSignals_16kHz');
 
 % Create a data object based on the right ear signal
 dObj = dataObject(earSignals(:,2),fsHz);

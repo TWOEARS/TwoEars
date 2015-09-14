@@ -1,12 +1,12 @@
-clear all
-close all
+clear;
+close all;
 
 % This script illustrates the chunk-based compatibility of the AFE framework with 
 % arbitrary chunk size.
 % It goes along the description in section 2.4 of the user manual (Deliverable 2.2)
 
 % Loading a signal
-load('TestBinauralCues');
+load('Test_signals/AFE_earSignals_16kHz');
 sIn = earSignals;
 clear earSignals
 

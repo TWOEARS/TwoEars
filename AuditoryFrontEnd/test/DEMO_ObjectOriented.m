@@ -18,7 +18,7 @@
 % - Feedback handling
 %
 
-% clear all
+clear
 close all
 clc
 
@@ -28,7 +28,8 @@ run([path filesep '..' filesep 'startAuditoryFrontEnd.m'])
 
 
 % Load a signal
-load('TestBinauralCues');
+load('Test_signals/AFE_earSignals_16kHz');
+
 
 %% 1- Basic advantages of object-oriented approach: 
 %     Extraction of inner hair-cell envelope for a single audio channel

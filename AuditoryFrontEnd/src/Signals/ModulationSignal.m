@@ -166,7 +166,7 @@ classdef ModulationSignal < Signal
             % Minimum ratemap floor to limit dynamic range
             minValdB = -(maxDynamicRangedB + (0 - maxValdB));
 
-            rangedB = [quant(minValdB,5) quant(maxValdB,5)];
+            rangedB = [round(minValdB/5)*5 round(maxValdB/5)*5];
 
             rsAMS(end+1,:,:) = NaN;  % insert borders
             
