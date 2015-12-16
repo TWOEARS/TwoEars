@@ -89,11 +89,8 @@ classdef BlackboardMonitor < handle
         
         %% handleBinding -- used internally to handle triggerings.
         function handleBinding(obj, evntSource, evnt, evntSink, triggerDuplicate )
-            if obj.blackboard.verbosity > 0
-                fprintf( ['-------- [Event Fired:] ',...
-                    '%s -> (%s) -> %s\n'],...
-                    char(evntSource), evnt.EventName, char(evntSink) );
-            end
+            bbprintf(obj, '[Event Fired:] %s -> (%s) -> %s\n', ...
+                     char(evntSource), evnt.EventName, char(evntSink))
             if isa( evnt, 'BlackboardEventData' )
                 evntTmIdx = evnt.data;
             else

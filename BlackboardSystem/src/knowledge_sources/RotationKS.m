@@ -24,48 +24,25 @@ classdef RotationKS < AbstractKS
 
         function execute(obj)
 
-            % Workout the head rotation angle so that the head will face
-            % the most likely source location.
-            % For some impulse responses like BRIR the possible head rotations might be
-            % limited. Those maximum values of possible head rotation are accessable from
-            % the robot.
-            %
-            % Set head rotation to the point of most likely perceived source direction
-            locHyp = obj.blackboard.getData('confusionHypotheses', ...
-                obj.trigger.tmIdx).data;
-            [~,idx] = max(locHyp.posteriors);
-            perceivedAngle = locHyp.locations(idx);
-            if perceivedAngle <= 180
-                headRotateAngle = perceivedAngle;
-            else
-                headRotateAngle = perceivedAngle - 360;
-            end
-            % Ensure minimal head rotation
-            minAngle = 3;
-            if abs(headRotateAngle)<minAngle
-                headRotateAngle = sign(randn(1)) * minAngle;
-            end
-            % Ensure head rotation is possible and add some jitter if maximum is
-            % approached
+            % Randomly select a head rotation angle but make sure head 
+            % orientation stays inside [-30 30] for the Surrey database
+            rotationAngles = [60:-5:10 -10:-5:-60];
             headOrientation = obj.blackboard.getData( ...
                'headOrientation', obj.trigger.tmIdx).data;
-            maxLimitHeadRotation = obj.robot.AzimuthMax - headOrientation;
-            minLimitHeadRotation = obj.robot.AzimuthMin - headOrientation;
-            if headRotateAngle > maxLimitHeadRotation
-                headRotateAngle = round(maxLimitHeadRotation - 5*rand);
-            elseif headRotateAngle < minLimitHeadRotation
-                headRotateAngle = round(minLimitHeadRotation + 5*rand);
+            while true
+                headRotateAngle = rotationAngles(randi(length(rotationAngles)));
+                newHO = mod(headOrientation + headRotateAngle, 360);
+                if newHO <= 30 || newHO >= 330
+                    break;
+                end
             end
-
             % Rotate head with a relative angle
             obj.robot.rotateHead(headRotateAngle, 'relative');
 
-            if obj.blackboard.verbosity > 0
-                fprintf(['--%05.2fs [Rotation KS:] Commanded head to rotate about ', ...
-                         '%d degrees. New head orientation: %.0f degrees\n'], ...
-                        obj.trigger.tmIdx, headRotateAngle, ...
-                        obj.robot.getCurrentHeadOrientation);
-            end
+            bbprintf(obj, ['[RotationKS:] Commanded head to rotate about ', ...
+                           '%d degrees. New head orientation: %.0f degrees\n'], ...
+                          headRotateAngle, obj.robot.getCurrentHeadOrientation);
+
             obj.rotationScheduled = false;
         end
     end

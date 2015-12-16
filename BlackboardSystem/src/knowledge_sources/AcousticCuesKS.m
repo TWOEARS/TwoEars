@@ -51,10 +51,7 @@ classdef AcousticCuesKS < AbstractKS
                 % Add acoustic cues to the blackboard
                 idx = obj.blackboard.addAcousticCues(acousticCues);
                 
-                if obj.blackboard.verbosity > 0
-                    % Display that KS has fired
-                    fprintf('-------- AcousticCuesKS has fired.\n');
-                end
+                bbprintf(obj, '[AcousticCuesKS:] has fired.\n');
                 
                 % Trigger event
                 notify(obj.blackboard, 'NewAcousticCues', ...

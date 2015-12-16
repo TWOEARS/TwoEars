@@ -1,35 +1,40 @@
-function [predictedAzimuth, localisationError] = evaluateLocalisationResults(perceivedLocations, sourceAzimuth)
+function [predictedAzimuth, localisationError] = evaluateLocalisationResults(perceivedAzimuths, sourceAzimuth)
 %displayLocalisationResults will print detailed information to the screen
 %
 %   USAGE:
-%       displayLocalisationResults(perceivedLocations, sourceAzimuth)
+%       displayLocalisationResults(perceivedAzimuths, sourceAzimuth)
 %
-%   INPUT ARGUMENTS:
-%       perceivedLocations   - as returned by Blackboard.getData('perceivedLocations')
-%       sourceAzimuth        - actual physical position of sound source
+%   INPUT PARAMETERS:
+%       perceivedAzimuths    - as returned by Blackboard.getData('perceivedAzimuths')
+%       sourceAzimuth        - actual physical position of sound source (optional)
+%
+%   OUTPUT PARAMETERS:
+%       predictedAzimuth     - model prediction of azimuth position
+%       localisationError    - localisation error compared to real physical position (only
+%                              if sourceAzimuth was provided as input
 
 if nargin<2
     sourceAzimuth = NaN;
 end
 
-relativeLocation = zeros(length(perceivedLocations),1);
-score = zeros(length(perceivedLocations),1);
-for m=1:length(perceivedLocations)
-    relativeLocation(m) = perceivedLocations(m).data.relativeLocation;
-    score(m) = perceivedLocations(m).data.score;
+relativeAzimuth = zeros(length(perceivedAzimuths),1);
+score = zeros(length(perceivedAzimuths),1);
+for m=1:length(perceivedAzimuths)
+    relativeAzimuth(m) = perceivedAzimuths(m).data.relativeAzimuth;
+    score(m) = perceivedAzimuths(m).data.score;
 end
 
 % Use three time blocks
-nBlocks = min(length(perceivedLocations)-1, 3);
+nBlocks = min(length(perceivedAzimuths)-1, 3);
 if nBlocks == 0
     idx = 0;
 else
     % Sort, starting with the highest score
     [~, idx] = sort(score(2:end), 'descend');
-    % Calculate mean perceived location over those time blocks
+    % Calculate mean perceived azimuth over those time blocks
     idx = idx(1:nBlocks);
 end
-predictedAzimuth = angleMean(relativeLocation(idx+1));
+predictedAzimuth = angleMean(relativeAzimuth(idx+1));
 localisationError = localisationErrors(sourceAzimuth, predictedAzimuth);
 
 % vim: set sw=4 ts=4 et tw=90:

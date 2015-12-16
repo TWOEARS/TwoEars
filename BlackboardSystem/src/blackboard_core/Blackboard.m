@@ -72,6 +72,19 @@ classdef Blackboard < handle
         end
         
         
+        %% list labels of data on blackboard
+        %   [reqSndTimeIdxs]:	Array of time indexes requested.
+        %                       if not given, all time indexes available are used
+        function labelList = getDataLabels( obj, reqSndTimeIdxs )
+            if nargin < 2
+                reqSndTimeIdxs = sort( cell2mat( keys( obj.data ) ) );
+            end
+            labelList = {};
+            for sndTmIdx = reqSndTimeIdxs
+                labelList = unique( [labelList; fieldnames( obj.data(sndTmIdx) )] );
+            end
+        end
+        
         %% get data from blackboard
         %   dataLabel:  the label of the data needed
         %   [reqSndTimeIdxs]:	Array of time indexes requested.

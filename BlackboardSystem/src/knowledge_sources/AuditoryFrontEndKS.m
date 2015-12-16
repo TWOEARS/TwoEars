@@ -9,7 +9,9 @@ classdef AuditoryFrontEndKS < AbstractKS
                                         % holds the signal buffer (data obj)
         robotInterfaceObj;              % Scene simulator object
         timeStep = (512.0 / 44100.0);   % basic time step, i.e. update rate
-        bufferSize_s = 10;
+        bufferSize_s = 10;              % 
+        afeFs = 44100;                  % sample rate of AFE. If different from 
+                                        % robotInterfaceObj.SampleRate, resampling is done
     end
 
     methods (Static)
@@ -36,9 +38,14 @@ classdef AuditoryFrontEndKS < AbstractKS
 
     methods
         %% constructor
-        function obj = AuditoryFrontEndKS(robotInterfaceObj)
+        function obj = AuditoryFrontEndKS(robotInterfaceObj,afeFs)
             obj = obj@AbstractKS();
-            dataObj = dataObject([], robotInterfaceObj.SampleRate, ...
+            if nargin < 2 
+                obj.afeFs = robotInterfaceObj.SampleRate; 
+            else
+                obj.afeFs = afeFs;
+            end
+            dataObj = dataObject([], obj.afeFs, ...
                 obj.bufferSize_s, 2);  % Last input (2) indicates a stereo signal
             obj.managerObject = manager(dataObj);
             obj.robotInterfaceObj = robotInterfaceObj;
@@ -56,6 +63,10 @@ classdef AuditoryFrontEndKS < AbstractKS
         function obj = execute(obj)
             % Two!Ears Binaural Simulator processing
             [signalFrame, processedTime] = obj.robotInterfaceObj.getSignal(obj.timeStep);
+            if obj.afeFs ~= obj.robotInterfaceObj.SampleRate
+                signalFrame = single( resample(...
+                        double(signalFrame),obj.afeFs,obj.robotInterfaceObj.SampleRate) );
+            end
             % Two!Ears Auditory Front-End Processing
             % process new data, append (as indicated by 1)
             obj.managerObject.processChunk(double(signalFrame), 1);

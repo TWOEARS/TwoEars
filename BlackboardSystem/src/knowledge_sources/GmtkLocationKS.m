@@ -1,21 +1,21 @@
-classdef LocationKS < AuditoryFrontEndDepKS
-    % LocationKS calculates posterior probabilities for each azimuth angle
-    % and generates LocationHypothesis when provided with spatial 
+classdef GmtkLocationKS < AuditoryFrontEndDepKS
+    % GmtkLocationKS calculates a distribution of posterior probabilities for each azimuth
+    % angle and generates SourcesAzimuthsDistributionHypothesis when provided with spatial
     % observation
 
     properties (SetAccess = private)
-        name;                  % Name of LocationKS
+        name;                  % Name of GmtkLocationKS
         gmtkLoc;               % GMTK engine
         angles;                % All azimuth angles to be considered
         tempPath;              % A path for temporary files
-        dataPath = ['learned_models' filesep 'LocationKS' filesep];
+        dataPath = ['learned_models' filesep 'GmtkLocationKS' filesep];
         angularResolution = 1; % Default angular resolution is 1deg
         bTrain = false;        % Start in training mode
         blocksize_s;
     end
 
     methods
-        function obj = LocationKS(gmName, angularResolution, bTrain)
+        function obj = GmtkLocationKS(gmName, angularResolution, bTrain)
             param = genParStruct(...
                 'fb_type', 'gammatone', ...
                 'fb_lowFreqHz', 80, ...
@@ -84,7 +84,7 @@ classdef LocationKS < AuditoryFrontEndDepKS
             % Check if the trained data has the correct angular resolution
             % The angular resolution of the trained data can be found in the corresponding
             % *.str file. We first extract it from that file and compare it then to the
-            % angular resolution of the running LocationKS
+            % angular resolution of the running GmtkLocationKS
             strFile = xml.dbGetFile(fullfile(obj.gmtkLoc.workPath, [obj.name, '.str']));
             fid = fopen(strFile,'r');
             strText = fscanf(fid,'%s');
@@ -103,11 +103,12 @@ classdef LocationKS < AuditoryFrontEndDepKS
             % Generate a temporary feature flist for GMTK
             featureBlock = [itds; ilds];
             if sum(sum(isnan(featureBlock) + isinf(featureBlock))) > 0
-                warning('LocationKS: NaNs or Infs in feature block; aborting inference');
+                warning(['GmtKLocationKS: NaNs or Infs in feature block; ', ...
+                         'aborting inference']);
                 return;
             end
             % FIXME: the following is a workaround, as the tmp dir is deleted at the
-            % moment after every execution of LocationKS, but only created once at the
+            % moment after every execution of GmtkLocationKS, but only created once at the
             % instanciation of the gmtkEngine. In the long run it should only
             % be deleted at the end of the Blackboard execution, when the agenda of the
             % Blackboard is empty.
@@ -123,19 +124,20 @@ classdef LocationKS < AuditoryFrontEndDepKS
             fprintf(fidFlist, '%s\n', htkfn);
             fclose(fidFlist);
 
-            % Calculate posteriors of clique 0 (which contains RV:location)
+            % Calculate posterior distribution of clique 0 (which contains RV:location)
             obj.gmtkLoc.infer(flist, 0);
 
-            % Now if successful, posteriors are written in output files 
+            % Now if successful, the posterior distributions are written in output files 
             % with an appendix of _0 for the first utterance
             post = load(strcat(obj.gmtkLoc.outputCliqueFile, '_0'));
 
-            % We simply take the average of posteriors across all the
+            % We simply take the average of posterior distributions across all the
             % samples for this block
             currentHeadOrientation = obj.blackboard.getLastData('headOrientation').data;
-            locHyp = LocationHypothesis(currentHeadOrientation, obj.angles, mean(post,1));
-            obj.blackboard.addData('locationHypotheses', ...
-                locHyp, false, obj.trigger.tmIdx);
+            aziHyp = SourcesAzimuthsDistributionHypothesis( ...
+                currentHeadOrientation, obj.angles, mean(post,1));
+            obj.blackboard.addData('sourcesAzimuthsDistributionHypotheses', ...
+                aziHyp, false, obj.trigger.tmIdx);
             notify(obj, 'KsFiredEvent', BlackboardEventData( obj.trigger.tmIdx ));
         end
 
@@ -145,8 +147,8 @@ classdef LocationKS < AuditoryFrontEndDepKS
             %This data can then be used to train the GMTK localisation model with train().
             %
             if ~obj.bTrain
-                error(['LocationKS has to be initiated in training mode to allow ', ...
-                       'for this functionality.']);
+                error(['GmtkLocationKS has to be initiated in training mode to ', ...
+                       'allow for this functionality.']);
             end
             if nargin<2
                 sceneDescription = [obj.name '.xml'];
@@ -191,8 +193,8 @@ classdef LocationKS < AuditoryFrontEndDepKS
             %removeTrainingData(obj) deletes all the data that was locally created by
             %generateTrainingData(obj).
             if ~obj.bTrain
-                error(['LocationKS has to be initiated in training mode to allow ', ...
-                       'for this functionality.']);
+                error(['GmtkLocationKS has to be initiated in training mode to ', ...
+                       'allow for this functionality.']);
             end
             if exist(fullfile(obj.gmtkLoc.workPath, 'data'),'dir')
                 rmdir(fullfile(obj.gmtkLoc.workPath, 'data'), 's');
@@ -212,8 +214,8 @@ classdef LocationKS < AuditoryFrontEndDepKS
             %stored in the Two!Ears database under learned_models/locationKS/ and GMTK
 
             if ~obj.bTrain
-                error(['LocationKS has to be initiated in training mode to allow ', ...
-                       'for this functionality.']);
+                error(['GmtkLocationKS has to be initiated in training mode to ', ...
+                       'allow for this functionality.']);
             end
 
             % Configuration

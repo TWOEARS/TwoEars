@@ -28,10 +28,8 @@ classdef IdDecisionKS < AbstractKS
             maxProbHyp = idHyps(idx);
 
             if maxProbHyp.p > 0.5
-                if obj.blackboard.verbosity > 0
-                    fprintf('Identity Decision: %s with %i%% probability.\n', ...
-                        maxProbHyp.label, int16(maxProbHyp.p*100));
-                end
+                bbprintf(obj, '[IdDecisionKS:] %s with %i%% probability.\n', ...
+                         maxProbHyp.label, int16(maxProbHyp.p*100));
                 obj.blackboard.addData('identityDecision', ...
                     maxProbHyp, false, obj.trigger.tmIdx);
                 notify(obj, 'KsFiredEvent', BlackboardEventData(obj.trigger.tmIdx));

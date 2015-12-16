@@ -22,9 +22,13 @@ classdef BlackboardSystem < handle
             obj.robotConnect = robotConnect;
         end
 
-        function setDataConnect( obj, connectorClassName )
+        function setDataConnect( obj, connectorClassName, dataFs )
+            dataConnectArgs = {obj.robotConnect};
+            if nargin > 2 
+                dataConnectArgs{end+1} = dataFs; 
+            end
             % Connect to the Two!Ears Auditory Front-End module
-            obj.dataConnect = obj.createKS( connectorClassName, {obj.robotConnect} );
+            obj.dataConnect = obj.createKS( connectorClassName, dataConnectArgs );
         end
 
         function createProcsForKs( obj, ks )
@@ -44,8 +48,8 @@ classdef BlackboardSystem < handle
 
         function buildDataConnectFromXml( obj, bbsXmlElements )
             elements = bbsXmlElements.getElementsByTagName( 'dataConnection' );
-            ksType = char( elements.item(0).getAttribute('Type') );
-            obj.setDataConnect( ksType );
+            [ksType,ksConstructArgs] = obj.readKsXmlConstructArgs( elements.item(0) );
+            obj.setDataConnect( ksType, ksConstructArgs{:} );
         end
 
         function kss = buildKSsFromXml( obj, bbsXmlElements )
@@ -56,25 +60,28 @@ classdef BlackboardSystem < handle
                 if kss.isKey( ksName )
                     error( '%s used twice as KS name!', ksName );
                 end
-                ksType = char( ksElements.item(k-1).getAttribute('Type') );
-                ksParamElements = ...
-                    ksElements.item(k-1).getChildNodes.getElementsByTagName('Param');
-                ksParams = {};
-                for jj = 1:ksParamElements.getLength()
-                    ksParamType = char( ksParamElements.item(jj-1).getAttribute('Type') );
-                    ksParamStr = char( ksParamElements.item(jj-1).getFirstChild.getData );
-                    switch ksParamType
-                        case 'char'
-                            ksParams{end+1} = ksParamStr;
-                        case 'double'
-                            ksParams{end+1} = str2double( ksParamStr );
-                        case 'int'
-                            ksParams{end+1} = int64( str2double( ksParamStr ) );
-                        case 'ref'
-                            ksParams{end+1} = obj.(ksParamStr);
-                    end
+                [ksType,ksConstructArgs] = obj.readKsXmlConstructArgs( ksElements.item(k-1) );
+                kss(ksName) = obj.createKS( ksType, ksConstructArgs );
+            end
+        end
+        
+        function [ksType, ksParams] = readKsXmlConstructArgs( obj, ksXmlElement )
+            ksType = char( ksXmlElement.getAttribute('Type') );
+            ksParamElements = ksXmlElement.getChildNodes.getElementsByTagName('Param');
+            ksParams = {};
+            for jj = 1:ksParamElements.getLength()
+                ksParamType = char( ksParamElements.item(jj-1).getAttribute('Type') );
+                ksParamStr = char( ksParamElements.item(jj-1).getFirstChild.getData );
+                switch ksParamType
+                    case 'char'
+                        ksParams{end+1} = ksParamStr;
+                    case 'double'
+                        ksParams{end+1} = str2double( ksParamStr );
+                    case 'int'
+                        ksParams{end+1} = int64( str2double( ksParamStr ) );
+                    case 'ref'
+                        ksParams{end+1} = obj.(ksParamStr);
                 end
-                kss(ksName) = obj.createKS( ksType, ksParams );
             end
         end
 
@@ -141,6 +148,7 @@ classdef BlackboardSystem < handle
             n = length( obj.blackboard.KSs );
         end
 
+
         %% List available AFE cues
         function listAfeData(obj)
             % Get AFE cues
@@ -160,14 +168,24 @@ classdef BlackboardSystem < handle
             fprintf(1, '\n');
         end
 
+        %% Return AFE cues
+        function cues = getAfeData(obj, name)
+            if strcmp('head_rotation', name)
+                cues = obj.blackboard.getData('headOrientation');
+            else
+                afeData = obj.dataConnect.managerObject.Data;
+                cues = getfield(afeData, name);
+            end
+        end
+
         %% Plot AFE cues
         function plotAfeData(obj, name)
+            cues = getAfeData(obj, name);
             if strcmp('head_rotation', name)
-                headOrientations = obj.blackboard.getData('headOrientation');
                 % Get default plotting parameter from AFE
                 p = Parameters.getPlottingParameters();
                 figure;
-                plot([headOrientations.sndTmIdx], [headOrientations.data]);
+                plot([cues.sndTmIdx], [cues.data]);
                 xlabel('Time (s)', ...
                        'fontsize', p.map('fsize_label'), ...
                        'fontname', p.map('ftype'));
@@ -178,16 +196,14 @@ classdef BlackboardSystem < handle
                       'fontsize', p.map('fsize_title'), ...
                       'fontname', p.map('ftype'));
                 set(gca,'fontsize',p.map('fsize_axes'),'fontname',p.map('ftype'));
-                axis([headOrientations(1).sndTmIdx headOrientations(end).sndTmIdx ...
+                axis([cues(1).sndTmIdx cues(end).sndTmIdx ...
                       0 360]);
             else % AFE cues
-                data = obj.dataConnect.managerObject.Data;
-                cue = getfield(data, name);
-                if size(cue,2)==1
-                    cue{1}.plot;
-                elseif size(cue,2)==2
-                    cue{1}.plot;
-                    cue{2}.plot;
+                if size(cues,2)==1
+                    cues{1}.plot;
+                elseif size(cues,2)==2
+                    cues{1}.plot;
+                    cues{2}.plot;
                 else
                     error(['Your picked data has %i channels, only 1 or 2 ', ...
                            'are supported.']);

@@ -1,11 +1,11 @@
-function displayLocalisationResults(perceivedLocations, sourceAzimuth)
+function displayLocalisationResults(perceivedAzimuths, sourceAzimuth)
 %displayLocalisationResults will print detailed information to the screen
 %
 %   USAGE:
-%       displayLocalisationResults(perceivedLocations, sourceAzimuth)
+%       displayLocalisationResults(perceivedAzimuths, sourceAzimuth)
 %
-%   INPUT ARGUMENTS:
-%       perceivedLocations   - as returned by Blackboard.getData('perceivedLocations')
+%   INPUT PARAMETERS:
+%       perceivedAzimuths    - as returned by Blackboard.getData('perceivedAzimuths')
 %       sourceAzimuth        - actual physical position of sound source
 
 if nargin<2
@@ -17,21 +17,21 @@ fprintf('Reference target angle: %3.0f degrees\n', sourceAzimuth);
 fprintf('------------------------------------------------------------------------------------\n');
 fprintf('Localised source angle:\n');
 %fprintf('------------------------------------------------------------------------------------\n');
-fprintf('BlockTime\tPerceivedLocation\t(head orient., relative loc.)\tProbability\n');
+fprintf('BlockTime\tPerceivedAzimuth\t(head orient., relative azimuth)\tProbability\n');
 fprintf('------------------------------------------------------------------------------------\n');
 
-estAngles = zeros(length(perceivedLocations),1);
+estAngles = zeros(length(perceivedAzimuths),1);
 
-for m=1:length(perceivedLocations)
+for m=1:length(perceivedAzimuths)
     fprintf('% 6.2f\t\t%3.0f degrees\t\t(%3.0f degrees,    %3.0f degrees)\t%.2f\n', ...
-        perceivedLocations(m).sndTmIdx, ...
-        perceivedLocations(m).data.relativeLocation, ...
-        perceivedLocations(m).data.headOrientation, ...
-        perceivedLocations(m).data.location, ...
-        perceivedLocations(m).data.score);
+        perceivedAzimuths(m).sndTmIdx, ...
+        perceivedAzimuths(m).data.relativeAzimuth, ...
+        perceivedAzimuths(m).data.headOrientation, ...
+        perceivedAzimuths(m).data.azimuth, ...
+        perceivedAzimuths(m).data.score);
 end
 fprintf('------------------------------------------------------------------------------------\n');
-[~, locError] = evaluateLocalisationResults(perceivedLocations, sourceAzimuth);
+[~, locError] = evaluateLocalisationResults(perceivedAzimuths, sourceAzimuth);
 fprintf('Mean localisation error: %g\n', locError );
 fprintf('------------------------------------------------------------------------------------\n\n');
 

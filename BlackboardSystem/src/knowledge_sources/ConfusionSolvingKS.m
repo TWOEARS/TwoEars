@@ -2,8 +2,8 @@ classdef ConfusionSolvingKS < AbstractKS
     % ConfusionSolvingKS solves a confusion given new features.
 
     properties (SetAccess = private)
-        postThreshold = 0.1;   % Posterior probability threshold for a valid
-                               % LocationHypothesis
+        postThreshold = 0.1;   % Distribution probability threshold for a valid
+                               % SourcesAzimuthsDistributionHypothesis
     end
 
     methods
@@ -21,13 +21,14 @@ classdef ConfusionSolvingKS < AbstractKS
             if confHyp.seenByConfusionSolvingKS, return; end;
             confHeadOrient = confHyp.headOrientation;
             currentHeadOrientation = obj.blackboard.getLastData('headOrientation');
-            % If no new LocationHypothesis has arrived, do nothing
-            lastLocHyp = obj.blackboard.getLastData('locationHypotheses');
-            if lastLocHyp.sndTmIdx == obj.trigger.tmIdx
+            % If no new SourcesAzimuthsDistributionHypothesis has arrived, do nothing
+            lastAziHyp = ...
+                obj.blackboard.getLastData('sourcesAzimuthsDistributionHypotheses');
+            if lastAziHyp.sndTmIdx == obj.trigger.tmIdx
                 bWait = true;
                 return;
             end;
-            % If head has not been turned but there's already a new loc
+            % If head has not been turned but there's already a new azimuths
             % hypothesis, don't wait again
             if confHeadOrient == currentHeadOrientation.data, return; end;
             bExecute = true;
@@ -38,30 +39,37 @@ classdef ConfusionSolvingKS < AbstractKS
                 obj.trigger.tmIdx).data;
             currentHeadOrientation = obj.blackboard.getLastData('headOrientation').data;
             headRotation = currentHeadOrientation - confHyp.headOrientation;
-            newLocHyp = obj.blackboard.getLastData('locationHypotheses').data;
+            newAziHyp = ...
+                obj.blackboard.getLastData('sourcesAzimuthsDistributionHypotheses').data;
+
+            [post1, post2] = removeFrontBackConfusion(confHyp.azimuths, ...
+                                                      confHyp.sourcesDistribution, ...
+                                                      newAziHyp.sourcesDistribution, ...
+                                                      headRotation);
+
             % Changed int16 to round here, which seems to cause problem
             % with circshift in the next line
             idxDelta = round(headRotation / ...
-                (newLocHyp.locations(2) - newLocHyp.locations(1)));
-            predictedPosteriors = circshift(newLocHyp.posteriors,[0 idxDelta]);
-            % Take the average of the posterior distribution before head
+                (newAziHyp.azimuths(2) - newAziHyp.azimuths(1)));
+            post2 = circshift(post2, idxDelta);
+            % Take the average of the sources distribution before head
             % rotation and predictd distribution from after head rotation
-            post = (confHyp.posteriors + predictedPosteriors) / 2;
+            post = (post1 + post2);
             post = post ./ sum(post);
-%            hold off;
-%            plot(obj.confusionHypothesis.locations, ...
-%               obj.confusionHypothesis.posteriors, 'o--');
-%            hold on;
-%            plot(obj.confusionHypothesis.locations, predictedPosteriors, 'go--');
-%            plot(obj.confusionHypothesis.locations, post, 'ro--');
-%            legend('Dist before rotation', 'Dist after rotation', 'Average dist');
+            %figure
+            %hold off;
+            %plot(confHyp.azimuths, confHyp.sourcesDistribution, 'o--');
+            %hold on;
+            %plot(confHyp.azimuths, predictedDistribution, 'go--');
+            %plot(confHyp.azimuths, post, 'ro--');
+            %legend('Dist before rotation', 'Dist after rotation', 'Average dist');
             [m,idx] = max(post);
             if m > obj.postThreshold;
-                % Generate Perceived Location
-                ploc = PerceivedLocation(...
+                % Generate Perceived Azimuth
+                ploc = PerceivedAzimuth(...
                     confHyp.headOrientation, ...
-                    confHyp.locations(idx), m);
-                obj.blackboard.addData('perceivedLocations', ploc, false, ...
+                    confHyp.azimuths(idx), m);
+                obj.blackboard.addData('perceivedAzimuths', ploc, false, ...
                     obj.trigger.tmIdx);
                 notify(obj, 'KsFiredEvent', BlackboardEventData(obj.trigger.tmIdx));
             end
