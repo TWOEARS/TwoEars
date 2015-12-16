@@ -1,8 +1,8 @@
-function phi = azimuthInPlusMinus180(phi)
-%azimuthInPlusMinus180 converts a given azimuth value to lie between -180°..180°
+function phi = wrapTo180(phi)
+%wrapTo180 Wrap angle in degrees to [-180 180]
 %
 % USAGE:
-%   phi = azimuthInPlusMinus180(phi)
+%   phi = wrapTo180(phi)
 %
 % INPUT PARAMETERS:
 %   phi - azimuth angle in deg
@@ -11,7 +11,6 @@ function phi = azimuthInPlusMinus180(phi)
 %   phi - azmuth angle in deg
 %
 narginchk(1, 1);
-warning('This function will be removed, use wrapTo180() instead.');
 % Ensure -360 <= phi <= 360
 phi = rem(phi, 360);
 % Ensure -180 <= phi < 180

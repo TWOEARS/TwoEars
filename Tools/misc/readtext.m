@@ -171,6 +171,7 @@ function      [data, result]= readtext(text, delimiter, comment, quotes, options
 	text=			strrep(text, char(13), eol);				% Replace MacClassic-style eol.
 	if(~isempty(opts.comment))									% Remove comments.
 		text=	regexprep(text, ['^\' opts.comment '[^' eol ']*' eol], '');	% Remove entire commented lines. 
+        text=   regexprep(text, ['\' opts.comment '[^' eol ']*' eol], '');  % This helps to remove several lines
 		text=	regexprep(text, [ '\' opts.comment '[^' eol ']*'], '');		% Remove commented line endings. 
 	end
 	if(isempty(text) || text(end) ~= eol),	text= [text eol];	end	% End string with eol, if none.

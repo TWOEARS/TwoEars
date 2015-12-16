@@ -17,20 +17,20 @@ function [humanLabels, stats] = readHumanLabels(labelFile)
 %                   .nested  - number of nested cells
 %
 % DETAILS:
-%   Under the experiment/ folder in the Two!Ears database so called human label files are
+%   Under the experiments/ folder in the Two!Ears database so called human label files are
 %   stored containing results from listening experiments. The files should be in the
 %   format of csv files using ',' as column delimiters. It can contain numerical as well
 %   as string data. The data is returned as a cell array and can be accessed in the form
-%   humanLabels{1,2}. One entry in the data file can also include nested data in the form
-%   {1, 2}. The corresponding cell in humanLabels will then contain a vector which can be
-%   accsess in the form humanLabels{1,2}(1).
+%   humanLabels{1,2}. The single entries in the data file can also include nested data in
+%   the form {4,-2}. The corresponding cell in humanLabels will then contain a vector
+%   which can be accsess in the form humanLabels{1,2}(1).
 
 % Checking of input parameters
 narginchk(1,1);
 
 % Get labelFile
 labelFile = xml.dbGetFile(labelFile);
-% Use readtext to get entries fron file
+% Use readtext to get entries from file
 [humanLabels, tmp]= readtext(labelFile, ',', '#', '{}', '');
 stats.rows = size(humanLabels,1);
 stats.columns = size(humanLabels,2);

@@ -1,10 +1,5 @@
 classdef (HandleCompatible) Parameterized
-    
-    %% -----------------------------------------------------------------------------------
-    properties (SetAccess = protected)
-        parameters;
-    end
-    
+        
     %% -----------------------------------------------------------------------------------
     properties (Access = private)
         inParser;
@@ -19,6 +14,7 @@ classdef (HandleCompatible) Parameterized
                 obj.inParser = inputParser();
             end
             obj.inParser.StructExpand = true;
+            if nargin < 1, return; end
             for ii = 1 : length( parameterDefinitions )
                 pd = parameterDefinitions{ii};
                 obj.addParameterDefinition( pd );
@@ -45,15 +41,12 @@ classdef (HandleCompatible) Parameterized
                 paramName = parameterNames{ii};
                 hasUserSetParam = ~any( strcmp( paramName, obj.inParser.UsingDefaults ) );
                 if hasUserSetParam || setDefaults
+                    obj.(paramName) = obj.inParser.Results.(paramName);
                     if isfield( obj.setCallbacks, paramName )
                         setCb = obj.setCallbacks.(paramName);
-                        oldValue = [];
-                        if isfield( obj.parameters, paramName )
-                            oldValue = obj.parameters.(paramName);
-                        end
+                        oldValue = obj.(paramName);
                         setCb( obj, obj.inParser.Results.(paramName), oldValue );
                     end
-                    obj.parameters.(paramName) = obj.inParser.Results.(paramName);
                 else
                     continue;
                 end
