@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<blackboardsystem>
+
+    <dataConnection Type="AuditoryFrontEndKS"/>
+
+    <KS Name="seg" Type="SegmentationKS">
+        <Param Type="char">DemoKS</Param>
+        <Param Type="double">3</Param>
+        <Param Type="int">3</Param>
+        <Param Type="int">1</Param>
+    </KS>
+
+    <Connection Mode="replaceOld" Event="AgendaEmpty">
+        <source>scheduler</source>
+        <sink>dataConnect</sink>
+    </Connection>
+    <Connection Mode="replaceOld">
+        <source>dataConnect</source>
+        <sink>seg</sink>
+    </Connection>
+
+</blackboardsystem>

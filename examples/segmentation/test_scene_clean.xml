@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<scene
+  Renderer="ssr_binaural"
+  BlockSize="4096"
+  SampleRate="44100"
+  LengthOfSimulation = "3"
+  HRIRs="impulse_responses/qu_kemar_anechoic/QU_KEMAR_anechoic_3m.sofa">
+  <source Name="Speaker1"
+          Type="point"
+          Position="0.8660 0.5 1.75">
+    <buffer ChannelMapping="1"
+            Type="fifo"
+            File="sound_databases/IEEE_AASP/speech/speech08.wav"/>
+  </source>
+  <source Name="Speaker2"
+          Type="point"
+          Position="1 0 1.75">
+    <buffer ChannelMapping="1"
+            Type="fifo"
+            File="sound_databases/IEEE_AASP/speech/speech14.wav"/>
+  </source>
+  <source Name="Speaker3"
+          Type="point"
+          Position="0.8660 -0.5 1.75">
+    <buffer ChannelMapping="1"
+            Type="fifo"
+            File="sound_databases/IEEE_AASP/speech/speech07.wav"/>
+  </source>
+  <sink Name="Head"
+        Position="0 0 1.75"
+        UnitX="1 0 0"
+        UnitZ="0 0 1"/>
+</scene>
