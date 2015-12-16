@@ -13,7 +13,7 @@ function train(name, sceneDescription, angularResolution)
 warning('off','all');
 
 % Initialize Two!Ears model and check dependencies
-startTwoEars();
+startTwoEars('Config.xml');
 
 % Check input parameters
 narginchk(3,3)
@@ -21,9 +21,9 @@ isargchar(name)
 isargfile(sceneDescription)
 isargpositivescalar(angularResolution)
 
-% Create a LocationKS in training mode
+% Create a GmtkLocationKS in training mode
 bTrain = true;
-loc = LocationKS(name, angularResolution, bTrain);
+loc = GmtkLocationKS(name, angularResolution, bTrain);
 
 % Generate binaural signals and extract ITD, ILD for learning.
 % The used HRTF set, audio material and signal length are specified in the scene

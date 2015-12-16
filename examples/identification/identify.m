@@ -7,7 +7,7 @@ if nargin < 1, idModels = setDefaultIdModels(); end
 disp( 'Initializing Two!Ears, setting up binaural simulator...' );
 
 % === Initialize Two!Ears model and check dependencies
-startTwoEars();
+startTwoEars('Config.xml');
 
 % === load test sounds
 % leave away the second argument to use the whole testlist

@@ -4,13 +4,12 @@
     <dataConnection Type="AuditoryFrontEndKS"/>
 
     <KS Name="loc" Type="GmtkLocationKS">
-        <Param Type="char">mit</Param>
-        <Param Type="double">5</Param>
+        <Param Type="char">5deg</Param>
+        <Param Type="int">5</Param>
     </KS>
-    <KS Name="conf" Type="ConfusionKS"/>
-    <KS Name="confSolv" Type="ConfusionSolvingKS"/>
-    <KS Name="rot" Type="RotationKS">
-        <Param Type="ref">robotConnect</Param>
+    <KS Name="conf" Type="ConfusionKS">
+        <!-- Disable confusion solving (== no head rotation) -->
+        <Param Type="int">0</Param>
     </KS>
 
     <Connection Mode="replaceOld" Event="AgendaEmpty">
@@ -24,14 +23,6 @@
     <Connection Mode="add">
         <source>loc</source>
         <sink>conf</sink>
-    </Connection>
-    <Connection Mode="replaceOld" Event="ConfusedLocations">
-        <source>conf</source>
-        <sink>rot</sink>
-    </Connection>
-    <Connection Mode="add" Event="ConfusedLocations">
-        <source>conf</source>
-        <sink>confSolv</sink>
     </Connection>
 
 </blackboardsystem>

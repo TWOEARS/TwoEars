@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <blackboardsystem>
 
-    <dataConnection Type="AuditoryFrontEndKS"/>
+    <dataConnection Type="AuditoryFrontEndKS">
+       <Param Type="double">16000</Param>
+    </dataConnection>
 
-    <KS Name="loc" Type="GmtkLocationKS">
-        <Param Type="char">mit</Param>
-        <Param Type="double">5</Param>
+    <KS Name="loc" Type="DnnLocationKS">
+        <Param Type="int">16</Param>
     </KS>
     <KS Name="conf" Type="ConfusionKS"/>
     <KS Name="confSolv" Type="ConfusionSolvingKS"/>

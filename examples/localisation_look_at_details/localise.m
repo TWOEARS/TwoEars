@@ -4,7 +4,7 @@ function bbs = localise()
 warning('off', 'all');
 
 % Initialize Two!Ears model and check dependencies
-startTwoEars();
+startTwoEars('Config.xml');
 
 % Source angle
 direction = 0;
@@ -28,9 +28,9 @@ sim.ShutDown = true;
 % === Look at detail results (see:
 % http://twoears.aipa.tu-berlin.de/doc/examples/localisation-details.html)
 %
-%perceivedLocations = bbs.blackboard.getData('perceivedLocations');
-%[loc, locError] = evaluateLocalisationResults(perceivedLocations, sourceAzimuth);
-%displayLocalisationResults(perceivedLocations, sourceAzimuth)
+%perceivedAzimuths = bbs.blackboard.getData('perceivedAzimuths');
+%[loc, locError] = evaluateLocalisationResults(perceivedAzimuths, sourceAzimuth);
+%displayLocalisationResults(perceivedAzimuths, sourceAzimuth)
 %bbs.listAfeData
 %bbs.plotAfeData('time');
 %bbs.plotAfeData('ild');

@@ -4,8 +4,8 @@
     <dataConnection Type="AuditoryFrontEndKS"/>
 
     <KS Name="loc" Type="GmtkLocationKS">
-        <Param Type="char">mit</Param>
-        <Param Type="double">5</Param>
+        <Param Type="char">5deg</Param>
+        <Param Type="int">5</Param>
     </KS>
     <KS Name="conf" Type="ConfusionKS"/>
     <KS Name="confSolv" Type="ConfusionSolvingKS"/>

@@ -4,7 +4,7 @@ function localise()
 warning('off','all');
 
 % Initialize Two!Ears model and check dependencies
-startTwoEars();
+startTwoEars('Config.xml');
 
 % Different angles the sound source is placed at
 sourceAngles = [30 88 160 257];
@@ -23,8 +23,8 @@ for direction = sourceAngles
     bbs.setRobotConnect(sim);
     bbs.buildFromXml('BlackboardQU.xml');
     bbs.run();
-    predictedLocations = bbs.blackboard.getData('perceivedLocations');
-    predictedAzimuthQu = evaluateLocalisationResults(predictedLocations, direction);
+    predictedAzimuths = bbs.blackboard.getData('perceivedAzimuths');
+    predictedAzimuthQu = evaluateLocalisationResults(predictedAzimuths, direction);
     sim.ShutDown = true;
 
     % Localisation using MIT KEMAR HRTFs
@@ -37,8 +37,8 @@ for direction = sourceAngles
     bbs.setRobotConnect(sim);
     bbs.buildFromXml('BlackboardMIT.xml');
     bbs.run();
-    predictedLocations = bbs.blackboard.getData('perceivedLocations');
-    predictedAzimuthMit = evaluateLocalisationResults(predictedLocations, direction);
+    predictedAzimuths = bbs.blackboard.getData('perceivedAzimuths');
+    predictedAzimuthMit = evaluateLocalisationResults(predictedAzimuths, direction);
     sim.ShutDown = true;
 
     printLocalisationTableColumn(direction, predictedAzimuthQu, predictedAzimuthMit);
@@ -59,9 +59,7 @@ end
 
 function printLocalisationTableColumn(direction, azimuth1, azimuth2)
     fprintf(1, '%4.0f \t\t\t %4.0f \t\t\t %4.0f\n', ...
-            azimuthInPlusMinus180(direction), ...
-            azimuthInPlusMinus180(azimuth1), ...
-            azimuthInPlusMinus180(azimuth2));
+            wrapTo180(direction), wrapTo180(azimuth1), wrapTo180(azimuth2));
 end
 
 function printLocalisationTableFooter()
