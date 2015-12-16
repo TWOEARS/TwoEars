@@ -2,8 +2,8 @@ classdef TwoEarsIdTrainPipe < handle
 
     %% -----------------------------------------------------------------------------------
     properties (SetAccess = public)
-        featureCreator = [];
-        modelCreator = [];
+        featureCreator;
+        modelCreator;
         trainset = [];
         testset = [];
         data = [];
@@ -14,25 +14,24 @@ classdef TwoEarsIdTrainPipe < handle
     properties (SetAccess = private)
         pipeline;
         binauralSim;
-        sceneConfBinauralSim;
         multiConfBinauralSim;
-        dataSetupAlreadyDone = false;
     end
     
     %% -----------------------------------------------------------------------------------
     methods
         
         function obj = TwoEarsIdTrainPipe()
-            modelTrainers.Base.featureMask( true, [] );
-            warning( 'modelTrainers.Base.featureMask set to []' );
             obj.pipeline = core.IdentificationTrainingPipeline();
             obj.binauralSim = dataProcs.IdSimConvRoomWrapper();
-            obj.sceneConfBinauralSim = ...
-                dataProcs.SceneEarSignalProc( obj.binauralSim );
             obj.multiConfBinauralSim = ...
-                dataProcs.MultiConfigurationsEarSignalProc( obj.sceneConfBinauralSim );
-%             obj.init();
-            obj.dataSetupAlreadyDone = false;
+                dataProcs.MultiConfigurationsEarSignalProc( obj.binauralSim );
+            obj.setSceneConfig( dataProcs.SceneConfiguration() );
+            obj.featureCreator = featureCreators.RatemapPlusDeltasBlockmean();
+            obj.modelCreator = modelTrainers.GlmNetLambdaSelectTrainer( ...
+                'performanceMeasure', @performanceMeasures.BAC2, ...
+                'cvFolds', 4, ...
+                'alpha', 0.99 );
+            obj.init();
         end
         %% -------------------------------------------------------------------------------
 
@@ -40,30 +39,9 @@ classdef TwoEarsIdTrainPipe < handle
             obj.multiConfBinauralSim.setSceneConfig( scArray );
         end
         %% -------------------------------------------------------------------------------
-
-        function set.trainset( obj, newTrainset )
-            obj.dataSetupAlreadyDone = strcmp(obj.trainset,newTrainset);
-            obj.trainset = newTrainset;
-        end
-        %% -------------------------------------------------------------------------------
-
-        function set.testset( obj, newTestset )
-            obj.dataSetupAlreadyDone = strcmp(obj.testset,newTestset);
-            obj.testset = newTestset;
-        end
-        %% -------------------------------------------------------------------------------
-
-        function set.data( obj, newData )
-            obj.dataSetupAlreadyDone = strcmp(obj.data,newData);
-            obj.data = newData;
-        end
-        %% -------------------------------------------------------------------------------
         
         function init( obj )
-            obj.setupData( true );
-            if isempty( obj.featureCreator )
-                obj.featureCreator = featureCreators.RatemapPlusDeltasBlockmean();
-            end
+            obj.setupData();
             obj.pipeline.featureCreator = obj.featureCreator;
             obj.pipeline.resetDataProcs();
             obj.pipeline.addDataPipeProc( obj.multiConfBinauralSim );
@@ -75,20 +53,11 @@ classdef TwoEarsIdTrainPipe < handle
             obj.pipeline.addDataPipeProc( ...
                 dataProcs.MultiConfigurationsFeatureProc( obj.featureCreator ) );
             obj.pipeline.addGatherFeaturesProc( core.GatherFeaturesProc() );
-            if isempty( obj.modelCreator )
-                obj.modelCreator = modelTrainers.GlmNetLambdaSelectTrainer( ...
-                    'performanceMeasure', @performanceMeasures.BAC2, ...
-                    'cvFolds', 4, ...
-                    'alpha', 0.99 );
-            end
             obj.pipeline.addModelCreator( obj.modelCreator );
         end
         %% -------------------------------------------------------------------------------
 
-        function setupData( obj, skipIfAlreadyDone )
-            if nargin > 1 && skipIfAlreadyDone && obj.dataSetupAlreadyDone
-                return;
-            end
+        function setupData( obj )
             if ~isempty( obj.trainset ) || ~isempty( obj.testset )
                 trainSet = core.IdentTrainPipeData();
                 trainSet.loadWavFileList( obj.trainset );
@@ -102,7 +71,6 @@ classdef TwoEarsIdTrainPipe < handle
                 obj.pipeline.connectData( data );
                 obj.pipeline.splitIntoTrainAndTestSets( obj.trainsetShare );
             end
-            obj.dataSetupAlreadyDone = true;
         end
         %% -------------------------------------------------------------------------------
         

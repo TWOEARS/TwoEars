@@ -5,7 +5,6 @@ classdef AuditoryFEmodule < core.IdProcInterface
         managerObject;           % WP2 manager object - holds the signal buffer (data obj)
         afeDataObj;
         afeSignals;
-        afeParams;
         output;
     end
     
@@ -24,11 +23,7 @@ classdef AuditoryFEmodule < core.IdProcInterface
             for ii = 1:length( afeRequests )
                 obj.afeSignals(ii) = obj.managerObject.addProcessor( ...
                     afeRequests{ii}.name, afeRequests{ii}.params );
-                obj.afeParams.s(ii) = dataProcs.AuditoryFEmodule.signal2struct( ...
-                    obj.afeSignals(ii) );
             end
-            obj.afeParams.p = dataProcs.AuditoryFEmodule.parameterSummary2struct( ...
-                obj.afeDataObj.getParameterSummary( obj.managerObject ) );
         end
         %% ----------------------------------------------------------------
         
@@ -45,7 +40,14 @@ classdef AuditoryFEmodule < core.IdProcInterface
     methods (Access = protected)
         
         function outputDeps = getInternOutputDependencies( obj )
-            outputDeps.afeParams = obj.afeParams;
+            persistent afeParams;
+            if isempty( afeParams )
+                afeParams = obj.afeDataObj.getParameterSummary( obj.managerObject );
+                % this takes too long to be called often. 
+                % It should be ok to assume that the parameters don't change over calls because
+                % the requests are all set at the construction in AuditoryFEmodule().
+            end            
+            outputDeps.afeParams = afeParams;
         end
         %% ----------------------------------------------------------------
 
@@ -76,66 +78,6 @@ classdef AuditoryFEmodule < core.IdProcInterface
             end
             afeData = obj.afeSignals;
             fprintf( '\n' );
-        end
-        %% ----------------------------------------------------------------
-        
-    end
-
-    %% --------------------------------------------------------------------
-    methods (Static)
-       
-        function s = signal2struct( sig )
-            for ii = 1 : length( sig )
-                sigschar = char(ii+96);
-                if isa( sig{ii}, 'TimeFrequencySignal' )
-                    s.(sigschar).cfHz = sig{ii}.cfHz;
-                end
-                if isa( sig{ii}, 'CorrelationSignal' )
-                    s.(sigschar).cfHz = sig{ii}.cfHz;
-                    s.(sigschar).lags = sig{ii}.lags;
-                end
-                if isa( sig{ii}, 'FeatureSignal' ) ...
-                   || isa( sig{ii}, 'SpectralFeaturesSignal' )
-                    s.(sigschar).flist = sig{ii}.fList;
-                end
-                if isa( sig{ii}, 'ModulationSignal' )
-                    s.(sigschar).cfHz = sig{ii}.cfHz;
-                    s.(sigschar).modCfHz = sig{ii}.modCfHz;
-                end
-                if isa( sig{ii}, 'Signal' )
-                    s.(sigschar).name = sig{ii}.Name;
-                    s.(sigschar).dim = sig{ii}.Dimensions;
-                    s.(sigschar).fsHz = sig{ii}.FsHz;
-                end
-            end
-        end
-        %% ----------------------------------------------------------------
-        
-        function s = parameterSummary2struct( p )
-            fnames = fieldnames( p );
-            for ii = 1 : length( fnames )
-                pfn = p.(fnames{ii});
-                if iscell( pfn )
-                    for jj = 1 : length( pfn )
-                        stmp(jj) = ...
-                            dataProcs.AuditoryFEmodule.parameter2struct( pfn{jj} );
-                    end
-                    s.(fnames{ii}) = stmp;
-                    clear stmp;
-                elseif isa( pfn, 'Parameters' )
-                    s.(fnames{ii}) = ...
-                        dataProcs.AuditoryFEmodule.parameter2struct( pfn );
-                end
-            end
-        end
-        %% ----------------------------------------------------------------
-        
-        function s = parameter2struct( p )
-            k = p.map.keys;
-            v = p.map.values;
-            for ii = 1 : p.map.Count
-                s.(k{ii}) = v{ii};
-            end
         end
         %% ----------------------------------------------------------------
         

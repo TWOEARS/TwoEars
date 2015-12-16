@@ -1,11 +1,10 @@
 classdef MultiConfigurationsFeatureProc < core.IdProcInterface
     
     %% --------------------------------------------------------------------
-    properties (SetAccess = private)
+    properties (Access = private)
         featProc;
-        singleConfFiles;
-        singleConfs;
-        outputWavFileName;
+        x;
+        y;
     end
     
     %% --------------------------------------------------------------------
@@ -39,31 +38,27 @@ classdef MultiConfigurationsFeatureProc < core.IdProcInterface
         %% ----------------------------------------------------------------
 
         function out = getOutput( obj )
-            out.singleConfFiles = obj.singleConfFiles;
-            out.singleConfs = obj.singleConfs;
-            out.wavFileName = obj.outputWavFileName;
+            out.x = obj.x;
+            out.y = obj.y;
         end
         %% ----------------------------------------------------------------
         
         function makeFeatures( obj, inFileName )
             in = load( inFileName );
-            obj.outputWavFileName = in.wavFileName;
-            obj.singleConfFiles = {};
-            obj.singleConfs = [];
+            obj.x = [];
+            obj.y = [];
             for ii = 1 : numel( in.singleConfFiles )
                 conf = in.singleConfs{ii};
                 obj.featProc.setExternOutputDependencies( conf );
                 if ~obj.featProc.hasFileAlreadyBeenProcessed( in.wavFileName )
-                    if ~exist( in.singleConfFiles{ii}, 'file' )
-                        error( '%s not found. \n%s corrupt -- delete and restart.', ...
-                            in.singleConfFiles{ii}, inFileName );
-                    end
                     obj.featProc.process( in.singleConfFiles{ii} );
-                    obj.featProc.saveOutput( in.wavFileName );
+                    xy = obj.featProc.saveOutput( in.wavFileName );
+                else
+                    xy = load( obj.featProc.getOutputFileName( in.wavFileName ) );
                 end
-                obj.singleConfFiles{ii} = obj.featProc.getOutputFileName( in.wavFileName );
-                obj.singleConfs{ii} = obj.featProc.getOutputDependencies;
-                fprintf( ';' );
+                obj.x = [obj.x; xy.x];
+                obj.y = [obj.y; xy.y];
+                fprintf( '.' );
             end
             fprintf( '\n' );
         end

@@ -1,9 +1,8 @@
 classdef BMFATrainer < modelTrainers.Base & Parameterized
     
     %% --------------------------------------------------------------------
-    properties (SetAccess = {?Parameterized})
+    properties (Access = protected)
         model;
-        nComp;
     end
 
     %% --------------------------------------------------------------------
@@ -26,9 +25,13 @@ classdef BMFATrainer < modelTrainers.Base & Parameterized
         %% ----------------------------------------------------------------
 
         function buildModel( obj, x, y )
+            if length( y ) > obj.parameters.maxDataSize
+                x(obj.parameters.maxDataSize+1:end,:) = [];
+                y(obj.parameters.maxDataSize+1:end) = [];
+            end
             obj.model = models.BMFAModel();
             xScaled = obj.model.scale2zeroMeanUnitVar( x, 'saveScalingFactors' );
-            gmmOpts.mfaK = obj.nComp;
+            gmmOpts.mfaK = obj.parameters.nComp;
             [obj.model.model{1}, obj.model.model{2}] = ...
                 modelTrainers.BMFATrainer.trainBMFA( y, xScaled, gmmOpts );
             verboseFprintf( obj, '\n' );

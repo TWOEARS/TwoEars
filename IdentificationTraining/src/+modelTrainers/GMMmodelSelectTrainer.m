@@ -1,13 +1,10 @@
 classdef GMMmodelSelectTrainer < modelTrainers.Base & Parameterized
     
     %% -----------------------------------------------------------------------------------
-    properties (SetAccess = {?Parameterized})
+    properties (Access = private)
         cvTrainer;
         coreTrainer;
         fullSetModel;
-        nComp;
-        thr;
-        cvFolds;
     end
     
     %% -----------------------------------------------------------------------------------
@@ -41,18 +38,18 @@ classdef GMMmodelSelectTrainer < modelTrainers.Base & Parameterized
         %% ----------------------------------------------------------------
         
         function buildModel( obj, ~, ~ )
-             comps =  obj.nComp;
-             thrs =  obj.thr;
+             comps =  obj.parameters.nComp;
+             thrs =  obj.parameters.thr;
          for nt=1:numel(thrs)
-             obj.thr = thrs(nt);
+             obj.parameters.thr = thrs(nt);
              for nc=1:numel(comps)
-                 obj.nComp = comps(nc);
+                 obj.parameters.nComp = comps(nc);
                  verboseFprintf( obj, '\nRun on full trainSet...\n' );
                  obj.coreTrainer = modelTrainers.GmmNetTrainer( ...
-                     'performanceMeasure', obj.performanceMeasure, ...
-                     'maxDataSize', obj.maxDataSize,...
-                     'nComp', obj.nComp, ...
-                     'thr', obj.thr);
+                     'performanceMeasure', obj.parameters.performanceMeasure, ...
+                     'maxDataSize', obj.parameters.maxDataSize,...
+                     'nComp', obj.parameters.nComp, ...
+                     'thr', obj.parameters.thr);
                  
                  obj.coreTrainer.setData( obj.trainSet, obj.testSet );
                  obj.coreTrainer.setPositiveClass( obj.positiveClass );
@@ -64,7 +61,7 @@ classdef GMMmodelSelectTrainer < modelTrainers.Base & Parameterized
                  obj.cvTrainer.setPerformanceMeasure( obj.performanceMeasure );
                  obj.cvTrainer.setPositiveClass( obj.positiveClass );
                  obj.cvTrainer.setData( obj.trainSet, obj.testSet );
-                 obj.cvTrainer.setNumberOfFolds( obj.cvFolds );
+                 obj.cvTrainer.setNumberOfFolds( obj.parameters.cvFolds );
                  obj.cvTrainer.run();
                  cvModels{nt,nc} = obj.cvTrainer.models;
                  verboseFprintf( obj, 'Calculate Performance for all values of components...\n' );
@@ -83,14 +80,14 @@ classdef GMMmodelSelectTrainer < modelTrainers.Base & Parameterized
          end
             [bComp, bThr] = find( thrCompMatrix==max(max(thrCompMatrix)));
             % trian the best model
-            obj.nComp = comps(bComp);
-            obj.thr = thrs(bThr);
+            obj.parameters.nComp = comps(bComp);
+            obj.parameters.thr = thrs(bThr);
             verboseFprintf( obj, '\nRun on full trainSet...\n' );
             obj.coreTrainer = modelTrainers.GmmNetTrainer( ...
-                'performanceMeasure', obj.performanceMeasure, ...
-                'maxDataSize', obj.maxDataSize,...
-                'nComp', obj.nComp, ...
-                'thr', obj.thr);
+                'performanceMeasure', obj.parameters.performanceMeasure, ...
+                'maxDataSize', obj.parameters.maxDataSize,...
+                'nComp', obj.parameters.nComp, ...
+                'thr', obj.parameters.thr);
             
             obj.coreTrainer.setData( obj.trainSet, obj.testSet );
             obj.coreTrainer.setPositiveClass( obj.positiveClass );

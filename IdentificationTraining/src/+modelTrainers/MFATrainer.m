@@ -1,7 +1,7 @@
 classdef MFATrainer < modelTrainers.Base & Parameterized
     
     %% --------------------------------------------------------------------
-    properties (SetAccess = {?Parameterized})
+    properties (Access = protected)
         model;
     end
 
@@ -22,6 +22,10 @@ classdef MFATrainer < modelTrainers.Base & Parameterized
         %% ----------------------------------------------------------------
 
         function buildModel( obj, x, y )
+            if length( y ) > obj.parameters.maxDataSize
+                x(obj.parameters.maxDataSize+1:end,:) = [];
+                y(obj.parameters.maxDataSize+1:end) = [];
+            end
             obj.model = models.MFAModel();
             xScaled = obj.model.scale2zeroMeanUnitVar( x, 'saveScalingFactors' );
             gmmOpts.mfaK = 10;%0.5*size(xScaled,2);

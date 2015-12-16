@@ -2,64 +2,30 @@ classdef (Abstract) IdProcInterface < handle
     %% data file processor
     %
     
-    %% -----------------------------------------------------------------------------------
+    %%---------------------------------------------------------------------
     properties (SetAccess = protected)
         procName;
         externOutputDeps;
-        preloadedConfigs = [];
-        preloadedConfigsChanged = false;
-        pcFilename = [];
-        preloadedPath = [];
-        configChanged = true;
-        currentFolder = [];
-        lastClassPath = [];
     end
     
-    %% -----------------------------------------------------------------------------------
+    %%---------------------------------------------------------------------
     methods (Static)
     end
     
-    %% -----------------------------------------------------------------------------------
+    %%---------------------------------------------------------------------
     methods (Access = public)
         
-        function delete(obj)
-            obj.savePreloadedConfigs();
-        end
-        %% -----------------------------------------------------------------
-        
-        function savePreloadedConfigs( obj )
-            if isempty( obj.preloadedConfigs ), return; end
-            if ~obj.preloadedConfigsChanged, return; end
-            preloadedConfigs = obj.preloadedConfigs;
-            % TODO: load file if changed by other process, and merge
-            sema = setfilesemaphore( obj.pcFilename );
-            save( obj.pcFilename, 'preloadedConfigs' );
-            removefilesemaphore( sema );
-            obj.preloadedConfigsChanged = false;
-        end
-        %% -----------------------------------------------------------------
-        
-        function init( obj )
-            obj.savePreloadedConfigs();
-            obj.preloadedConfigs = [];
-            obj.preloadedConfigsChanged = false;
-            obj.preloadedPath = [];
-            obj.configChanged = true;
-            obj.currentFolder = [];
-            obj.lastClassPath = [];
-        end
-        %% -----------------------------------------------------------------
-        
-        function savePlaceholderFile( obj, inFilePath )
-            obj.save( inFilePath, struct('dummy',[]) );
-        end
-        %% -----------------------------------------------------------------
-        
         function out = saveOutput( obj, inFilePath )
+            inFilePath = which( inFilePath ); % ensure absolute path
             out = obj.getOutput();
-            obj.save( inFilePath, out );
+            currentFolder = obj.getCurrentFolder( inFilePath );
+            if isempty( currentFolder )
+                currentFolder = obj.createCurrentConfigFolder( inFilePath );
+            end
+            outFilename = obj.getOutputFileName( inFilePath, currentFolder );
+            save( outFilename, '-struct', 'out' );
         end
-        %% -----------------------------------------------------------------
+        %%-----------------------------------------------------------------
         
         function out = processSaveAndGetOutput( obj, inFileName )
             if ~obj.hasFileAlreadyBeenProcessed( inFileName )
@@ -69,10 +35,10 @@ classdef (Abstract) IdProcInterface < handle
                 out = load( obj.getOutputFileName( inFileName ) );
             end
         end
-        %% -----------------------------------------------------------------
+        %%-----------------------------------------------------------------
         
         function outFileName = getOutputFileName( obj, inFilePath, currentFolder )
-%            inFilePath = which( inFilePath ); % ensure absolute path
+            inFilePath = which( inFilePath ); % ensure absolute path
             if nargin < 3
                 currentFolder = obj.getCurrentFolder( inFilePath );
             end
@@ -80,23 +46,18 @@ classdef (Abstract) IdProcInterface < handle
             fileName = [fileName fileExt];
             outFileName = fullfile( currentFolder, [fileName obj.getProcFileExt] );
         end
-        %% -----------------------------------------------------------------
+        %%-----------------------------------------------------------------
         
-        function fileProcessed = hasFileAlreadyBeenProcessed( obj, filePath, createFolder )
-            if isempty( filePath ), fileProcessed = false; return; end
-%            filePath = which( filePath ); % ensure absolute path
+        function fileProcessed = hasFileAlreadyBeenProcessed( obj, filePath )
+            filePath = which( filePath ); % ensure absolute path
             currentFolder = obj.getCurrentFolder( filePath );
             fileProcessed = ...
                 ~isempty( currentFolder )  && ...
                 exist( obj.getOutputFileName( filePath, currentFolder ), 'file' );
-            if nargin > 2  &&  createFolder  &&  isempty( currentFolder )
-                currentFolder = obj.createCurrentConfigFolder( filePath );
-            end
         end
-        %% -----------------------------------------------------------------
+        %%-----------------------------------------------------------------
         
         function setExternOutputDependencies( obj, externOutputDeps )
-            obj.configChanged = true;
             obj.externOutputDeps = externOutputDeps;
         end
         %%-----------------------------------------------------------------
@@ -113,11 +74,11 @@ classdef (Abstract) IdProcInterface < handle
                 outputDeps.extern = obj.externOutputDeps;
             end
         end
-        %% -----------------------------------------------------------------
+        %%-----------------------------------------------------------------
         
     end
     
-    %% -----------------------------------------------------------------------------------
+    %%---------------------------------------------------------------------
     methods (Access = protected)
         
         function obj = IdProcInterface( procName )
@@ -134,133 +95,114 @@ classdef (Abstract) IdProcInterface < handle
         %%-----------------------------------------------------------------
     end
     
-    %% -----------------------------------------------------------------------------------
+    %%---------------------------------------------------------------------
     methods (Access = private)
         
-        function out = save( obj, inFilePath, data )
-%            inFilePath = which( inFilePath ); % ensure absolute path
-            out = data;
-            if isempty( inFilePath ), return; end
-            currentFolder = obj.getCurrentFolder( inFilePath );
-            if isempty( currentFolder )
-                currentFolder = obj.createCurrentConfigFolder( inFilePath );
-            end
-            outFilename = obj.getOutputFileName( inFilePath, currentFolder );
-            save( outFilename, '-struct', 'out' );
-        end
-        %% -----------------------------------------------------------------
-
         function saveOutputConfig( obj, configFileName )
             outputDeps = obj.getOutputDependencies();
+            outputDeps.configHash = calcDataHash( outputDeps );
             save( configFileName, '-struct', 'outputDeps' );
         end
-        %% -----------------------------------------------------------------
+        %%-----------------------------------------------------------------
         
         function currentFolder = getCurrentFolder( obj, filePath )
-            classFolder = fileparts( filePath );
-            if ~isempty( obj.currentFolder ) && ...
-                    ~obj.configChanged && strcmp( classFolder, obj.lastClassPath )
-                currentFolder = obj.currentFolder;
-                return;
-            end
+            [procFolders, configs] = obj.getProcFolders( filePath );
             currentConfig = obj.getOutputDependencies();
-            dbFolder = fileparts( classFolder );
-            procFoldersDir = dir( [classFolder filesep obj.procName '.2*'] );
-            procFolders = {procFoldersDir.name};
-            procFolders = cellfun( @(pfdn)(pfdn(length(obj.procName)+2:end)), ...
-                procFolders, 'UniformOutput', false );
             currentFolder = [];
-            if isempty( obj.preloadedPath )
-                obj.preloadedPath = containers.Map( 'KeyType', 'char', 'ValueType', 'any' );
+            persistent preloadedPath;
+            if isempty( preloadedPath )
+                preloadedPath = containers.Map( 'KeyType', 'char', 'ValueType', 'any' );
             end
-            if isempty( procFolders ), return; end
-            allProcFolders = strcat( procFolders{:} );
-            if obj.preloadedPath.isKey( allProcFolders )
-                preloaded = obj.preloadedPath(allProcFolders);
-                if isequalDeepCompare( preloaded{2}, currentConfig )
-                    currentFolder = preloaded{1};
-                    obj.configChanged = false;
-                    obj.lastClassPath = classFolder;
-                    obj.currentFolder = currentFolder;
-                    return;
+            if ~isempty( procFolders )
+                allProcFolders = strcat( procFolders{:} );
+                if preloadedPath.isKey( allProcFolders )
+                    preloaded = preloadedPath(allProcFolders);
+                    if obj.areConfigsEqual( preloaded{2}, currentConfig )
+                        currentFolder = preloaded{1};
+                        return;
+                    end
                 end
-            end
-            obj.loadPreloadedConfigs( dbFolder );
-            for ii = length( procFolders ) : -1 : 1
-                if obj.preloadedConfigs.isKey( procFolders{ii} )
-                    cfg = obj.preloadedConfigs(procFolders{ii});
-                    if isequalDeepCompare( currentConfig, cfg )
-                        currentFolder = [classFolder filesep ...
-                            obj.procName '.' procFolders{ii}];
-                        procFolders = {};
+                currentConfig.configHash = calcDataHash( currentConfig );
+                for ii = 1 : length( configs )
+                    if obj.areConfigsEqual( currentConfig, configs{ii} )
+                        currentFolder = procFolders{ii};
                         break;
                     end
-                    procFolders(ii) = [];
                 end
+                preloadedPath(allProcFolders) = {currentFolder, currentConfig};
             end
-            for ii = length( procFolders ) : -1 : 1
-                cfg = load( fullfile( ...
-                    classFolder, [obj.procName '.' procFolders{ii}], 'config.mat' ) );
-                if isequalDeepCompare( currentConfig, cfg )
-                    currentFolder = [classFolder filesep obj.procName '.' procFolders{ii}];
-                    obj.preloadedConfigs(procFolders{ii}) = cfg;
-                    obj.preloadedConfigsChanged = true;
-                    break;
-                end
-            end
-            if ~isempty( currentFolder )
-                obj.preloadedPath(allProcFolders) = {currentFolder, currentConfig};
-            end
-            obj.configChanged = false;
-            obj.lastClassPath = classFolder;
-            obj.currentFolder = currentFolder;
         end
-        %% -----------------------------------------------------------------
+        %%-----------------------------------------------------------------
+        
+        function [procFolders, configs] = getProcFolders( obj, filePath )
+            fileBaseFolder = fileparts( filePath );
+            procFoldersDir = dir( [fileBaseFolder filesep obj.procName '.*'] );
+            procFolders = strcat( [fileBaseFolder filesep], {procFoldersDir.name} );
+            configs = {};
+            persistent preloadedConfigs;
+            if isempty( preloadedConfigs )
+                preloadedConfigs = containers.Map( 'KeyType', 'char', 'ValueType', 'any' );
+            end
+            if ~isempty( procFolders )
+                allProcFolders = strcat( procFolders{:} );
+                if preloadedConfigs.isKey( allProcFolders )
+                    configs = preloadedConfigs(allProcFolders);
+                else
+                    for ii = 1 : length( procFolders )
+                        configs{ii} = obj.readConfig( procFolders{ii} );
+                    end
+                    preloadedConfigs(allProcFolders) = configs;
+                end
+            end
+        end
+        %%-----------------------------------------------------------------
         
         function currentFolder = createCurrentConfigFolder( obj, filePath )
-            classFolder = fileparts( filePath );
-            timestr = buildCurrentTimeString( true );
-            currentFolder = [classFolder filesep obj.procName timestr];
+            fileBaseFolder = fileparts( filePath );
+            timestr = buildCurrentTimeString();
+            currentFolder = [fileBaseFolder filesep obj.procName timestr];
             mkdir( currentFolder );
             obj.saveOutputConfig( fullfile( currentFolder, 'config.mat' ) );
-            cfg = load( fullfile( currentFolder, 'config.mat' ) );
-            dbFolder = fileparts( classFolder );
-            obj.loadPreloadedConfigs( dbFolder );
-            obj.preloadedConfigs(timestr(2:end)) = cfg;
-            obj.preloadedConfigsChanged = true;
-            obj.configChanged = false;
-            obj.lastClassPath = classFolder;
-            obj.currentFolder = currentFolder;
         end
-        %% -----------------------------------------------------------------
+        %%-----------------------------------------------------------------
         
-        function loadPreloadedConfigs( obj, dbFolder )
-            if isempty( obj.preloadedConfigs )
-                obj.pcFilename = [dbFolder filesep obj.procName '.preloadedConfigs.mat'];
-                if exist( obj.pcFilename, 'file' )
-                    sema = setfilesemaphore( obj.pcFilename );
-                    Parameters.dynPropsOnLoad( true, false );
-                    pc = load( obj.pcFilename );
-                    Parameters.dynPropsOnLoad( true, true );
-                    removefilesemaphore( sema );
-                    obj.preloadedConfigs = pc.preloadedConfigs;
-                    obj.preloadedConfigsChanged = false;
-                else
-                    obj.preloadedConfigs = ...
-                        containers.Map( 'KeyType', 'char', 'ValueType', 'any' );
-                end
+        function config = readConfig( obj, procFolder )
+            persistent preloadedConfigs;
+            if isempty( preloadedConfigs )
+                preloadedConfigs = containers.Map( 'KeyType', 'char', 'ValueType', 'any' );
+            end
+            if preloadedConfigs.isKey( procFolder )
+                config = preloadedConfigs(procFolder);
+            else
+                config = load( fullfile( procFolder, 'config.mat' ) );
+                preloadedConfigs(procFolder) = config;
             end
         end
-        %% -----------------------------------------------------------------
+        %%-----------------------------------------------------------------
         
         function procFileExt = getProcFileExt( obj )
             procFileExt = ['.' obj.procName '.mat'];
         end
-        %% -----------------------------------------------------------------
+        %%-----------------------------------------------------------------
+        
+        function eq = areConfigsEqual( obj, config1, config2 )
+            if isfield( config1, 'configHash' ) % compatibility to older versions
+                if isfield( config2, 'configHash' )
+                    eq = strcmp( config1.configHash, config2.configHash );
+                else
+                    config1 = rmfield( config1, 'configHash' );
+                    eq = isequalDeepCompare( config1, config2 );
+                end
+            else
+                config2 = rmfield( config2, 'configHash' );
+                eq = isequalDeepCompare( config1, config2 );
+            end
+        end
+        %%-----------------------------------------------------------------
         
     end
     
-    %% -----------------------------------------------------------------------------------
+    %%---------------------------------------------------------------------
     methods (Abstract)
         process( obj, inputFileName )
     end
@@ -271,4 +213,3 @@ classdef (Abstract) IdProcInterface < handle
     
 end
 
-        

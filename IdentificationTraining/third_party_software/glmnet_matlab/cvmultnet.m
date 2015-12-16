@@ -20,10 +20,10 @@ end
 prob_min = 1e-5; prob_max = 1 - prob_min;
 nc = size(y);
 if nc(2) == 1
-    [classes,~,sy] = unique(y);
+    classes = unique(y);
     nc = length(classes);
     indexes = eye(nc);
-    y = indexes(sy,:);
+    y = indexes(y,:);
 else
     nc = nc(2);
 end

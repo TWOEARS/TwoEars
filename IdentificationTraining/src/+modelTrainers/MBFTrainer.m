@@ -1,9 +1,8 @@
 classdef MBFTrainer < modelTrainers.Base & Parameterized
     
     %% --------------------------------------------------------------------
-    properties (SetAccess = {?Parameterized})
+    properties (Access = protected)
         model;
-        nComp;
     end
 
     %% --------------------------------------------------------------------
@@ -26,9 +25,13 @@ classdef MBFTrainer < modelTrainers.Base & Parameterized
         %% ----------------------------------------------------------------
 
         function buildModel( obj, x, y )
+            if length( y ) > obj.parameters.maxDataSize
+                x(obj.parameters.maxDataSize+1:end,:) = [];
+                y(obj.parameters.maxDataSize+1:end) = [];
+            end
             obj.model = models.MbfModel();
             xScaled = obj.model.scale2zeroMeanUnitVar( x, 'saveScalingFactors' );
-             gmmOpts.nComp = obj.nComp;
+             gmmOpts.nComp = obj.parameters.nComp;
              xTrain = (normvec(xScaled'))';
 %             xTrain = xScaled;
 %             xTrain = (preprocess(xScaled'))';
