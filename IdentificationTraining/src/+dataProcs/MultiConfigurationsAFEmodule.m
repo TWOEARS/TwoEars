@@ -50,16 +50,20 @@ classdef MultiConfigurationsAFEmodule < core.IdProcInterface
             obj.outputWavFileName = in.wavFileName;
             obj.singleConfFiles = {};
             obj.singleConfs = [];
-            for ii = 1 : numel( in.singleConfFiles )
-                conf = in.singleConfs{ii};
+            for ii = 1 : numel( in.singleScFiles )
+                conf = in.singleSCs{ii};
                 obj.afeProc.setExternOutputDependencies( conf );
                 if ~obj.afeProc.hasFileAlreadyBeenProcessed( in.wavFileName )
-                    obj.afeProc.process( in.singleConfFiles{ii} );
+                    if ~exist( in.singleScFiles{ii}, 'file' )
+                        error( '%s not found. \n%s corrupt -- delete and restart.', ...
+                            in.singleScFiles{ii}, inFileName );
+                    end
+                    obj.afeProc.process( in.singleScFiles{ii} );
                     obj.afeProc.saveOutput( in.wavFileName );
                 end
                 obj.singleConfFiles{ii} = obj.afeProc.getOutputFileName( in.wavFileName );
                 obj.singleConfs{ii} = obj.afeProc.getOutputDependencies;
-                fprintf( '.' );
+                fprintf( ';' );
             end
             fprintf( '\n' );
         end

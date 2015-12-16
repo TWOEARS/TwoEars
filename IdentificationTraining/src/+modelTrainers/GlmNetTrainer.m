@@ -1,8 +1,12 @@
 classdef GlmNetTrainer < modelTrainers.Base & Parameterized
     
     %% --------------------------------------------------------------------
-    properties (Access = protected)
+    properties (SetAccess = {?Parameterized})
         model;
+        alpha;
+        family;
+        nLambda;
+        lambda;
     end
 
     %% --------------------------------------------------------------------
@@ -35,22 +39,19 @@ classdef GlmNetTrainer < modelTrainers.Base & Parameterized
 
         function buildModel( obj, x, y )
             glmOpts.weights = obj.setDataWeights( y );
-            if length( y ) > obj.parameters.maxDataSize
-                x(obj.parameters.maxDataSize+1:end,:) = [];
-                y(obj.parameters.maxDataSize+1:end) = [];
-            end
             obj.model = models.GlmNetModel();
             x(isnan(x)) = 0;
             x(isinf(x)) = 0;
             xScaled = obj.model.scale2zeroMeanUnitVar( x, 'saveScalingFactors' );
-            glmOpts.alpha = obj.parameters.alpha;
-            glmOpts.nlambda = obj.parameters.nLambda;
-            if ~isempty( obj.parameters.lambda )
-                glmOpts.lambda = obj.parameters.lambda;
+            clear x;
+            glmOpts.alpha = obj.alpha;
+            glmOpts.nlambda = obj.nLambda;
+            if ~isempty( obj.lambda )
+                glmOpts.lambda = obj.lambda;
             end
             verboseFprintf( obj, 'GlmNet training with alpha=%f\n', glmOpts.alpha );
-            verboseFprintf( obj, '\tsize(x) = %dx%d\n', size(x,1), size(x,2) );
-            obj.model.model = glmnet( xScaled, y, obj.parameters.family, glmOpts );
+            verboseFprintf( obj, '\tsize(x) = %dx%d\n', size(xScaled,1), size(xScaled,2) );
+            obj.model.model = glmnet( xScaled, y, obj.family, glmOpts );
             verboseFprintf( obj, '\n' );
         end
         %% ----------------------------------------------------------------

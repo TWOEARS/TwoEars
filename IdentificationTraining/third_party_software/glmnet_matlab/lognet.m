@@ -10,6 +10,8 @@ if nc == 1
     nc = length(classes);
     indexes = eye(nc);
     y = indexes(sy,:);
+else
+    classes = 1: nc;
 end
 
 if strcmp(family, 'binomial')
@@ -112,6 +114,7 @@ if strcmp(family, 'multinomial')
         df = zeros(1,lmu);
     end
     fit.a0 = a0;
+    fit.label = classes;
     fit.beta = beta_list;
     fit.dev = dev;
     fit.nulldev = dev0;
@@ -144,6 +147,7 @@ else
         df = zeros(1,lmu);
     end
     fit.a0 = a0;
+    fit.label = classes;
     fit.beta = beta; %sign flips make 2 arget class
     fit.dev = dev;
     fit.nulldev = dev0;

@@ -1,8 +1,10 @@
 classdef vMFTrainer < modelTrainers.Base & Parameterized
     
     %% --------------------------------------------------------------------
-    properties (Access = protected)
+    properties (SetAccess = {?Parameterized})
         model;
+        nComp;
+        thr;
     end
 
     %% --------------------------------------------------------------------
@@ -29,14 +31,10 @@ classdef vMFTrainer < modelTrainers.Base & Parameterized
 
         function buildModel( obj, x, y )
 %             glmOpts.weights = obj.setDataWeights( y );
-            if length( y ) > obj.parameters.maxDataSize
-                x(obj.parameters.maxDataSize+1:end,:) = [];
-                y(obj.parameters.maxDataSize+1:end) = [];
-            end
             obj.model = models.vMFModel();
             xScaled = obj.model.scale2zeroMeanUnitVar( x, 'saveScalingFactors' );
-            gmmOpts.nComp = obj.parameters.nComp;
-            gmmOpts.thr = obj.parameters.thr;
+            gmmOpts.nComp = obj.nComp;
+            gmmOpts.thr = obj.thr;
             %....... approach 1: explicit dimension reduction using PCA
             idFeature = modelTrainers.featureSelectionPCA2(xScaled,gmmOpts.thr);
             xTrain = xScaled(:,idFeature);

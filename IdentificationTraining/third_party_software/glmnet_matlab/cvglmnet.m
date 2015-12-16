@@ -263,7 +263,7 @@ is_offset = glmfit.offset;
 options.lambda = glmfit.lambda;
 
 nz = glmnetPredict(glmfit,[],[],'nonzero');
-if strcmp(glmfit.class,'multnet')
+if (strcmp(glmfit.class,'multnet'))
     nnz = zeros(length(options.lambda),length(nz));
     for i = 1:length(nz)
         nnz(:,i) = transpose(sum(nz{i},1));
@@ -322,7 +322,7 @@ else
         end
         xr = x(~which,:); yr = y(~which,:);
         cpredmat{i} = glmnet(xr, yr, family, opts);
-    end    
+    end
 end
 
 switch cpredmat{1}.class

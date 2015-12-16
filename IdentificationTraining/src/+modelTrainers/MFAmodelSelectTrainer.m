@@ -1,10 +1,13 @@
 classdef MFAmodelSelectTrainer < modelTrainers.Base & Parameterized
     
     %% -----------------------------------------------------------------------------------
-    properties (Access = private)
+    properties (SetAccess = {?Parameterized})
         cvTrainer;
         coreTrainer;
         fullSetModel;
+        nComp;
+        nDim;
+        cvFolds;
     end
     
     %% -----------------------------------------------------------------------------------
@@ -38,18 +41,18 @@ classdef MFAmodelSelectTrainer < modelTrainers.Base & Parameterized
         %% ----------------------------------------------------------------
         
         function buildModel( obj, ~, ~ )
-            comps =  obj.parameters.nComp;
-            nDims =  obj.parameters.nDim;
+            comps =  obj.nComp;
+            nDims =  obj.nDim;
             for nt=1:numel(nDims)
-                obj.parameters.nDim = nDims(nt);
+                obj.nDim = nDims(nt);
                 for nc=1:numel(comps)
-                    obj.parameters.nComp = comps(nc);
+                    obj.nComp = comps(nc);
                     verboseFprintf( obj, '\nRun on full trainSet...\n' );
                     obj.coreTrainer = modelTrainers.MfaNetTrainer( ...
-                        'performanceMeasure', obj.parameters.performanceMeasure, ...
-                        'maxDataSize', obj.parameters.maxDataSize,...
-                        'nComp', obj.parameters.nComp, ...
-                        'nDim', obj.parameters.nDim);
+                        'performanceMeasure', obj.performanceMeasure, ...
+                        'maxDataSize', obj.maxDataSize,...
+                        'nComp', obj.nComp, ...
+                        'nDim', obj.nDim);
                     
                     obj.coreTrainer.setData( obj.trainSet, obj.testSet );
                     obj.coreTrainer.setPositiveClass( obj.positiveClass );
@@ -61,7 +64,7 @@ classdef MFAmodelSelectTrainer < modelTrainers.Base & Parameterized
                     obj.cvTrainer.setPerformanceMeasure( obj.performanceMeasure );
                     obj.cvTrainer.setPositiveClass( obj.positiveClass );
                     obj.cvTrainer.setData( obj.trainSet, obj.testSet );
-                    obj.cvTrainer.setNumberOfFolds( obj.parameters.cvFolds );
+                    obj.cvTrainer.setNumberOfFolds( obj.cvFolds );
                     obj.cvTrainer.run();
                     cvModels{nt,nc} = obj.cvTrainer.models;
                     verboseFprintf( obj, 'Calculate Performance for all values of components...\n' );
@@ -80,14 +83,14 @@ classdef MFAmodelSelectTrainer < modelTrainers.Base & Parameterized
             end
             [bComp, bnDim] = find( nDimCompMatrix==max(max(nDimCompMatrix)));
             % trian the best model
-            obj.parameters.nComp = comps(bComp);
-            obj.parameters.nDim = nDims(bnDim);
+            obj.nComp = comps(bComp);
+            obj.nDim = nDims(bnDim);
             verboseFprintf( obj, '\nRun on full trainSet...\n' );
             obj.coreTrainer = modelTrainers.MfaNetTrainer( ...
-                'performanceMeasure', obj.parameters.performanceMeasure, ...
-                'maxDataSize', obj.parameters.maxDataSize,...
-                'nComp', obj.parameters.nComp, ...
-                'nDim', obj.parameters.nDim);
+                'performanceMeasure', obj.performanceMeasure, ...
+                'maxDataSize', obj.maxDataSize,...
+                'nComp', obj.nComp, ...
+                'nDim', obj.nDim);
             
             obj.coreTrainer.setData( obj.trainSet, obj.testSet );
             obj.coreTrainer.setPositiveClass( obj.positiveClass );

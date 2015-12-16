@@ -1,8 +1,13 @@
 classdef SVMtrainer < modelTrainers.Base & Parameterized
     
     %% --------------------------------------------------------------------
-    properties (Access = protected)
+    properties (SetAccess = {?Parameterized})
         model;
+        epsilon;
+        kernel;
+        c;
+        gamma;
+        makeProbModel;
     end
 
     %% --------------------------------------------------------------------
@@ -39,13 +44,15 @@ classdef SVMtrainer < modelTrainers.Base & Parameterized
         function buildModel( obj, x, y )
             [x, y, cp] = obj.prepareData( x, y );
             obj.model = models.SVMmodel();
-            obj.model.useProbModel = obj.parameters.makeProbModel;
+            obj.model.useProbModel = obj.makeProbModel;
             xScaled = obj.model.scale2zeroMeanUnitVar( x, 'saveScalingFactors' );
-            svmParamStrScheme = '-t %d -g %e -c %e -w-1 1 -w1 %e -e %e -m 500 -b %d -h 0';
+            m = ceil( prod( size( x ) ) * 8 / (1024 * 1024) );
+            m = min( 2*m, 2000 );
+            svmParamStrScheme = '-t %d -g %e -c %e -w-1 1 -w1 %e -e %e -m %d -b %d -h 0';
             svmParamStr = sprintf( svmParamStrScheme, ...
-                obj.parameters.kernel, obj.parameters.gamma, ...
-                obj.parameters.c, cp, ...
-                obj.parameters.epsilon, obj.parameters.makeProbModel );
+                obj.kernel, obj.gamma, ...
+                obj.c, cp, ...
+                obj.epsilon, m, obj.makeProbModel );
             if ~obj.verbose, svmParamStr = [svmParamStr, ' -q']; end
             verboseFprintf( obj, 'SVM training with param string\n\t%s\n', svmParamStr );
             verboseFprintf( obj, '\tsize(x) = %dx%d\n', size(x,1), size(x,2) );
@@ -70,14 +77,10 @@ classdef SVMtrainer < modelTrainers.Base & Parameterized
             if isnan( cp ) || isinf( cp )
                 warning( 'The share of positive to negative examples is inf or nan.' );
             end
-            if obj.parameters.makeProbModel
+            if obj.makeProbModel
                 x = [x(y == -1,:); repmat( x(y == +1,:), round( cp ), 1)];
                 y = [y(y == -1); repmat( y(y == +1), round( cp ), 1)];
                 cp = 1;
-            end
-            if length( y ) > obj.parameters.maxDataSize
-                x(obj.parameters.maxDataSize+1:end,:) = [];
-                y(obj.parameters.maxDataSize+1:end) = [];
             end
         end
         %% ----------------------------------------------------------------

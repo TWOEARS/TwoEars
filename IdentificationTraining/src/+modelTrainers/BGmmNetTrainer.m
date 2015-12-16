@@ -1,8 +1,10 @@
 classdef BGmmNetTrainer < modelTrainers.Base & Parameterized
     
     %% --------------------------------------------------------------------
-    properties (Access = protected)
+    properties (SetAccess = {?Parameterized})
         model;
+        nComp;
+        thr;
     end
 
     %% --------------------------------------------------------------------
@@ -28,16 +30,12 @@ classdef BGmmNetTrainer < modelTrainers.Base & Parameterized
         %% ----------------------------------------------------------------
 
         function buildModel( obj, x, y )
-            if length( y ) > obj.parameters.maxDataSize
-                x(obj.parameters.maxDataSize+1:end,:) = [];
-                y(obj.parameters.maxDataSize+1:end) = [];
-            end
             obj.model = models.BGmmNetModel();
             xScaled = obj.model.scale2zeroMeanUnitVar( x, 'saveScalingFactors' );
-            gmmOpts.nComp = obj.parameters.nComp;
-            gmmOpts.thr = obj.parameters.thr;
-            if ~isempty( obj.parameters.nComp )
-                gmmOpts.nComp = obj.parameters.nComp;
+            gmmOpts.nComp = obj.nComp;
+            gmmOpts.thr = obj.thr;
+            if ~isempty( obj.nComp )
+                gmmOpts.nComp = obj.nComp;
             end
             verboseFprintf( obj, 'GmmNet training with nComp=%f and thr=%f\n', gmmOpts.nComp, gmmOpts.thr);
             verboseFprintf( obj, '\tsize(x) = %dx%d\n', size(x,1), size(x,2) );

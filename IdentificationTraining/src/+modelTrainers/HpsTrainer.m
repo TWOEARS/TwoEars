@@ -1,11 +1,21 @@
 classdef (Abstract) HpsTrainer < modelTrainers.Base & Parameterized
     
     %% -----------------------------------------------------------------------------------
-    properties (Access = private)
+    properties (SetAccess = {?Parameterized})
         hpsCVtrainer;
         coreTrainer;
         trainWithBestHps = true;
         hpsSets;
+        buildCoreTrainer;
+        hpsCoreTrainerParams;
+        finalCoreTrainerParams;
+        finalMaxDataSize;
+        hpsMaxDataSize;
+        hpsRefineStages;
+        hpsSearchBudget;
+        hpsCvFolds;
+        hpsMethod;
+        abortPerfMin = 0;
     end
     
     %% -----------------------------------------------------------------------------------
@@ -42,6 +52,9 @@ classdef (Abstract) HpsTrainer < modelTrainers.Base & Parameterized
                               'default', 'grid', ...
                               'valFun', @(x)(...
                                        ischar(x) && any(strcmpi(x, {'grid','random'}))) );
+            pds{10} = struct( 'name', 'finalMaxDataSize', ...
+                              'default', inf, ...
+                              'valFun', @(x)(isinf(x) || (rem(x,1) == 0 && x > 0)) );
             obj = obj@Parameterized( pds );
             obj.setParameters( true, varargin{:} );
         end
@@ -53,38 +66,42 @@ classdef (Abstract) HpsTrainer < modelTrainers.Base & Parameterized
         %% ----------------------------------------------------------------
         
         function buildModel( obj, ~, ~ )
-            obj.coreTrainer = obj.parameters.buildCoreTrainer();
+            obj.coreTrainer = obj.buildCoreTrainer();
             obj.createHpsTrainer();
             hps.params = obj.determineHyperparameterSets();
             hps.perfs = zeros( size( hps.params ) );
-            verboseFprintf( obj, '\nHyperparameter search CV...\n' );
+            verboseFprintf( obj, '\nHyperparameter search CV...\n===========================\n' );
             for ii = 1 : size( hps.params, 1 )
                 verboseFprintf( obj, '\nhps set %d...\n ', ii );
                 obj.coreTrainer.setParameters( false, ...
-                    'maxDataSize', obj.parameters.hpsMaxDataSize, ...
+                    'maxDataSize', obj.hpsMaxDataSize, ...
                     hps.params(ii), ...
-                    obj.parameters.hpsCoreTrainerParams{:} );
-                obj.hpsCVtrainer.abortPerfMin = max( hps.perfs );
+                    obj.hpsCoreTrainerParams{:} );
+                obj.hpsCVtrainer.abortPerfMin = max( max( hps.perfs ), obj.abortPerfMin );
                 obj.hpsCVtrainer.run();
                 hps.perfs(ii) = obj.hpsCVtrainer.getPerformance().avg;
             end
             verboseFprintf( obj, 'Done\n' );
-            if obj.parameters.hpsRefineStages > 0
-                verboseFprintf( obj, 'HPS refine stage...\n' );
+            if obj.hpsRefineStages > 0
+                verboseFprintf( obj, '\n== HPS refine stage...\n' );
                 refinedHpsTrainer = obj.createRefineGridTrainer( hps );
                 refinedHpsTrainer.run();
                 hps.params = [hps.params; refinedHpsTrainer.hpsSets.params];
                 hps.perfs = [hps.perfs; refinedHpsTrainer.hpsSets.perfs];
             end
             obj.hpsSets = obj.sortHpsSetsByPerformance( hps );
-            verboseFprintf( obj, 'Best HPS set performance: %f\n', obj.hpsSets.perfs(end) );
+            verboseFprintf( obj, ['\n\n==============================\n' ...
+                                      'Best HPS set performance: %f\n' ...
+                                      '==============================\n'], obj.hpsSets.perfs(end) );
             if obj.trainWithBestHps
                 obj.coreTrainer.setParameters( false, ...
                     obj.hpsSets.params(end), ...
-                    'maxDataSize', inf, ...
-                    obj.parameters.finalCoreTrainerParams{:} );
+                    'maxDataSize', obj.finalMaxDataSize, ...
+                    obj.finalCoreTrainerParams{:} );
                 obj.coreTrainer.setData( obj.trainSet, obj.testSet );
-                verboseFprintf( obj, 'Train with best HPS set on full trainSet...\n' );
+                verboseFprintf( obj, ['\n\n ---------------------------------------->>>\n' ...
+                                           'Train with best HPS set on full trainSet...\n' ...
+                                           '-------------------------------------------\n'] );
                 obj.coreTrainer.run();
             end
         end
@@ -101,7 +118,9 @@ classdef (Abstract) HpsTrainer < modelTrainers.Base & Parameterized
     methods (Access = protected)
         
         function model = giveTrainedModel( obj )
-            model = obj.coreTrainer.getModel();
+            model = models.HPSmodel();
+            model.model = obj.coreTrainer.getModel();
+            model.hpsSet = obj.hpsSets;
         end
         %% -------------------------------------------------------------------------------
         
@@ -115,12 +134,12 @@ classdef (Abstract) HpsTrainer < modelTrainers.Base & Parameterized
             obj.hpsCVtrainer.setPerformanceMeasure( obj.performanceMeasure );
             obj.hpsCVtrainer.setPositiveClass( obj.positiveClass );
             obj.hpsCVtrainer.setData( obj.trainSet, obj.testSet );
-            obj.hpsCVtrainer.setNumberOfFolds( obj.parameters.hpsCvFolds );
+            obj.hpsCVtrainer.setNumberOfFolds( obj.hpsCvFolds );
         end
         %% -------------------------------------------------------------------------------
         
         function hpsSets = determineHyperparameterSets( obj )
-            switch( lower( obj.parameters.hpsMethod ) )
+            switch( lower( obj.hpsMethod ) )
                 case 'grid'
                     hpsSets = obj.getHpsGridSearchSets();
                 case 'random'
@@ -138,7 +157,8 @@ classdef (Abstract) HpsTrainer < modelTrainers.Base & Parameterized
             refinedHpsTrainer.setData( obj.trainSet, obj.testSet );
             refinedHpsTrainer.trainWithBestHps = false;
             refinedHpsTrainer.setParameters( false, ...
-                'hpsRefineStages', obj.parameters.hpsRefineStages - 1 );
+                'hpsRefineStages', obj.hpsRefineStages - 1 );
+            refinedHpsTrainer.abortPerfMin = max( hps.perfs );
         end
         %% -------------------------------------------------------------------------------
         

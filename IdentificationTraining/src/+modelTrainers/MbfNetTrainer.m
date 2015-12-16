@@ -1,8 +1,10 @@
 classdef MbfNetTrainer < modelTrainers.Base & Parameterized
     
     %% --------------------------------------------------------------------
-    properties (Access = protected)
+    properties (SetAccess = {?Parameterized})
         model;
+        nComp;
+        thr;
     end
 
     %% --------------------------------------------------------------------
@@ -29,20 +31,16 @@ classdef MbfNetTrainer < modelTrainers.Base & Parameterized
 
         function buildModel( obj, x, y )
 %             glmOpts.weights = obj.setDataWeights( y );
-            if length( y ) > obj.parameters.maxDataSize
-                x(obj.parameters.maxDataSize+1:end,:) = [];
-                y(obj.parameters.maxDataSize+1:end) = [];
-            end
             obj.model = models.MbfNetModel();
             xScaled = obj.model.scale2zeroMeanUnitVar( x, 'saveScalingFactors' );
-            mbfOpts.nComp = obj.parameters.nComp;
-            mbfOpts.thr = obj.parameters.thr;
-            if ~isempty( obj.parameters.nComp )
-                mbfOpts.nComp = obj.parameters.nComp;
+            mbfOpts.nComp = obj.nComp;
+            mbfOpts.thr = obj.thr;
+            if ~isempty( obj.nComp )
+                mbfOpts.nComp = obj.nComp;
             end
             verboseFprintf( obj, 'MbfNet training with nComp=%f and thr=%f\n', mbfOpts.nComp, mbfOpts.thr);
             verboseFprintf( obj, '\tsize(x) = %dx%d\n', size(x,1), size(x,2) );
-%             obj.model.model = glmnet( xScaled, y, obj.parameters.family, glmOpts );
+%             obj.model.model = glmnet( xScaled, y, obj.family, glmOpts );
             mbfOpts.initComps = mbfOpts.nComp;
           idFeature = modelTrainers.featureSelectionPCA2(xScaled,mbfOpts.thr);
             [obj.model.model{1}, obj.model.model{2}] = ...
