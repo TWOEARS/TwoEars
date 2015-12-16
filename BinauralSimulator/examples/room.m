@@ -45,4 +45,5 @@ end
 
 data = sim.Sinks.getData();
 sim.Sinks.saveFile('out_room.wav',sim.SampleRate);  % save file
+sim.plot();
 sim.set('ShutDown',true);

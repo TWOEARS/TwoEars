@@ -33,4 +33,5 @@ end
 
 data = sim.Sinks.getData();
 sim.Sinks.saveFile('out_moving_source.wav',sim.SampleRate);
+sim.plot();
 sim.set('ShutDown',true);

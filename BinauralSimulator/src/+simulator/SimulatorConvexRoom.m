@@ -9,9 +9,9 @@ classdef SimulatorConvexRoom < simulator.SimulatorInterface & simulator.RobotInt
     SSRMute;
     SSRGain;
     SSRReferencePosXY;
-    SSRReferenceOriXY;
+    SSRReferenceOriXY;    
   end
-
+  
   properties (SetAccess=private)
     Time = 0.0;
     % Maximum Azimuth of head orientation
@@ -21,7 +21,7 @@ classdef SimulatorConvexRoom < simulator.SimulatorInterface & simulator.RobotInt
     % @type double
     AzimuthMin = -inf;
   end
-
+  
   %% Constructor
   methods
     function obj = SimulatorConvexRoom(xmlfile, init)
@@ -45,7 +45,7 @@ classdef SimulatorConvexRoom < simulator.SimulatorInterface & simulator.RobotInt
       % function init(obj)
       % initialize Simulator
 
-      % initialize head rotation limits
+      % initialize head rotation limits  
       obj.AzimuthMax = inf;
       obj.AzimuthMin = -inf;
       if strcmp(func2str(obj.Renderer), 'ssr_brs')
@@ -56,12 +56,12 @@ classdef SimulatorConvexRoom < simulator.SimulatorInterface & simulator.RobotInt
             obj.AzimuthMin);
         end
       end
-
+      
       % initialize Room
       if ~isempty(obj.Room)
         obj.Room.init();
-      end
-
+      end      
+      
       % define source types
       source_types = {};
       source_irfiles = {};
@@ -100,11 +100,11 @@ classdef SimulatorConvexRoom < simulator.SimulatorInterface & simulator.RobotInt
       % initialize SSR
       % TODO: remove workaround by providing newest binaries for Windows/Mac
       if obj.Verbose
-        obj.Renderer('init', source_irfiles, params);
+        obj.Renderer('init', source_irfiles, params);      
       else
-        obj.Renderer('init', source_irfiles, params, obj.Verbose);
+        obj.Renderer('init', source_irfiles, params, obj.Verbose); 
       end
-
+      
       if ~isempty(source_types)
         % TODO: remove this workaround and handle this inside the SSR
         obj.Renderer('source_model', source_types);
@@ -290,11 +290,11 @@ classdef SimulatorConvexRoom < simulator.SimulatorInterface & simulator.RobotInt
       % function rotateHeadRelative(obj, angleIncDeg)
       %
       % See also: simulator.RobotInterface.rotateHeadRelative
-
+      
       % get current XY-Orientation
       azi = obj.Sinks.OrientationXY;
-      % consider limits of head orientation
-      angleDeg = max( min( azi+angleIncDeg, obj.AzimuthMax ), obj.AzimuthMin );
+      % consider limits of head orientation      
+      angleDeg = max( min( azi+angleIncDeg, obj.AzimuthMax ), obj.AzimuthMin );      
       % rotate Head around z-axis
       obj.Sinks.rotateAroundAxis([0; 0; 1], angleDeg - azi)
     end
@@ -305,7 +305,7 @@ classdef SimulatorConvexRoom < simulator.SimulatorInterface & simulator.RobotInt
 
       % get current XY-Orientation
       azi = obj.Sinks.OrientationXY;
-      % consider limits of head orientation
+      % consider limits of head orientation  
       angleDeg = max( min( angleDeg, obj.AzimuthMax ), obj.AzimuthMin );
       % rotate Head around z-axis
       obj.Sinks.rotateAroundAxis([0; 0; 1], angleDeg - azi);
@@ -319,14 +319,14 @@ classdef SimulatorConvexRoom < simulator.SimulatorInterface & simulator.RobotInt
       % See also: simulator.RobotInterface.getCurrentHeadOrientation
       azimuth = obj.Sinks.OrientationXY;
     end
-
+    
     function [sig, timeIncSec, timeIncSamples] = getSignal(obj, timeIncSec)
       % function [sig, timeIncSec, timeIncSamples] = getSignal(obj, timeIncSec)
       %
       % See also: simulator.RobotInterface.getSignal
       if nargin < 2
         timeIncSec = inf;
-      end
+      end      
       blocks = ceil(timeIncSec*obj.SampleRate/obj.BlockSize);
 
       idx = 0;

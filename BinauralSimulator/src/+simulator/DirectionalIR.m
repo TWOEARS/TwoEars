@@ -87,7 +87,7 @@ classdef DirectionalIR < hgsetget
       % MATLAB proposes to replace wavwrite with audiowrite, but this does not
       % work for a high number of channels like in HRTF datasets
       d = d./max(abs(d(:))); % normalize
-      wavwrite(d,fs,32,filename);
+      simulator.savewav(d,filename,fs);
 
       obj.SampleRate = fs;
       obj.Data = d;
@@ -153,9 +153,6 @@ classdef DirectionalIR < hgsetget
       colorbar;
     end
     function [d, fs] = convertSOFA(obj,filename)
-
-      % Disable SOFA updagre conventions warnings
-      warning('off', 'SOFA:upgrade')
 
       header = SOFAload(filename, 'nodata');
 

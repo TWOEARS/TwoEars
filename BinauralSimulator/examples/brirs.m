@@ -34,4 +34,5 @@ while ~sim.isFinished()
 end
 
 sim.Sinks.saveFile('out_brirs.wav',sim.SampleRate);  % save file
+sim.plot();  % plot
 sim.set('ShutDown',true);  % clean up
