@@ -270,7 +270,7 @@ classdef FeatureSignal < Signal
                 xlim([tSec(1) tSec(end)])
                 colorbar;
                 xlabel('Time (s)')
-                ylabel('\# feature dimensions')
+                ylabel('# feature dimensions')
                 title('Gabor features')
                 
                 

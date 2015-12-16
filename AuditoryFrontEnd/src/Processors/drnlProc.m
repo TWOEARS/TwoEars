@@ -191,7 +191,7 @@ classdef drnlProc < Processor
             if nargin<1; fs = []; end
 
             % Call super-constructor
-            pObj = pObj@Processor(fs,fs,'gammatoneProc',parObj);
+            pObj = pObj@Processor(fs,fs,'drnlProc',parObj);
             
             if nargin>0 && ~isempty(fs)
                 
@@ -327,7 +327,7 @@ classdef drnlProc < Processor
                     % CtS is computed here to avoid repeated division by a later
                     % a==0 means no nonlinear path active
                     if pObj.aNonlinPath>0
-                        CtS = ctBM/pObj.aNonlinPath; 
+                        CtS = ctBM./pObj.aNonlinPath; 
                     else CtS = inf(length(nFilter),1); 
                     end
                     
@@ -358,7 +358,7 @@ classdef drnlProc < Processor
                         % (CtS= ctBM/DRNLa -> abs_x*DRNLa<ctBM)
                         belowThreshold = abs_x<CtS(ii);
                         out_nlin(belowThreshold, ii) = ...
-                            pObj.aNonlinPath.*out_nlin(belowThreshold, ii);
+                            pObj.aNonlinPath(ii).*out_nlin(belowThreshold, ii);
                         aboveThreshold = ~belowThreshold;
                         out_nlin(aboveThreshold, ii) = signs(aboveThreshold) *ctBM .* ...
                             exp(pObj.cNonlinPath * log(pObj.aNonlinPath(ii)*abs_x(aboveThreshold)/ctBM) );                                              
@@ -469,6 +469,15 @@ classdef drnlProc < Processor
             fs = pObj.FsHzIn;
             
             % Compute internal parameters and instantiate filters
+            
+            % Switch bUnityComp of preProc to zero to make the middle ear
+            % filtering fully effective
+            % (By default this is set to 1 for the use with gammatone
+            % filterbank, enabling unity gain middle ear filtering)
+            % The cell array given by the .LowerDependencies of a processor 
+            % contains handle(s) to the processor(s) just below 
+            % in the processing tree.
+            pObj.LowerDependencies{1}.parameters.map('pp_bUnityComp') = false;
             
             % mocIpsi, mocContra can be a scalar or vector with the same
                 % length as cfHz (individual nonlinear gain per channel)
@@ -586,7 +595,7 @@ classdef drnlProc < Processor
                         pObj.bwNonlinPathGammatoneFilter = 0.14*pObj.cfHz + 180; % Hz, bwNonlinPathGammatoneFilter, MAP defines in a new way
                         % broken stick compression - note that MAP has changed the
                         % formula from CASP2008 version!! 
-                        pObj.aNonlinPath = 4e3; %*ones(size(cfHz)); % a
+                        pObj.aNonlinPath = 4e3*ones(size(pObj.cfHz)); % a
                         pObj.bNonlinPath = 25; % Using b for ctBMdB of MAP
                         pObj.cNonlinPath = .25; % c, compression coeff
                         pObj.nCascadeNonlinPathGammatoneFilter2 = 3; % number of cascaded gammatone filters AFTER BROKEN STICK NONLINEARITY STAGE

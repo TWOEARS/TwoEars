@@ -12,6 +12,23 @@ classdef adaptationProc < Processor
 %       overshootLimit      - a limit to the overshoot caused by the loops
 %       minLeveldB          - the lowest audible threshhold of the signal (dB)
 %       tau                 - Time constants of the loops
+%       model (optional)    - implementation model as in various related
+%                               studies. If this is given, the first three
+%                               parameters are overwritten according to the
+%                               description below:
+%             'adt_dau'        Choose the parameters as in the Dau 1996 and 1997
+%                              models. This consists of 5 adaptation loops with
+%                              an overshoot limit of 10 and a minimum level of
+%                              1e-5. This is a correction in regard to the model
+%                              described in Dau et al. (1996a), which did not use 
+%                              overshoot limiting. The adaptation loops have an 
+%                              exponential spacing. The default values of the
+%                              overshootLimit, minLeveldB, and tau correspond
+%                              to this model.
+%             'adt_puschel'    Choose the parameters as in the original Puschel 1988
+%                              model. This consists of 5 adaptation loops without
+%                              overshoot limiting. The adapation loops have a linear spacing.
+%             'adt_breebaart'  As 'puschel', but with overshoot limiting.
 %
 %   See also: Processor, ihcProc
 %
@@ -28,6 +45,9 @@ classdef adaptationProc < Processor
      tau                 % time constants involved in the adaptation loops 
                          % the number of adaptation loops is determined
                          % by the length of tau
+     model               % implementation model - if not empty this setting
+                         % overrides the other three parameters
+                         
     end
 
     properties (GetAccess = private)
@@ -58,26 +78,6 @@ classdef adaptationProc < Processor
         %
         % See also: genParStruct, parameterHelper, Processor
         
-        % TODO: Restore the ability to choose parameters from documented models.
-        % Corresponding code with kept here and commented out
-        %
-        %   model : implementation model as in various related studies
-        %
-        %     'adt_dau'        Choose the parameters as in the Dau 1996 and 1997
-        %                      models. This consists of 5 adaptation loops with
-        %                      an overshoot limit of 10 and a minimum level of
-        %                      1e-5. This is a correction in regard to the model
-        %                      described in Dau et al. (1996a), which did not use 
-        %                      overshoot limiting. The adaptation loops have an 
-        %                      exponential spacing. This flag is the default.
-        %
-        %     'adt_puschel'    Choose the parameters as in the original Puschel 1988
-        %                      model. This consists of 5 adaptation loops without
-        %                      overshoot limiting. The adapation loops have a linear spacing.
-        %
-        %     'adt_breebaart'  As 'puschel', but with overshoot limiting.
-        % 
-
         if nargin<2||isempty(parObj); parObj = Parameters; end
         if nargin<1; fs = []; end
 
@@ -304,7 +304,49 @@ classdef adaptationProc < Processor
             end
         end
          
-     end
+    end
+     
+    methods (Access=protected)
+        function verifyParameters(pObj)
+            % Solve any potential conflicts and/or control the validity of parameters
+            % here.
+            if ~isempty(pObj.parameters.map('adpt_model'))
+                % the adpt_model parameter takes priority if given with
+                % other parameters
+                modelType = pObj.parameters.map('adpt_model');
+                switch(modelType)
+                            case 'adt_dau'
+                                % This means adpt_model was either not
+                                % given or given with any other parameter
+                                
+                                pObj.parameters.map('adpt_lim') = 10;
+                                pObj.parameters.map('adpt_mindB') = 0;
+                                pObj.parameters.map('adpt_tau') = ...
+                                    [0.005 0.050 0.129 0.253 0.500];                                
+                            case 'adt_puschel'
+                                % 5 adaptation loops, no overshoot limiting, 
+                                % linear tau spacing
+                                pObj.parameters.map('adpt_lim') = 0;
+                                pObj.parameters.map('adpt_mindB') = 0;
+                                pObj.parameters.map('adpt_tau') = ...
+                                    linspace(0.005,0.5,5);
+                            case 'adt_breebaart'
+                                % 5 adaptation loops, with [default] overshoot limiting,
+                                % linear tau spacing
+                                pObj.parameters.map('adpt_lim') = 10;
+                                pObj.parameters.map('adpt_mindB') = 0;
+                                pObj.parameters.map('adpt_tau') = ...
+                                    linspace(0.005,0.5,5);
+                            otherwise
+                                % not supported
+                                error('%s: Unsupported adaptation loop model',upper(mfilename));
+                end
+                fprintf('Note: adaptation loop model name %s was given. The model will override other parameters.', modelType);
+            end
+            
+        end
+        
+    end
      
      % "Getter" methods
      methods
@@ -318,6 +360,10 @@ classdef adaptationProc < Processor
          
          function tau = get.tau(pObj)
              tau = pObj.parameters.map('adpt_tau');
+         end
+         
+         function model = get.model(pObj)
+             model = pObj.parameters.map('adpt_model');
          end
      end
      
@@ -341,15 +387,18 @@ classdef adaptationProc < Processor
             
             names = {'adpt_lim',...
                      'adpt_mindB',...
-                     'adpt_tau'};
+                     'adpt_tau', ...
+                     'adpt_model'};
             
             descriptions = {'Adaptation loop overshoot limit',...
                             'Adaptation loop lowest signal level (dB)',...
-                            'Adaptation loop time constants (s)'};
+                            'Adaptation loop time constants (s)',...
+                            'Adaptation loop optional implementation model'};
             
             defaultValues = {10,...
                              0,...
-                             [0.005 0.05 0.129 0.253 0.5]};
+                             [0.005 0.05 0.129 0.253 0.5],...
+                             ''};
                 
           end
          

@@ -59,7 +59,6 @@ par_GT = genParStruct('pp_bLevelScaling', true, 'pp_refSPLdB', pp_refSPLdB, ...
                         'pp_bMiddleEarFiltering', true, ...
                         'pp_middleEarModel', pp_middleEarModel, ...
                         'fb_type', 'gammatone', 'fb_cfHz', fb_cfHz);
-
                     
 %% PERFORM PROCESSING
 % 
@@ -104,7 +103,7 @@ plot(tSec, dObj_DRNL.filterbank{1}.Data(:));
 xlim([tSec(1) tSec(end)]);
 title(sprintf('DRNL filterbank output at %d Hz', dObj_DRNL.filterbank{1}.cfHz));
 xlabel('Time (s)');
-ylabel('Amplitude (x 1E$^{-5}$)')
+ylabel('Amplitude')
 
 
 

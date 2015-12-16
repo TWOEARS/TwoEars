@@ -186,6 +186,17 @@ classdef preProc < Processor
                 end
             end
             
+            if pObj.bUnityComp
+                switch pObj.middleEarModel
+                    case 'jepsen'
+                        pObj.meFilterPeakdB = 55.9986;
+                    case 'lopezpoveda'
+                        pObj.meFilterPeakdB = 66.2888;
+                end
+            else
+                pObj.meFilterPeakdB = 0;
+            end
+
             if pObj.bMiddleEarFiltering
                 data_l = pObj.midEarFilter_l.filter(data_l)* 10^(pObj.meFilterPeakdB/20);
                 data_r = pObj.midEarFilter_r.filter(data_r)* 10^(pObj.meFilterPeakdB/20);
@@ -236,16 +247,16 @@ classdef preProc < Processor
 %             if numel(p.pp_refSPLdB)>2
 %                 fprintf('More than two refSPLdB values given - only the first two will be used (L/R)');
 %             end
-            if pObj.bUnityComp
-                switch pObj.middleEarModel
-                    case 'jepsen'
-                        pObj.meFilterPeakdB = 55.9986;
-                    case 'lopezpoveda'
-                        pObj.meFilterPeakdB = 66.2888;
-                end
-            else
-                pObj.meFilterPeakdB = 0;
-            end
+%             if pObj.bUnityComp
+%                 switch pObj.middleEarModel
+%                     case 'jepsen'
+%                         pObj.meFilterPeakdB = 55.9986;
+%                     case 'lopezpoveda'
+%                         pObj.meFilterPeakdB = 66.2888;
+%                 end
+%             else
+%                 pObj.meFilterPeakdB = 0;
+%             end
         end
         
     end
