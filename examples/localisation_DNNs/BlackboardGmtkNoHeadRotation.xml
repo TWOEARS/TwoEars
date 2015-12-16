@@ -4,8 +4,7 @@
     <dataConnection Type="AuditoryFrontEndKS"/>
 
     <KS Name="loc" Type="GmtkLocationKS">
-        <Param Type="char">5deg</Param>
-        <Param Type="int">5</Param>
+        <Param Type="char">default</Param>
     </KS>
     <KS Name="conf" Type="ConfusionKS">
         <!-- Disable confusion solving (== no head rotation) -->
