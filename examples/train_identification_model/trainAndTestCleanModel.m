@@ -2,8 +2,6 @@ function trainAndTestCleanModel( classname )
 
 if nargin < 1, classname = 'speech'; end;
 
-startTwoEars( 'Config.xml' );
-
 pipe = TwoEarsIdTrainPipe();
 pipe.featureCreator = featureCreators.FeatureSet1Blockmean();
 pipe.modelCreator = modelTrainers.GlmNetLambdaSelectTrainer( ...

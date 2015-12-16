@@ -1,6 +1,5 @@
 function colorationWfsLinearOffoffcenter()
 
-startTwoEars('Config.xml');
 addpath('common');
 
 %% ===== Configuration ===================================================

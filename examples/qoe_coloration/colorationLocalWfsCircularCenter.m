@@ -1,6 +1,5 @@
 function colorationLocalWfsCircularCenter()
 
-startTwoEars('Config.xml');
 addpath('common');
 
 %% ===== Configuration ===================================================
