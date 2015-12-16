@@ -33,115 +33,7 @@ classdef SegmentationKS < AuditoryFrontEndDepKS
         dataPath = ...              % Path for storing trained models
             fullfile(xml.dbPath, 'learned_models', 'SegmentationKS');
     end
-
-    methods (Static, Hidden)
-        function fileList = getFiles(folder, extension)
-            % GETFILES Returns a cell-array, containing a list of files
-            %   with a specified extension.
-            %
-            % REQUIRED INPUTS:
-            %    folder - Path pointing to the folder that should be
-            %       searched.
-            %    extension - String, specifying the file extension that
-            %       should be searched.
-            %
-            % OUTPUTS:
-            %    fileList - Cell-array containing all files that were found
-            %       in the folder. If no files with the specified extension
-            %       were found, an empty cell-array is returned.
-
-            % Check inputs
-            p = inputParser();
-
-            p.addRequired('folder', @isdir);
-            p.addRequired('extension', @ischar);
-            parse(p, folder, extension);
-
-            % Get all files in folder
-            fileList = dir(fullfile(p.Results.folder, ...
-                ['*.', p.Results.extension]));
-
-            % Return cell-array of filenames
-            fileList = {fileList(:).name};
-        end
-
-        function [nData, dataMean, whiteningMatrix] = whitenData(data)
-            % WHITENDATA This function performs a whitening
-            %   transformation on a matrix containing data points.
-            %
-            % REQUIRED INPUTS:
-            %   data - Input data matrix of dimensions N x D, where N is
-            %       the number of data samples and D is the data dimension.
-            %
-            % OUTPUTS:
-            %   nData - Normalized data matrix, having zero mean and unit
-            %       variance.
-            %   dataMean - D x 1 vector, representing the mean of the data
-            %              samples.
-            %   whiteningMatrix - Transformation matrix for performing the
-            %       whitening transform on the given dataset.
-
-            % Check inputs
-            p = inputParser();
-
-            p.addRequired('data', @(x) validateattributes(x, ...
-                {'numeric'}, {'real', '2d'}));
-            p.parse(data);
-
-            % Check if data matrix is skinny
-            [nSamples, nDims] = size(data);
-            if nDims >= nSamples
-                error(['The number of data samples must be ', ...
-                    'greater than the data dimension.']);
-            end
-
-            % Compute mean and covariance matrix of the input data
-            dataMean = mean(p.Results.data);
-            dataCov = cov(p.Results.data);
-
-            % Compute whitening matrix
-            [V, D] = eig(dataCov);
-            whiteningMatrix = ...
-                V * diag(1 ./ (diag(D) + eps).^(1/2)) * V';
-
-            % Compute normalized dataset
-            nData = ...
-                bsxfun(@minus, p.Results.data, dataMean) * whiteningMatrix;
-        end
-
-        function hashValue = generateHash(inputString)
-            % GENERATEHASH This function can be used to generate a MD5 hash
-            %   value for a given string.
-            %
-            % REQUIRED INPUTS:
-            %   inputString - String that should be converted.
-            %
-            % OUTPUTS:
-            %   hashValue - MD5 hash value
-
-            % Check inputs
-            p = inputParser();
-
-            p.addRequired('inputString', @ischar);
-            p.parse(inputString);
-
-            % Convert string to byte-array
-            byteString = java.lang.String(inputString);
-
-            % Generate an instance of the Java "Message Digest" class
-            javaMessageDigest = ...
-                java.security.MessageDigest.getInstance('MD5');
-
-            % Append byte array to hash processor
-            javaMessageDigest.update(byteString.getBytes);
-
-            % Generate hash value and convert back to Matlab string format
-            byteHash = javaMessageDigest.digest();
-            byteHash = java.math.BigInteger(1, byteHash);
-            hashValue = char(byteHash.toString(16));
-        end
-    end
-
+    
     methods (Access = public)
         function obj = SegmentationKS(name, varargin)
             % SEGMENTATIONKS This is the class constructor. This KS can
@@ -358,6 +250,8 @@ classdef SegmentationKS < AuditoryFrontEndDepKS
             if obj.bBackground
                 % Generate segmentation hypothesis for background noise
                 idString = ['1', num2str(obj.lastExecutionTime_s)];
+                bgIdentifier = generateHash(idString);
+                
                 bgIdentifier = obj.generateHash(idString);
 
                 % Get soft mask of background noise
@@ -380,8 +274,8 @@ classdef SegmentationKS < AuditoryFrontEndDepKS
                 % Generate source identifier
                 idString = [num2str(sourceIdx), ...
                     num2str(obj.lastExecutionTime_s)];
-                sourceIdentifier = obj.generateHash(idString);
-
+                sourceIdentifier = generateHash(idString);
+                
                 % Get soft mask for current source
                 softMask = ...
                     reshape(probMap(:, sourceIdx), nFrames, nChannels);

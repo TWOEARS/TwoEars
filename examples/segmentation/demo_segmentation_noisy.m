@@ -12,6 +12,9 @@
 %   Ruhr-Universitaet Bochum
 %   Universitaetsstr. 150, 44801 Bochum
 
+% Start the Two!Ears auditory model
+startTwoEars('segmentation_config.xml');
+
 % Initialize Binaural Simulator
 sim = simulator.SimulatorConvexRoom('test_scene_noise.xml');
 
@@ -61,7 +64,7 @@ title('Estimated soft mask for background noise.')
 for k = 2 : 4
     % Get hypotheses for current source
     softMask = hypotheses{end}.segmentationHypotheses(k).softMask;
-    position = hypotheses{end}.positionHypotheses(k - 1).sourcePosition;
+    position = hypotheses{end}.sourceAzimuthHypotheses(k - 1).sourceAzimuth;
     
     % Convert position from [rad] to [deg]
     position = position * 180 / pi;

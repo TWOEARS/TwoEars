@@ -11,6 +11,9 @@
 %   Ruhr-Universitaet Bochum
 %   Universitaetsstr. 150, 44801 Bochum
 
+% Start the Two!Ears auditory model
+startTwoEars('segmentation_config.xml');
+
 % Initialize Binaural Simulator
 sim = simulator.SimulatorConvexRoom('test_scene_clean.xml');
 
@@ -45,7 +48,7 @@ figure(1)
 for k = 1 : 3
     % Get hypotheses for current source
     softMask = hypotheses{end}.segmentationHypotheses(k).softMask;
-    position = hypotheses{end}.positionHypotheses(k).sourcePosition;
+    position = hypotheses{end}.sourceAzimuthHypotheses(k).sourceAzimuth;
     
     % Convert position from [rad] to [deg]
     position = position * 180 / pi;
