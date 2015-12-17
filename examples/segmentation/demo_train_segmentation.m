@@ -10,9 +10,6 @@
 %   Ruhr-Universitaet Bochum
 %   Universitaetsstr. 150, 44801 Bochum
 
-% Start the Two!Ears auditory model
-startTwoEars('segmentation_config.xml');
-
 %% Step 1: Create an instance of the KS that should be trained
 
 % Each instance needs an unique identifier, specified as a string
