@@ -551,7 +551,7 @@ classdef SegmentationKS < AuditoryFrontEndDepKS
 
                     % Perform whitening on features
                     [features, featureMean, whiteningMatrix] = ...
-                        obj.whitenData(features);
+                        whitenData(features);
 
                     % Train SVM regression model
                     trainingParams = sprintf('-s 4 -t 0 -m 512 -h 0 -q');
