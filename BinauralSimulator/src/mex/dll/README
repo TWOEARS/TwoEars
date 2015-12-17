@@ -1,0 +1,42 @@
+## libfftw3f-3.dll
+
+This binary is part of the FFTW library for computing Fourier transforms
+(version 3.x). It is licensed under the GPLv2. The binary can be found at
+http://www.fftw.org/install/windows.html. The source code can be found at
+https://github.com/FFTW/fftw3
+
+Copyright (c) 2003, 2007-14 Matteo Frigo
+Copyright (c) 2003, 2007-14 Massachusetts Institute of Technology
+
+## libsndfile-1.dll
+
+This binary is part of the libsndfile for reading and writing files containing
+sampled sound. It is licensed under the LGPLv2.1. The binary can be found at
+http://www.mega-nerd.com/libsndfile/#Download. The source code can be found at
+https://github.com/erikd/libsndfile
+
+Copyright (c) 2007-2015 Erik de Castro Lopo
+
+## libxml2-2.dll
+
+This binary is part of the libxml2 for parsing XML files. The binary can be
+found at ftp://ftp.zlatkovic.com/libxml/64bit/. The source code and license
+information can be found at https://git.gnome.org/browse/libxml2/
+
+Copyright (c) 1998-2012 Daniel Veillard
+
+##  zlib1.dll
+
+This binary is part of the zlib for general compression purposes. The binary can
+be found at ftp://ftp.zlatkovic.com/libxml/64bit/. The source code and license
+information can be found at https://github.com/madler/zlib
+
+Copyright (c) 1995-2013 Jean-loup Gailly and Mark Adler
+
+##  iconv1.dll
+
+This binary is part of the libiconv. It is licensed under the GPL. The binary
+can and the source code can be found at
+http://gnuwin32.sourceforge.net/packages/libiconv.htm
+
+Copyright (c) 1998, 2010 Free Software Foundation, Inc
