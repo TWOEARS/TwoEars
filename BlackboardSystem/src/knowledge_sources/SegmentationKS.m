@@ -31,9 +31,9 @@ classdef SegmentationKS < AuditoryFrontEndDepKS
                                     % additionally?
         bVerbose = false            % Display processing information?
         dataPath = ...              % Path for storing trained models
-            fullfile(xml.dbPath, 'learned_models', 'SegmentationKS');
+            fullfile('learned_models', 'SegmentationKS');
     end
-    
+
     methods (Access = public)
         function obj = SegmentationKS(name, varargin)
             % SEGMENTATIONKS This is the class constructor. This KS can
@@ -161,14 +161,14 @@ classdef SegmentationKS < AuditoryFrontEndDepKS
             % Check if trained models are available
             filename = [obj.name, '_models_', ...
                 cell2mat(obj.reqHashs), '.mat'];
-            if ~exist(fullfile(obj.dataPath, obj.name, filename), 'file')
-                warning(['No trained models are available for this ', ...
-                    'KS. Please ensure to run KS training first.']);
-            else
+            try
                 % Load available models and add them to object props
-                models = load(fullfile(obj.dataPath, obj.name, filename));
-                obj.localizationModels = models.locModels;
+                models = load(xml.dbGetFile(fullfile(obj.dataPath, obj.name, filename)));
+            catch
+                error(['No trained models are available for this ', ...
+                       'KS. Please ensure to run KS training first.']);
             end
+            obj.localizationModels = models.locModels;
         end
 
         function [bExecute, bWait] = canExecute(obj)
@@ -251,8 +251,6 @@ classdef SegmentationKS < AuditoryFrontEndDepKS
                 % Generate segmentation hypothesis for background noise
                 idString = ['1', num2str(obj.lastExecutionTime_s)];
                 bgIdentifier = generateHash(idString);
-                
-                bgIdentifier = obj.generateHash(idString);
 
                 % Get soft mask of background noise
                 bgSoftMask = reshape(probMap(:, 1), nFrames, nChannels);
@@ -275,7 +273,7 @@ classdef SegmentationKS < AuditoryFrontEndDepKS
                 idString = [num2str(sourceIdx), ...
                     num2str(obj.lastExecutionTime_s)];
                 sourceIdentifier = generateHash(idString);
-                
+
                 % Get soft mask for current source
                 softMask = ...
                     reshape(probMap(:, sourceIdx), nFrames, nChannels);
@@ -335,7 +333,7 @@ classdef SegmentationKS < AuditoryFrontEndDepKS
             end
 
             % Check if training data has already been generated
-            filelist = obj.getFiles(dataFolder, 'mat');
+            filelist = getFiles(dataFolder, 'mat');
             if ~isempty(filelist)
                 warning(['Training data for current KS is already ', ...
                     'available. Please run the ', ...
@@ -438,7 +436,7 @@ classdef SegmentationKS < AuditoryFrontEndDepKS
             end
 
             % Get all mat-files from training folder
-            filelist = obj.getFiles(trainingFolder, 'mat');
+            filelist = getFiles(trainingFolder, 'mat');
             if isempty(filelist)
                 error([trainingFolder, ' does not contain any ', ...
                     'training files.']);
@@ -491,7 +489,7 @@ classdef SegmentationKS < AuditoryFrontEndDepKS
             end
 
             % Get all mat-files from training folder
-            filelist = obj.getFiles(trainingFolder, 'mat');
+            filelist = getFiles(trainingFolder, 'mat');
             if isempty(filelist)
                 error([trainingFolder, ' does not contain any ', ...
                     'training files. Please run the method ', ...
