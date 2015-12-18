@@ -3,6 +3,9 @@ function localise()
 
 warning('off','all');
 
+% Initialize Two!Ears model and check dependencies
+startTwoEars('Config.xml');
+
 % === Configuration
 % Different source positions given by BRIRs
 % see:
@@ -34,16 +37,10 @@ for ii = 1:length(sourceAngles)
     phi1 = estimateAzimuth(sim, 'BlackboardDnn.xml');                % DnnLocationKS w head movements
     resetBinauralSimulator(sim, headOrientation);
     phi2 = estimateAzimuth(sim, 'BlackboardDnnNoHeadRotation.xml');  % DnnLocationKS wo head movements
-    resetBinauralSimulator(sim, headOrientation);
-    phi3 = estimateAzimuth(sim, 'BlackboardGmtk.xml');               % GmtkLocationKS w head movements
-    resetBinauralSimulator(sim, headOrientation);
-    phi4 = estimateAzimuth(sim, 'BlackboardGmtkNoHeadRotation.xml'); % GmtkLocationKS wo head movements
 
     printLocalisationTableColumn(direction, ...
                                  phi1 - headOrientation, ...
-                                 phi2 - headOrientation, ...
-                                 phi3 - headOrientation, ...
-                                 phi4 - headOrientation);
+                                 phi2 - headOrientation);
 
     sim.ShutDown = true;
 end
@@ -55,19 +52,18 @@ end % of main function
 
 function printLocalisationTableHeader()
     fprintf('\n');
-    fprintf('------------------------------------------------------------------------------------------------------------------------------------\n');
-    fprintf('Source direction   DnnLocationKS w head rot.   DnnLocationKS wo head rot.   GmtkLocationKS w head rot.   GmtkLocationKS wo head rot.\n');
-    fprintf('------------------------------------------------------------------------------------------------------------------------------------\n');
+    fprintf('-------------------------------------------------------------------------\n');
+    fprintf('Source direction   DnnLocationKS w head rot.   DnnLocationKS wo head rot.\n');
+    fprintf('-------------------------------------------------------------------------\n');
 end
 
-function printLocalisationTableColumn(direction, phi1, phi2, phi3, phi4)
-    fprintf('     %4.0f              %4.0f                       %4.0f                        %4.0f                        %4.0f\n', ...
-            wrapTo180(direction), wrapTo180(phi1), wrapTo180(phi2), ...
-            wrapTo180(phi3), wrapTo180(phi4));
+function printLocalisationTableColumn(direction, phi1, phi2)
+    fprintf('     %4.0f              %4.0f                       %4.0f\n', ...
+            wrapTo180(direction), wrapTo180(phi1), wrapTo180(phi2));
 end
 
 function printLocalisationTableFooter()
-    fprintf('------------------------------------------------------------------------------------------------------------------------------------\n');
+    fprintf('------------------------------------------------------------------------\n');
 end
 
 % vim: set sw=4 ts=4 expandtab textwidth=90 :
