@@ -1,10 +1,14 @@
 classdef GlmNetLambdaSelectTrainer < modelTrainers.Base & Parameterized
     
     %% -----------------------------------------------------------------------------------
-    properties (Access = private)
+    properties (SetAccess = {?Parameterized})
         cvTrainer;
         coreTrainer;
         fullSetModel;
+        alpha;
+        family;
+        nLambda;
+        cvFolds;
     end
     
     %% -----------------------------------------------------------------------------------
@@ -43,11 +47,11 @@ classdef GlmNetLambdaSelectTrainer < modelTrainers.Base & Parameterized
         function buildModel( obj, ~, ~ )
             verboseFprintf( obj, '\nRun on full trainSet...\n' );
             obj.coreTrainer = modelTrainers.GlmNetTrainer( ...
-                'performanceMeasure', obj.parameters.performanceMeasure, ...
-                'maxDataSize', obj.parameters.maxDataSize, ...
-                'alpha', obj.parameters.alpha, ...
-                'family', obj.parameters.family, ...
-                'nLambda', obj.parameters.nLambda );
+                'performanceMeasure', obj.performanceMeasure, ...
+                'maxDataSize', obj.maxDataSize, ...
+                'alpha', obj.alpha, ...
+                'family', obj.family, ...
+                'nLambda', obj.nLambda );
             obj.coreTrainer.setData( obj.trainSet, obj.testSet );
             obj.coreTrainer.setPositiveClass( obj.positiveClass );
             obj.coreTrainer.run();
@@ -59,38 +63,23 @@ classdef GlmNetLambdaSelectTrainer < modelTrainers.Base & Parameterized
             obj.cvTrainer.setPerformanceMeasure( obj.performanceMeasure );
             obj.cvTrainer.setPositiveClass( obj.positiveClass );
             obj.cvTrainer.setData( obj.trainSet, obj.testSet );
-            obj.cvTrainer.setNumberOfFolds( obj.parameters.cvFolds );
+            obj.cvTrainer.setNumberOfFolds( obj.cvFolds );
             obj.cvTrainer.run();
             cvModels = obj.cvTrainer.models;
             verboseFprintf( obj, 'Calculate Performance for all lambdas...\n' );
             lPerfs = zeros( numel( lambdas ), numel( cvModels ) );
-            coefs = zeros( numel( lambdas ), numel( cvModels ), ...
-                           obj.fullSetModel.model.dim(1) );
-            coefsNum = zeros( numel( lambdas ), numel( cvModels ) );
-            for ll = 1 : numel( lambdas )
-                for ii = 1 : numel( cvModels )
-                    cvModels{ii}.setLambda( lambdas(ll) );
-                    lPerfs(ll,ii) = models.Base.getPerformance( ...
-                        cvModels{ii}, obj.cvTrainer.folds{ii}, obj.positiveClass, ...
-                        obj.performanceMeasure );
-                    coefsPlusIntercept = glmnetCoef( cvModels{ii}.model, lambdas(ll) );
-                    coefs(ll,ii,:) = coefsPlusIntercept(2:end);
-                    coefsNorm(ll,ii,:) = coefs(ll,ii,:) ./ sum( abs( coefs(ll,ii,:) ) );
-                    coefsNum(ll,ii) = sum( coefsNorm(ll,ii,:) ~= 0 );
-                    verboseFprintf( obj, '.' );
-                end
+            for ii = 1 : numel( cvModels )
+                cvModels{ii}.setLambda( [] );
+                lPerfs(:,ii) = models.Base.getPerformance( ...
+                    cvModels{ii}, obj.cvTrainer.folds{ii}, obj.positiveClass, ...
+                    obj.performanceMeasure );
+                verboseFprintf( obj, '.' );
             end
             obj.fullSetModel.lPerfsMean = mean( lPerfs, 2 );
             obj.fullSetModel.lPerfsStd = std( lPerfs, [], 2 );
-            obj.fullSetModel.nCoefs = mean( coefsNum, 2 );
-            obj.fullSetModel.coefsRelAvg = squeeze( mean( coefsNorm, 2 ) );
-            obj.fullSetModel.coefsRelStd = squeeze( std( coefsNorm, [], 2 ) );
-            obj.fullSetModel.coefsCV = coefs;
             verboseFprintf( obj, 'Done\n' );
-            obj.fullSetModel.lambdasSortedByPerf = sortrows( ...
-                [lambdas,obj.fullSetModel.lPerfsMean - obj.fullSetModel.lPerfsStd], 2 );
-            bestLambda = mean( obj.fullSetModel.lambdasSortedByPerf(end-2:end,1) );
-            obj.fullSetModel.setLambda( bestLambda );
+            lambdasSortedByPerf = sortrows( [lambdas,obj.fullSetModel.lPerfsMean], 2 );
+            obj.fullSetModel.setLambda( lambdasSortedByPerf(end,1) );
         end
         %% -------------------------------------------------------------------------------
         

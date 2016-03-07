@@ -1,33 +1,39 @@
-classdef MultiConfigurationsEarSignalProc < core.IdProcInterface
+classdef MultiConfigurationsEarSignalProc < dataProcs.BinSimProcInterface
     
-    %% --------------------------------------------------------------------
+    %% -----------------------------------------------------------------------------------
     properties (SetAccess = private)
         sceneConfigurations;
-        binauralSim;
-        singleConfFiles;
-        singleConfs;
+        sceneProc;
+        singleScFiles;
+        singleSCs;
         outputWavFileName;
     end
     
-    %% --------------------------------------------------------------------
+    %% -----------------------------------------------------------------------------------
     methods (Static)
     end
     
-    %% --------------------------------------------------------------------
+    %% -----------------------------------------------------------------------------------
     methods (Access = public)
         
-        function obj = MultiConfigurationsEarSignalProc( binauralSim )
-            obj = obj@core.IdProcInterface();
-            if ~isa( binauralSim, 'dataProcs.BinSimProcInterface' )
-                error( 'binauralSim must implement dataProcs.BinSimProcInterface.' );
+        function obj = MultiConfigurationsEarSignalProc( sceneProc )
+            obj = obj@dataProcs.BinSimProcInterface();
+            if ~isa( sceneProc, 'dataProcs.BinSimProcInterface' )
+                error( 'sceneProc must implement dataProcs.BinSimProcInterface.' );
             end
-            obj.binauralSim = binauralSim;
-            obj.sceneConfigurations = dataProcs.SceneConfiguration.empty;
+            obj.sceneProc = sceneProc;
+            obj.sceneConfigurations = sceneConfig.SceneConfiguration.empty;
         end
         %% ----------------------------------------------------------------
         
         function setSceneConfig( obj, sceneConfig )
+            obj.configChanged = true;
             obj.sceneConfigurations = sceneConfig;
+        end
+        %% ----------------------------------------------------------------
+
+        function fs = getDataFs( obj )
+            fs = obj.sceneProc.getDataFs();
         end
         %% ----------------------------------------------------------------
 
@@ -38,46 +44,50 @@ classdef MultiConfigurationsEarSignalProc < core.IdProcInterface
         
     end
 
-    %% --------------------------------------------------------------------
+    %% -----------------------------------------------------------------------------------
     methods (Access = protected)
         
         function outputDeps = getInternOutputDependencies( obj )
-            for ii = 1 : length( obj.sceneConfigurations )
+            for ii = 1 : numel( obj.sceneConfigurations )
                 outDepName = sprintf( 'sceneConfig%d', ii );
-                obj.binauralSim.setSceneConfig( obj.sceneConfigurations(ii) );
-                outputDeps.(outDepName) = obj.binauralSim.getInternOutputDependencies;
+                obj.sceneProc.setSceneConfig( obj.sceneConfigurations(ii) );
+                outputDeps.(outDepName) = obj.sceneProc.getInternOutputDependencies;
             end
         end
         %% ----------------------------------------------------------------
 
         function out = getOutput( obj )
-            out.singleConfFiles = obj.singleConfFiles;
-            out.singleConfs = obj.singleConfs;
+            out.singleScFiles = obj.singleScFiles;
+            out.singleSCs = obj.singleSCs;
             out.wavFileName = obj.outputWavFileName;
         end
         %% ----------------------------------------------------------------
         
         function makeEarsignalsAndLabels( obj, wavFileName )
-            obj.singleConfFiles = {};
-            obj.singleConfs = [];
+            obj.singleScFiles = {};
+            obj.singleSCs = [];
             for ii = 1 : numel( obj.sceneConfigurations )
-                sceneConf = obj.sceneConfigurations(ii);
-                obj.binauralSim.setSceneConfig( sceneConf );
-                if ~obj.binauralSim.hasFileAlreadyBeenProcessed( wavFileName )
-                    obj.binauralSim.process( wavFileName );
-                    obj.binauralSim.saveOutput( wavFileName );
+                obj.sceneProc.setSceneConfig( obj.sceneConfigurations(ii) );
+                if ~obj.sceneProc.hasFileAlreadyBeenProcessed( wavFileName )
+                    obj.sceneProc.process( wavFileName );
+                    obj.sceneProc.saveOutput( wavFileName );
                 end
-                obj.singleConfFiles{ii} = obj.binauralSim.getOutputFileName( wavFileName );
-                obj.singleConfs{ii} = obj.binauralSim.getInternOutputDependencies;
-                fprintf( '.' );
+                obj.singleScFiles{ii} = obj.sceneProc.getOutputFileName( wavFileName );
+                obj.singleSCs{ii} = obj.sceneProc.getInternOutputDependencies;
+                fprintf( ';' );
             end
             fprintf( '\n' );
         end
         %% ----------------------------------------------------------------
         
+        function precProcFileNeeded = needsPrecedingProcResult( obj, inFileName )
+            precProcFileNeeded = true; % it's the first proc in the pipe.
+        end
+        %% -----------------------------------------------------------------
+        
     end
     
-    %% --------------------------------------------------------------------
+    %% -----------------------------------------------------------------------------------
     methods (Access = private)
     end
     

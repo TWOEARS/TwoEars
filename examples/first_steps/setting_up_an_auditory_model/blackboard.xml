@@ -3,9 +3,7 @@
 
     <dataConnection Type="AuditoryFrontEndKS"/>
 
-    <KS Name="loc" Type="LocationKS">
-        <Param Type="char">default</Param>
-    </KS>
+    <KS Name="loc" Type="GmmLocationKS"/>
     <KS Name="conf" Type="ConfusionKS"/>
     <KS Name="confSolv" Type="ConfusionSolvingKS"/>
     <KS Name="rot" Type="RotationKS">

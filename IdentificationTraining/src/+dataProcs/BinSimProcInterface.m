@@ -4,6 +4,7 @@ classdef (Abstract) BinSimProcInterface < core.IdProcInterface
     properties (Access = protected)
         earSout;
         onOffsOut;
+        annotsOut;
     end
     
     %% --------------------------------------------------------------------
@@ -22,6 +23,7 @@ classdef (Abstract) BinSimProcInterface < core.IdProcInterface
         function out = getOutput( obj )
             out.earSout = obj.earSout;
             out.onOffsOut = obj.onOffsOut;
+            out.annotsOut = obj.annotsOut;
         end
         %% ----------------------------------------------------------------
        

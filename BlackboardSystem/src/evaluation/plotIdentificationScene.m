@@ -11,7 +11,7 @@ if isempty( hlin )
     title( axh, 'Identity Information' );
     xlabel( axh, 'time (s)' );
     hlin = line( [0 0], [0 0], ...
-        'DisplayName', 'Ground Truth', 'LineWidth', 2, 'Color', [0 0 0], 'Parent', axh );
+        'DisplayName', 'Ground Truth', 'LineWidth', 3, 'Color', [0 0 0], 'Parent', axh );
 end
 if isempty( hscores )
     hscores = containers.Map('KeyType','char','ValueType','any');
@@ -48,7 +48,7 @@ for ii = 1 : numel( idLabels )
     if ~isKey( hscores, idLabels{ii} )
         hscores(idLabels{ii}) = ...
             plot( idScores.(idLabels{ii}).x, idScores.(idLabels{ii}).y, ...
-            'Parent', axh, 'DisplayName', idLabels{ii}, 'LineWidth', 2, 'LineStyle', '--' );
+            'Parent', axh, 'DisplayName', idLabels{ii}, 'LineWidth', 4, 'LineStyle', '--' );
     else
         set( hscores(idLabels{ii}), ...
             'XData', idScores.(idLabels{ii}).x, 'YData', idScores.(idLabels{ii}).y );

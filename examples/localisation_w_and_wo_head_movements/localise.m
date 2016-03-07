@@ -3,6 +3,9 @@ function localise()
 
 warning('off','all');
 
+% Initialize Two!Ears model and check dependencies
+startTwoEars('Config.xml');
+
 % Different angles the sound source is placed at
 sourceAngles = [0 33 76 239];
 

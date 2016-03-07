@@ -3,6 +3,9 @@ function localise()
 
 warning('off','all');
 
+% Initialize Two!Ears model and check dependencies
+startTwoEars('Config.xml');
+
 % === Configuration
 % Different source positions given by BRIRs
 % see:

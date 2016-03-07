@@ -7,7 +7,6 @@ basePath = fileparts(mfilename('fullpath'));
 addpath(fullfile(basePath, 'src', 'blackboard_core'));
 addpath(fullfile(basePath, 'src', 'blackboard_data'));
 addpath(fullfile(basePath, 'src', 'evaluation'));
-addpath(fullfile(basePath, 'src', 'gmtk_matlab_interface'));
 addpath(fullfile(basePath, 'src', 'knowledge_sources'));
 addpath(genpath(fullfile(basePath, 'src', 'tools')));
 

@@ -39,8 +39,9 @@ classdef IdentityKS < AuditoryFrontEndDepKS
             afeData = obj.getAFEdata();
             afeData = obj.featureCreator.cutDataBlock( afeData, obj.timeSinceTrigger );
             
-            x = obj.featureCreator.makeDataPoint( afeData );
-            [d, score] = obj.model.applyModel( x );
+            obj.featureCreator.setAfeData( afeData );
+            x = obj.featureCreator.constructVector();
+            [d, score] = obj.model.applyModel( x{1} );
             
             bbprintf(obj, '[IdentitiyKS:] %s with %i%% probability.\n', ...
                      obj.modelname, int16(score(1)*100) );

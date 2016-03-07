@@ -3,9 +3,7 @@
 
     <dataConnection Type="AuditoryFrontEndKS"/>
 
-    <KS Name="loc" Type="GmtkLocationKS">
-        <Param Type="char">default</Param>
-    </KS>
+    <KS Name="loc" Type="GmmLocationKS"/>
     <KS Name="conf" Type="ConfusionKS">
         <!-- Disable confusion solving (== no head rotation) -->
         <Param Type="int">0</Param>

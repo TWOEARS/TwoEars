@@ -56,6 +56,7 @@ classdef IdentificationTrainingPipeline < handle
                 error( 'dataProc must be of type core.IdProcInterface.' );
             end
             dataPipeProc = core.DataPipeProc( dataProc ); 
+            dataPipeProc.init();
             dataPipeProc.connectData( obj.data );
             obj.dataPipeProcs{end+1} = dataPipeProc;
         end
@@ -107,9 +108,13 @@ classdef IdentificationTrainingPipeline < handle
         %           set of models
         %   trainSetShare:  value between 0 and 1. testSet gets share of
         %                   1 - trainSetShare.
-        %   nGenAssessFolds: number of folds of generalization assessment cross validation
+        %   nGenAssessFolds: number of folds of generalization assessment
+        %   cross validation (default: 0 - no folds)
         %
         function modelPath = run( obj, models, nGenAssessFolds )
+            if nargin < 3
+                nGenAssessFolds = 0;
+            end
             cleaner = onCleanup( @() obj.finish() );
             modelPath = obj.createFilesDir();
             
@@ -122,6 +127,16 @@ classdef IdentificationTrainingPipeline < handle
                 if ii > 1
                     obj.dataPipeProcs{ii}.connectToOutputFrom( obj.dataPipeProcs{ii-1} );
                 end
+            end
+            for ii = length( obj.dataPipeProcs ) : -1 : 1
+                if ii == length( obj.dataPipeProcs )
+                    obj.dataPipeProcs{ii}.checkDataFiles();
+                else
+                    obj.dataPipeProcs{ii}.checkDataFiles(...
+                        obj.dataPipeProcs{ii+1}.precedingFileNeededList);
+                end
+            end
+            for ii = 1 : length( obj.dataPipeProcs )
                 obj.dataPipeProcs{ii}.run();
             end
             
@@ -130,6 +145,29 @@ classdef IdentificationTrainingPipeline < handle
             obj.gatherFeaturesProc.connectToOutputFrom( obj.dataPipeProcs{end} );
             obj.gatherFeaturesProc.run();
 
+            if isempty( obj.featureCreator.description )
+                afe = obj.dataPipeProcs{end-1}.dataFileProcessor.afeProc;
+                obj.featureCreator.dummyProcess( afe.makeDummyData );
+            end
+            featureCreator = obj.featureCreator;
+            lastDataProcParams = obj.dataPipeProcs{end}.getOutputDependencies();
+            if strcmp(models{1}, 'dataStore')
+                data = obj.data;
+                save( 'dataStore.mat', ...
+                      'data', 'featureCreator', 'lastDataProcParams', '-v7.3' );
+                return; 
+            elseif strcmp(models{1}, 'dataStoreUni')
+                x = obj.data(:,:,'x');
+                classnames = obj.data.classNames;
+                featureNames = obj.featureCreator.description;
+                for ii = 1 : length( classnames )
+                    y(:,ii) = obj.data(:,:,'y', classnames{ii});
+                end
+                save( 'dataStoreUni.mat', ...
+                      'x', 'y', 'classnames', 'featureNames', '-v7.3' );
+                return; 
+            end;
+            
             for modelName = models
                 fprintf( ['\n\n===================================\n',...
                               '##   Training model "%s"\n',...
@@ -150,9 +188,13 @@ classdef IdentificationTrainingPipeline < handle
                 tic;
                 obj.trainer.run();
                 trainTime = toc;
+                testTime = nan;
+                testPerfresults = [];
                 if ~isempty( obj.testSet )
                     fprintf( '\n==  Testing model on testSet... \n\n' );
+                    tic;
                     testPerfresults = obj.trainer.getPerformance();
+                    testTime = toc;
                     if numel( testPerfresults ) == 1
                         fprintf( ['\n\n===================================\n',...
                             '##   "%s" Performance: %f\n',...
@@ -164,17 +206,13 @@ classdef IdentificationTrainingPipeline < handle
                             '===================================\n\n'], ...
                             modelName{1} );
                     end
-                else
-                    testPerfresults = [];
                 end
                 model = obj.trainer.getModel();
-                featureCreator = obj.featureCreator;
                 modelFileExt = ['.model.mat'];
                 modelFilename = [modelName{1} modelFileExt];
-                lastDataProcParams = obj.dataPipeProcs{end}.getOutputDependencies();
                 save( modelFilename, ...
                       'model', 'featureCreator', ...
-                      'testPerfresults', 'trainTime', 'lastDataProcParams' );
+                      'testPerfresults', 'trainTime', 'testTime', 'lastDataProcParams' );
             end;
         end
         

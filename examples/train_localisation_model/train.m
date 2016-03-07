@@ -12,6 +12,9 @@ function train(name, sceneDescription, angularResolution)
 
 warning('off','all');
 
+% Initialize Two!Ears model and check dependencies
+startTwoEars('Config.xml');
+
 % Check input parameters
 narginchk(3,3)
 isargchar(name)

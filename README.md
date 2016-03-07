@@ -45,6 +45,12 @@ licensed under [GNU General Public License, version
 `RoboticPlatform` and the `Tools` folder are licensed under [The BSD 2-Clause
 License](http://opensource.org/licenses/BSD-2-Clause).
 
+## Development
+
+If you are interested in getting involved in the development of the Two!Ears
+model, please visit the [development documentation
+page](http://twoears.aipa.tu-berlin.de/doc/latest/dev/).
+
 ## Funding
 
 This project has received funding from the European Union’s Seventh Framework

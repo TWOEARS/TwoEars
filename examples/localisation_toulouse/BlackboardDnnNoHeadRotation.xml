@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<blackboardsystem>
+
+    <dataConnection Type="AuditoryFrontEndKS">
+       <Param Type="double">16000</Param>
+    </dataConnection>
+
+    <KS Name="loc" Type="DnnLocationKS">
+        <Param Type="int">16</Param>
+    </KS>
+    <KS Name="conf" Type="ConfusionKS">
+        <!-- Disable confusion solving (== no head rotation) -->
+        <Param Type="int">0</Param>
+    </KS>
+
+    <Connection Mode="replaceOld" Event="AgendaEmpty">
+        <source>scheduler</source>
+        <sink>dataConnect</sink>
+    </Connection>
+    <Connection Mode="replaceOld">
+        <source>dataConnect</source>
+        <sink>loc</sink>
+    </Connection>
+    <Connection Mode="add">
+        <source>loc</source>
+        <sink>conf</sink>
+    </Connection>
+
+</blackboardsystem>

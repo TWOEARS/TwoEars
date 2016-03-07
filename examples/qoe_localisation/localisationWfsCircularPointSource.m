@@ -17,6 +17,9 @@ binSimFile = 'experiments/2013-11-01_sfs_localisation/2013-11-01_sfs_localisatio
 
 
 %% ===== Main ============================================================
+% Initialize Two!Ears model and check dependencies
+startTwoEars('Config.xml');
+
 fprintf(1, '\nPROCESS HUMAN LABEL FILE: %s\n', humanLabelFile);
 
 % Get human labels

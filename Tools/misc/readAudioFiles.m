@@ -92,10 +92,12 @@ if nargout>1
     end
     for ii = 1:nFiles
         labels(ii).filename = audioFiles{ii};
-        labels(ii).class = IdEvalFrame.readEventClass( audioFiles{ii} );
         labels(ii).onsetsOffsets = ...
             IdEvalFrame.readOnOffAnnotations(audioFiles{ii}) + nZeros/fsDesired;
-        if isempty(labels(ii).onsetsOffsets)
+        if ~isempty(labels(ii).onsetsOffsets)
+            labels(ii).class = repmat( IdEvalFrame.readEventClass( audioFiles{ii} ), ...
+                                       size( labels(ii).onsetsOffsets, 1 ), 1 );
+        else
             labels(ii).class = [];
         end
         labels(ii).cumOnsetsOffsets = ...

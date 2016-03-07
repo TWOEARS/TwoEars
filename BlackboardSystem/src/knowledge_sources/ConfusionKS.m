@@ -4,7 +4,7 @@ classdef ConfusionKS < AbstractKS
     % rotation will be triggered.
 
     properties (SetAccess = private)
-        postThreshold = 0.1;       % Distribution probability threshold for a valid
+        postThreshold = 0.01;       % Distribution probability threshold for a valid
                                    % SourcesAzimuthsDistributionHypothesis
         bSolveConfusion = true;    % Invoke ConfusionSolvingKS
     end

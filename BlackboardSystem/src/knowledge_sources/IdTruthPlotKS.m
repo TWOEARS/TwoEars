@@ -14,6 +14,7 @@ classdef IdTruthPlotKS < AuditoryFrontEndDepKS
             obj = obj@AuditoryFrontEndDepKS(requests);
             obj.invocationMaxFrequency_Hz = inf;
             obj.fig = figure('Name','Identification: Truth vs Model');
+            set( obj.fig, 'ButtonDownFcn', @IdTruthPlotKS.pauseToggle );
             obj.subplots(1) = subplot(3,1,1,'Parent',obj.fig);
             obj.subplots(2) = subplot(3,1,[2,3],'Parent',obj.fig);
             clear plotIdentificationScene;
@@ -43,6 +44,14 @@ classdef IdTruthPlotKS < AuditoryFrontEndDepKS
             set( gca, 'XTick', [] );
             plotIdentificationScene( obj.subplots(2), ...
                 obj.labels, obj.onOffsets, idHyps, timeRange );
+            drawnow;
+        end
+        
+    end
+    
+    methods (Static)
+        function pauseToggle(src,~)
+            pause
         end
     end
 end

@@ -4,5 +4,6 @@
 
 basePath = fileparts(mfilename('fullpath'));
 addpath(genpath(fullfile(basePath, 'src')))
+addpath(genpath(fullfile(basePath, 'test')))
 
 clear basePath

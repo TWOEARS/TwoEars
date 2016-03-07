@@ -42,9 +42,9 @@ classdef BAC2 < performanceMeasures.Base
         % -----------------------------------------------------------------
     
         function [obj, performance] = calcPerformance( obj, yTrue, yPred )
-            obj.tp = sum( yTrue == 1 & yPred >= 0 );
+            obj.tp = sum( yTrue == 1 & yPred > 0 );
             obj.tn = sum( yTrue == -1 & yPred < 0 );
-            obj.fp = sum( yTrue == -1 & yPred >= 0 );
+            obj.fp = sum( yTrue == -1 & yPred > 0 );
             obj.fn = sum( yTrue == 1 & yPred < 0 );
             tp_fn = sum( yTrue == 1 );
             tn_fp = sum( yTrue == -1 );

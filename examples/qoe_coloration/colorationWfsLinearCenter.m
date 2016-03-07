@@ -1,5 +1,6 @@
 function colorationWfsLinearCenter()
 
+startTwoEars('Config.xml');
 addpath('common');
 
 %% ===== Configuration ===================================================

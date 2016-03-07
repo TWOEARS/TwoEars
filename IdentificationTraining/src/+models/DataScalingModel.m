@@ -15,12 +15,6 @@ classdef (Abstract) DataScalingModel < models.Base
         end
         %% -----------------------------------------------------------------
         
-        function [y,score] = applyModel( obj, x )
-            x = obj.scale2zeroMeanUnitVar( x );
-            [y, score] = obj.applyModelToScaledData( x );
-        end
-        %% -----------------------------------------------------------------
-        
         function x = scale2zeroMeanUnitVar( obj, x, saveScalingFactors )
             if isempty( x ), return; end;
             if nargin > 2 && strcmp( saveScalingFactors, 'saveScalingFactors' )
@@ -33,7 +27,18 @@ classdef (Abstract) DataScalingModel < models.Base
         %% -----------------------------------------------------------------
         
     end
-    
+
+    %% --------------------------------------------------------------------
+    methods (Access = protected)
+            
+        function [y,score] = applyModelMasked( obj, x )
+            x = obj.scale2zeroMeanUnitVar( x );
+            [y, score] = obj.applyModelToScaledData( x );
+        end
+        %% -----------------------------------------------------------------
+    end
+
+    %% --------------------------------------------------------------------
     methods (Abstract, Access = protected)
         [y,score] = applyModelToScaledData( obj, x );
     end

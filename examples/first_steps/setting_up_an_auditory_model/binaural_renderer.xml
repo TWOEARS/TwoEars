@@ -3,6 +3,7 @@
   Renderer="ssr_binaural"
   BlockSize="4096"
   SampleRate="44100"
+  LengthOfSimulation = "3"
   HRIRs="impulse_responses/qu_kemar_anechoic/QU_KEMAR_anechoic_3m.sofa">
   <source Name="Cello"
           Type="point"

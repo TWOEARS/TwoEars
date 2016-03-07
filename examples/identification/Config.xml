@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<requirements>
+    <TwoEarsPart sub="src" startup="startBinauralSimulator">binaural-simulator</TwoEarsPart>
+    <TwoEarsPart branch="master"             startup="startAuditoryFrontEnd">auditory-front-end</TwoEarsPart>
+    <TwoEarsPart branch="master" startup="startBlackboardSystem">blackboard-system</TwoEarsPart>
+    <TwoEarsPart branch="master" startup="startIdentificationTraining">identification-training</TwoEarsPart>
+    <TwoEarsPart sub="API_MO" startup="SOFAstart">sofa</TwoEarsPart>
+</requirements>

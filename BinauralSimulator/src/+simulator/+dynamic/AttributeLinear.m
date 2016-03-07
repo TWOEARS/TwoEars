@@ -26,7 +26,15 @@ classdef AttributeLinear < simulator.dynamic.AttributeBase
       if obj.Dynamic
         isargpositivescalar(T);
         delta = obj.Target - obj.Current;
-        inc = sign(delta).*min(abs(obj.Velocity)*T,abs(delta));
+        if numel(obj.Velocity) == 1
+          if norm(delta,2) <= abs(obj.Velocity)*T
+            inc = delta;
+          else
+            inc = abs(obj.Velocity)*T.*delta./norm(delta,2);
+          end
+        else
+          inc = sign(delta).*min(abs(obj.Velocity)*T,abs(delta));
+        end
         obj.Current = obj.Current + inc;
       end
     end

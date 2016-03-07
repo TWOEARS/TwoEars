@@ -12,6 +12,9 @@ classdef DnnLocationKS < AuditoryFrontEndDepKS
         blockSize                   % The size of one data block that
                                     % should be processed by this KS in
                                     % [s].
+        energyThreshold = 2E-3;     % ratemap energy threshold (cuberoot 
+                                    % compression) for detecting active 
+                                    % frames
     end
 
     methods
@@ -40,10 +43,9 @@ classdef DnnLocationKS < AuditoryFrontEndDepKS
             requests{1}.params = param;
             requests{2}.name = 'ild';
             requests{2}.params = param;
-            requests{3}.name = 'time';
-            requests{3}.params = param;
             obj = obj@AuditoryFrontEndDepKS(requests);
             obj.blockSize = 0.5;
+            obj.invocationMaxFrequency_Hz = 10;
 
             % Load localiastion DNNs
             obj.nChannels = nChannels;
@@ -67,18 +69,19 @@ classdef DnnLocationKS < AuditoryFrontEndDepKS
 
 
         function [bExecute, bWait] = canExecute(obj)
-            afeData = obj.getAFEdata();
-            timeSObj = afeData(3);
-            bExecute = hasSignalEnergy(timeSObj, obj.blockSize, obj.timeSinceTrigger);
+            %afeData = obj.getAFEdata();
+            %timeSObj = afeData(3);
+            %bExecute = hasSignalEnergy(timeSObj, obj.blockSize, obj.timeSinceTrigger);
+            
+            % Execute KS if a sufficient amount of data for one block has
+            % been gathered
+            bExecute = obj.hasEnoughNewSignal( obj.blockSize );
             bWait = false;
         end
 
         function execute(obj)
-            afeData = obj.getAFEdata();
-            ccSObj = afeData(1);
-            cc = ccSObj.getSignalBlock(obj.blockSize, obj.timeSinceTrigger);
-            ildSObj = afeData(2);
-            ild = ildSObj.getSignalBlock(obj.blockSize, obj.timeSinceTrigger);
+            cc = obj.getNextSignalBlock( 1, obj.blockSize, obj.blockSize, false );
+            ild = obj.getNextSignalBlock( 2, obj.blockSize, obj.blockSize, false );
 
             % Compute posterior distributions for each frequency channel and time frame
             nFrames = size(ild,1);
@@ -102,7 +105,8 @@ classdef DnnLocationKS < AuditoryFrontEndDepKS
             end
 
             % Average posterior distributions over frequency
-            prob_AF = exp(squeeze(nanSum(log(post),3)));
+            %prob_AF = exp(squeeze(nanSum(log(post),3)));
+            prob_AF = squeeze(nanMean(post,3));
 
             % Normalise each frame such that probabilities sum up to one
             prob_AFN = prob_AF ./ repmat(sum(prob_AF,2),[1 nAzimuths]);

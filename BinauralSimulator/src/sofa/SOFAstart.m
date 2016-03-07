@@ -52,11 +52,15 @@ if exist('addpath','builtin')
   addpath(basepath);
   addpath([basepath f 'helper']);
   addpath([basepath f 'coordinates']);
+  addpath([basepath f 'converters']);
+  addpath([basepath f 'demos']);
   addpath([basepath f 'netcdf']);
 else
   path(path,basepath);
   path(path,[basepath f 'helper']);
   path(path,[basepath f 'coordinates']);
+  path(path,[basepath f 'converters']);
+  path(path,[basepath f 'demos']);
   path(path,[basepath f 'netcdf']);
 end
 

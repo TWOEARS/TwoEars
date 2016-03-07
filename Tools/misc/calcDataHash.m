@@ -36,8 +36,17 @@ elseif isnumeric( data )
     if ~isreal( data )
         data = [real(data), imag(data)];
     end
-    engine.update(typecast(data(:), 'uint8'));
-    hash = bitxor(hash, double(typecast(engine.digest, 'uint8')));
+    dataInfo = whos( 'data' );
+    nChunks = 1;
+    if dataInfo.bytes > 512e5
+        nChunks = ceil( dataInfo.bytes / 512e5 );
+        while mod( numel( data ), nChunks ) ~= 0, nChunks = nChunks + 1; end
+    end
+    data = reshape( data, [], nChunks );
+    for cc = 1 : size( data, 2 )
+        engine.update(typecast(data(:,cc), 'uint8'));
+        hash = bitxor(hash, double(typecast(engine.digest, 'uint8')));
+    end
 elseif ischar( data )  % Silly TYPECAST cannot handle CHAR
     engine.update(typecast(uint16(data(:)), 'uint8'));
     hash = bitxor(hash, double(typecast(engine.digest, 'uint8')));

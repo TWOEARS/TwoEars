@@ -8,10 +8,10 @@ else
 end
 
 for ii = 1 : length( modelAr )
-    lambdas{ii} = modelAr(ii).model.model.lambda;
-    lperfs{ii} = modelAr(ii).model.lPerfsMean;
-    lstds{ii} = modelAr(ii).model.lPerfsStd;
-    ncoefs{ii} = modelAr(ii).model.nCoefs;
+    lambdas{ii} = modelAr(ii).model.lambda;
+    lperfs{ii} = modelAr(ii).lPerfsMean;
+    lstds{ii} = modelAr(ii).lPerfsStd;
+    ncoefs{ii} = modelAr(ii).nCoefs;
 end
 
 allLambdas = sort( unique( vertcat( lambdas{:} ) ) );

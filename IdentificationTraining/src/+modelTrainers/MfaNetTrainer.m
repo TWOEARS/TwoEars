@@ -1,8 +1,10 @@
 classdef MfaNetTrainer < modelTrainers.Base & Parameterized
     
     %% --------------------------------------------------------------------
-    properties (Access = protected)
+    properties (SetAccess = {?Parameterized})
         model;
+        nComp;
+        nDim;
     end
 
     %% --------------------------------------------------------------------
@@ -28,16 +30,12 @@ classdef MfaNetTrainer < modelTrainers.Base & Parameterized
         %% ----------------------------------------------------------------
 
         function buildModel( obj, x, y )
-            if length( y ) > obj.parameters.maxDataSize
-                x(obj.parameters.maxDataSize+1:end,:) = [];
-                y(obj.parameters.maxDataSize+1:end) = [];
-            end
             obj.model = models.MfaNetModel();
             xScaled = obj.model.scale2zeroMeanUnitVar( x, 'saveScalingFactors' );
-            mbfOpts.nComp = obj.parameters.nComp;
-            mbfOpts.nDim = obj.parameters.nDim;
-            if ~isempty( obj.parameters.nComp )
-                mbfOpts.nComp = obj.parameters.nComp;
+            mbfOpts.nComp = obj.nComp;
+            mbfOpts.nDim = obj.nDim;
+            if ~isempty( obj.nComp )
+                mbfOpts.nComp = obj.nComp;
             end
             verboseFprintf( obj, 'MbfNet training with nComp=%f and nDim=%f\n', mbfOpts.nComp, mbfOpts.nDim);
             verboseFprintf( obj, '\tsize(x) = %dx%d\n', size(x,1), size(x,2) );
