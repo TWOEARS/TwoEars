@@ -3,8 +3,6 @@ function localise()
 
 warning('off','all');
 
-% Initialize Two!Ears model and check dependencies
-
 % === Configuration
 % Different source positions given by BRIRs
 % see:

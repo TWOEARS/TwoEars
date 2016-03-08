@@ -6,8 +6,6 @@ if nargin < 1, idModels = setDefaultIdModels(); end
 %warning('off', 'all');
 disp( 'Initializing Two!Ears, setting up binaural simulator...' );
 
-% === Initialize Two!Ears model and check dependencies
-
 % === load test sounds
 % leave away the second argument to use the whole testlist
 [sourceSignal, labels, onOffsets] = makeTestSignal(idModels, 'shortTest.flist');

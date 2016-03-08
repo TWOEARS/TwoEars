@@ -3,8 +3,6 @@ function bbs = localise()
 
 warning('off', 'all');
 
-% Initialize Two!Ears model and check dependencies
-
 % Source angle
 direction = 0;
 

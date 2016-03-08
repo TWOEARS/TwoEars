@@ -11,7 +11,6 @@
 %   Ruhr-Universitaet Bochum
 %   Universitaetsstr. 150, 44801 Bochum
 
-% Start the Two!Ears auditory model
 
 % Initialize Binaural Simulator
 sim = simulator.SimulatorConvexRoom('test_scene_clean.xml');
