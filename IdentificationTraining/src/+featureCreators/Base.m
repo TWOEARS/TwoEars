@@ -68,10 +68,10 @@ classdef Base < core.IdProcInterface
             for afeKey = afeData.keys
                 afeSignal = afeData(afeKey{1});
                 if isa( afeSignal, 'cell' )
-                    afeSignalExtract{1} = afeSignal{1}.cutSignalCopy( obj.blockSize_s, backOffset_s );
-                    afeSignalExtract{1}.reduceBufferToArray();
-                    afeSignalExtract{2} = afeSignal{2}.cutSignalCopy( obj.blockSize_s, backOffset_s );
-                    afeSignalExtract{2}.reduceBufferToArray();
+                    for ii = 1 : numel( afeSignal )
+                        afeSignalExtract{ii} = afeSignal{ii}.cutSignalCopy( obj.blockSize_s, backOffset_s );
+                        afeSignalExtract{ii}.reduceBufferToArray();
+                    end
                 else
                     afeSignalExtract = afeSignal.cutSignalCopy( obj.blockSize_s, backOffset_s );
                     afeSignalExtract.reduceBufferToArray();

@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<requirements>
-<TwoEarsPart branch="master" startup="startIdentificationTraining">identification-training</TwoEarsPart>
-</requirements>
