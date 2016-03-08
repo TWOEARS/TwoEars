@@ -6,6 +6,7 @@
 
 <repoPaths>
     <binaural-simulator>./BinauralSimulator</binaural-simulator>
+    <sofa>./SOFA</sofa>
     <auditory-front-end>./AuditoryFrontEnd</auditory-front-end>
     <blackboard-system>./BlackboardSystem</blackboard-system>
     <identification-training>./IdentificationTraining</identification-training>
