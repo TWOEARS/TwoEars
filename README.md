@@ -15,7 +15,7 @@ the inclusion of world knowledge to the model.
 The actual release of the model is available at its official [release
 page](http://twoears.aipa.tu-berlin.de/download).  For an extensive
 documentation on how to install and use the model have a look at its [online
-documentation](http://twoears.aipa.tu-berlin.de/doc).
+documentation](http://docs.twoears.eu).
 
 ## Partners
 
