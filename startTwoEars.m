@@ -21,10 +21,11 @@ end
 
 % Add current folder and the src folders
 TwoEarsPath = fileparts(mfilename('fullpath'));
-addpath(TwoEarsPath);
-addpath(fullfile(TwoEarsPath, 'Tools', 'TwoEarsStartup'));
-addpath(fullfile(TwoEarsPath, 'Tools', 'args'));
-addpath(fullfile(TwoEarsPath, 'Tools', 'misc'));
+addpath( fullfile(TwoEarsPath, 'Tools', 'misc') );
+addPathsIfNotIncluded( {TwoEarsPath,...
+                        fullfile(TwoEarsPath, 'Tools', 'TwoEarsStartup'),...
+                        fullfile(TwoEarsPath, 'Tools', 'args')...
+                        } );
 
 % Display version information and finish if asked to do so
 if strcmp('info', configFile)
@@ -35,7 +36,7 @@ end
 % SOFA work around. The following checks if you have another version of SOFA
 % added to your Matlab paths and removes it as the official SOFA version is not
 % compatible with the one needed by Two!Ears
-if exist('SOFAstart') & ~strcmp('1.0-twoears', SOFAgetVersion('SOFA'))
+if exist('SOFAstart') && ~strcmp('1.0-twoears', SOFAgetVersion('SOFA'))
     warning('off', 'MATLAB:rmpath:DirNotFound');
     sofaPath = fileparts(which('SOFAstart'));
     rmpath(sofaPath);

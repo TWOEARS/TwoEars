@@ -35,7 +35,7 @@ if strcmp('full', modus)
     fprintf(1, '   Torsten Dau, DTU\n');
     fprintf(1, '   Remi Decorsiere, DTU\n');
     fprintf(1, '   Thomas Forgue. LAAS\n');
-    fprintf(1, '   Bruno Gas, UPMC\n')
+    fprintf(1, '   Bruno Gas, UPMC\n');
     fprintf(1, '   Chungeun Kim, TU/e\n');
     fprintf(1, '   Armin Kohlrausch, TU/e\n');
     fprintf(1, '   Dorothea Kolossa, RUB\n');
@@ -48,13 +48,13 @@ if strcmp('full', modus)
     fprintf(1, '   Christopher Schymura, RUB\n');
     fprintf(1, '   Sascha Spors, URO\n');
     fprintf(1, '   Jalil Taghia, TUB\n');
-    fprintf(1, '   Ivo Trowitsch, TUB\n');
+    fprintf(1, '   Ivo Trowitzsch, TUB\n');
     fprintf(1, '   Thomas Walther, RUB\n');
     fprintf(1, '   Hagen Wierstorf, TUB\n');
     fprintf(1, '   Fiete Winter, URO\n');
     fprintf(1, '\n');
 elseif strcmp('small', modus)
-    fprintf(1, 'Two!Ears %s. Copyright 2015 the Two!Ears team.\n', getTwoEarsVersion);
+    fprintf(1, 'Two!Ears %s. Copyright 2016 the Two!Ears team.\n', getTwoEarsVersion);
 else
     error('''modus'' has to be ''full'' or ''small''.');
 end

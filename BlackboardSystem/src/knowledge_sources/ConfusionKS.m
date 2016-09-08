@@ -49,10 +49,16 @@ classdef ConfusionKS < AbstractKS
                 notify(obj, 'ConfusedLocations', BlackboardEventData(obj.trigger.tmIdx));
             elseif numLoc > 0
                 % Assuming no confusion by using the index with the highest probability
-                [~,locIdx] = max(aziHyp.sourcesDistribution);
+                [maxPost,locIdx] = max(aziHyp.sourcesDistribution);
                 % No confusion, generate Perceived Azimuth
+                
+                % Apply exponential interpolation to refine peak position
+                delta = interpolateParabolic(aziHyp.sourcesDistribution,locIdx);
+                deltaAz = abs(diff(aziHyp.azimuths(1:2)));
+                
                 ploc = PerceivedAzimuth(aziHyp.headOrientation, ...
-                    aziHyp.azimuths(locIdx), aziHyp.sourcesDistribution(locIdx));
+                    aziHyp.azimuths(locIdx) + deltaAz*delta, ...
+                    maxPost);
                 obj.blackboard.addData('perceivedAzimuths', ploc, false, ...
                     obj.trigger.tmIdx);
                 notify(obj, 'KsFiredEvent', BlackboardEventData(obj.trigger.tmIdx));

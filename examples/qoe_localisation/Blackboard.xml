@@ -1,9 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <blackboardsystem>
 
-    <dataConnection Type="AuditoryFrontEndKS"/>
+    <dataConnection Type="AuditoryFrontEndKS">
+        <Param Type="double">16000</Param>
+    </dataConnection>
 
-    <KS Name="loc" Type="ItdLocationKS"/>
+    <KS Name="loc" Type="DnnLocationKS">
+        <Param Type="char">MCT-DIFFUSE-FRONT</Param> <!-- preset   -->
+        <Param Type="int">1400</Param>               <!-- highFreq -->
+        <Param Type="int">80</Param>                 <!-- lowFreq  -->
+        <Param Type="int">5</Param>                  <!-- azRes    -->
+    </KS>
     <KS Name="conf" Type="ConfusionKS">
         <!-- Disable confusion solving (== no head rotation) -->
         <Param Type="int">0</Param>

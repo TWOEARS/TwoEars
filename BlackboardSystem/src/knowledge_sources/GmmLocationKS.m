@@ -18,18 +18,27 @@ classdef GmmLocationKS < AuditoryFrontEndDepKS
     end
 
     methods
-        function obj = GmmLocationKS(nChannels)
+        function obj = GmmLocationKS(preset, nChannels, azRes)
             if nargin < 1
+                % Default preset is 'MCT-DIFFUSE'. For localisation in the
+                % front hemifield only, use 'MCT-DIFFUSE-FRONT'
+                preset = 'MCT-DIFFUSE';
+            end
+            if nargin < 2
                 % Default number of frequency channels is 32 for GMM
                 % localition KS
                 nChannels = 32;
+            end
+            if nargin < 3
+                % Default azimuth resolution is 5 deg.
+                azRes = 5;
             end
             param = genParStruct(...
                 'fb_type', 'gammatone', ...
                 'fb_lowFreqHz', 80, ...
                 'fb_highFreqHz', 8000, ...
                 'fb_nChannels', nChannels, ...
-                'ihc_method', 'dau', ...
+                'ihc_method', 'halfwave', ...
                 'ild_wSizeSec', 20E-3, ...
                 'ild_hSizeSec', 10E-3, ...
                 'rm_wSizeSec', 20E-3, ...
@@ -49,15 +58,13 @@ classdef GmmLocationKS < AuditoryFrontEndDepKS
 
             % Localisation model params
             obj.nChannels = nChannels;
-            preset = 'MCT_DIFFUSE';
             nMix = 16;
-            strModels = fullfile(obj.dataPath, sprintf('GMM_%s_%dchannels_%dmix_Norm.mat', preset, nChannels, nMix));
+            strModels = fullfile(obj.dataPath, sprintf('GMM_%s_itd-ild_%ddeg_%dchannels_%dmix_Norm.mat', preset, azRes, nChannels, nMix));
             
             % Load localisation models
             load(xml.dbGetFile(strModels));
             obj.GMMs = C.gmmFinal;
             obj.normFactors = C.featNorm;
-            
             obj.angles = C.azimuths;
         end
 

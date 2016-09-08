@@ -4,10 +4,10 @@
 basePath = fileparts(mfilename('fullpath'));
 
 % Add all relevant folders to the matlab search path
-addpath(fullfile(basePath, 'src', 'blackboard_core'));
-addpath(fullfile(basePath, 'src', 'blackboard_data'));
-addpath(fullfile(basePath, 'src', 'evaluation'));
-addpath(fullfile(basePath, 'src', 'knowledge_sources'));
-addpath(genpath(fullfile(basePath, 'src', 'tools')));
+addPathsIfNotIncluded([{ fullfile(basePath, 'src', 'blackboard_core'),...
+                         fullfile(basePath, 'src', 'blackboard_data'),...
+                         fullfile(basePath, 'src', 'evaluation'),...
+                         fullfile(basePath, 'src', 'knowledge_sources') },...
+                         strsplit(genpath(fullfile(basePath, 'src', 'tools')),pathsep) ]);
 
 clear basePath;

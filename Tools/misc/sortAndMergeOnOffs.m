@@ -13,6 +13,7 @@
 %
 function onOffs = sortAndMergeOnOffs( onOffs )
 
+if isempty( onOffs ), onOffs = zeros( 0, 2 ); end
 if ~isa( onOffs, 'numeric' ), error( 'onOffs must be a numeric array' ); end
 if size( onOffs, 2 ) ~= 2, error( 'onOffs must be an Nx2 array' ); end
 

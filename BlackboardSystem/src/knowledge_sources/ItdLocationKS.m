@@ -60,7 +60,7 @@ classdef ItdLocationKS < AuditoryFrontEndDepKS
             itdObj = afeData(1);
             itd = itdObj.getSignalBlock(obj.blocksizeSec, obj.timeSinceTrigger)' .* 1000;
             icObj = afeData(3);
-            ic = icObj.getSignalBlock(obj.blocksizeSec, obj.timeSinceTrigger)';
+            ic = icObj.getSignalBlock(obj.blocksizeSec, obj.timeSinceTrigger);
             % Load lookup table
             lookupTable = load(xml.dbGetFile(fullfile(obj.dataPath, 'default_lookup.mat')));
             % Convert ITDs to azimuth angles

@@ -25,9 +25,11 @@ for cLinIdx = 1 : numel( c )
         targetIdx{end+1} = targetIdxGrid{kk}(cLinIdx);
     end
     if isempty( cs{targetIdx{:}} )
-        cs{targetIdx{:}} = c(cLinIdx);
+        cs{targetIdx{:}} = c{cLinIdx};
     else
-        cs{targetIdx{:}} = cat( dim, cs{targetIdx{:}}, c{cLinIdx} );
+        if ~isempty( c{cLinIdx} )
+            cs{targetIdx{:}} = cat( dim, cs{targetIdx{:}}, c{cLinIdx} );
+        end
     end
 end
 

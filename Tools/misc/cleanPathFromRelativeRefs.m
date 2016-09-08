@@ -1,6 +1,6 @@
 function cp = cleanPathFromRelativeRefs( p )
 
-sepPos = sort([0 strfind( p, '/' ) strfind( p, '\' ) length(p)]);
+sepPos = sort([0 strfind( p, '/' ) strfind( p, '\' ) length(p)+1]);
 cp = '';
 lenPartBefore = [];
 for ii = 1 : (numel( sepPos ) - 1)
@@ -17,7 +17,11 @@ for ii = 1 : (numel( sepPos ) - 1)
             && sepPos(ii) > 0       % not root
         continue
     else
-        lenPartBefore(end+1) = sepPos(ii+1) - sepPos(ii);
-        cp(end+1:end+lenPartBefore(end)) = p(sepPos(ii)+1:sepPos(ii+1));
+        lowerIdx = sepPos(ii);
+        upperIdx = min( sepPos(ii+1), length(p) );
+        lenPartBefore(end+1) = upperIdx - lowerIdx;
+        cp(end+1:end+lenPartBefore(end)) = p(lowerIdx+1:upperIdx);
     end
 end
+
+cp = fullfile( cp );

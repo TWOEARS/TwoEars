@@ -63,12 +63,16 @@ classdef ConfusionSolvingKS < AbstractKS
             %plot(confHyp.azimuths, predictedDistribution, 'go--');
             %plot(confHyp.azimuths, post, 'ro--');
             %legend('Dist before rotation', 'Dist after rotation', 'Average dist');
-            [m,idx] = max(post);
-            if m > obj.postThreshold;
+            [maxPost,idx] = max(post);
+            if maxPost > obj.postThreshold;
+                % Apply exponential interpolation to refine peak position
+                delta = interpolateParabolic(post,idx);
+                deltaAz = abs(diff(confHyp.azimuths(1:2)));
+                
                 % Generate Perceived Azimuth
                 ploc = PerceivedAzimuth(...
                     confHyp.headOrientation, ...
-                    confHyp.azimuths(idx), m);
+                    confHyp.azimuths(idx) + deltaAz*delta, maxPost);
                 obj.blackboard.addData('perceivedAzimuths', ploc, false, ...
                     obj.trigger.tmIdx);
                 notify(obj, 'KsFiredEvent', BlackboardEventData(obj.trigger.tmIdx));

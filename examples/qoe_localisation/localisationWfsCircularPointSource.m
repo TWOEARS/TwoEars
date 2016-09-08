@@ -26,7 +26,7 @@ humanLabels = readHumanLabels(humanLabelFile);
 
 fprintf(1, '\n');
 fprintf(1, '----------------------------------------------------------------------------------\n');
-fprintf(1, 'condition \t\t\t\t\t experiment \t ItdLocationKS\n');
+fprintf(1, 'condition \t\t\t\t\t experiment \t DnnLocationKS\n');
 fprintf(1, '----------------------------------------------------------------------------------\n');
 
 for ii = 1:size(humanLabels, 1)
