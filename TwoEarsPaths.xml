@@ -9,5 +9,5 @@
     <sofa>./SOFA</sofa>
     <auditory-front-end>./AuditoryFrontEnd</auditory-front-end>
     <blackboard-system>./BlackboardSystem</blackboard-system>
-    <identification-training>./IdentificationTraining</identification-training>
+    <machine-learning-training>./MachineLearningTraining</machine-learning-training>
 </repoPaths>
