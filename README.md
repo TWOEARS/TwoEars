@@ -1,7 +1,8 @@
 Two!Ears Auditory Model
 =======================
 
-**A computational framework for modelling active exploratory listening that assigns meaning to auditory scenes**
+**A computational framework for modelling active exploratory listening that
+assigns meaning to auditory scenes**
 
 The Two!Ears Auditory Model consists of several stages for modeling active human
 listening. These stages include not only classical signal driven processing
@@ -21,7 +22,7 @@ documentation](http://docs.twoears.eu).
 
 The model is being developed by the partners of the EU project [Two!Ears](http://www.twoears.eu/).
 
-* [Assessment of IP-based Applications Group, TU Berlin, Germany](http://www.aipa.tu-berlin.de/menue/assessment_of_ip-based_applications/parameter/en/)  
+* [Audiovisual Technology Group, TU Ilmenau, Germany](https://www.tu-ilmenau.de/en/audio-visual-technology/)  
 * [Neural Information Processing Group, TU Berlin, Germany](http://www.ni.tu-berlin.de/)  
 * [Department of Electrical Engineering-Hearing Systems, Technical University of Denmark](http://www.hea.elektro.dtu.dk/)  
 * [Institute of Communication Acoustics, Ruhr University Bochum, Germany](http://www.ruhr-uni-bochum.de/ika/)  
@@ -34,8 +35,10 @@ The model is being developed by the partners of the EU project [Two!Ears](http:/
 
 ## Publications
 
-A [list of all project publications](http://twoears.aipa.tu-berlin.de/publications/) can be found on the project homepage. Additional material for some of the publications can be found in the [papers
-repository](https://github.com/TWOEARS/papers).
+A [list of all project
+publications](http://twoears.aipa.tu-berlin.de/publications/) can be found on
+the project homepage. Additional material for some of the publications can be
+found in the [papers repository](https://github.com/TWOEARS/papers).
 
 ## License
 
