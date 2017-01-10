@@ -1,23 +1,31 @@
-/*/
- * Copyright (c) 2014 LAAS/CNRS
+/*/Copyright (c) 2014, LAAS/CNRS
  * All rights reserved.
  *
- * Redistribution  and  use  in  source  and binary  forms,  with  or  without
+ * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- *   1. Redistributions of  source  code must retain the  above copyright
- *      notice and this list of conditions.
- *   2. Redistributions in binary form must reproduce the above copyright
- *      notice and  this list of  conditions in the  documentation and/or
- *      other materials provided with the distribution.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
  *
- * THE SOFTWARE  IS PROVIDED "AS IS"  AND THE AUTHOR  DISCLAIMS ALL WARRANTIES
- * WITH  REGARD   TO  THIS  SOFTWARE  INCLUDING  ALL   IMPLIED  WARRANTIES  OF
- * MERCHANTABILITY AND  FITNESS.  IN NO EVENT  SHALL THE AUTHOR  BE LIABLE FOR
- * ANY  SPECIAL, DIRECT,  INDIRECT, OR  CONSEQUENTIAL DAMAGES  OR  ANY DAMAGES
- * WHATSOEVER  RESULTING FROM  LOSS OF  USE, DATA  OR PROFITS,  WHETHER  IN AN
- * ACTION OF CONTRACT, NEGLIGENCE OR  OTHER TORTIOUS ACTION, ARISING OUT OF OR
- * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * 3. Neither the name of the copyright holder nor the names of its
+ *    contributors may be used to endorse or promote products derived from this
+ *    software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "bassStruct.idl"
@@ -26,7 +34,7 @@
 component bass {
     version         "1.0";
     lang            "c";
-    require         "genom3 >= 2.99.24";
+    require         "genom3 >= 2.99.26";
     provides        bassInterface;
     codels-require  "alsa >= 1.0.25";
 
@@ -41,6 +49,14 @@ component bass {
 
     /* ---Task declaration--- */
     task capture;
+
+    task socket {
+        period      5ms;
+        priority    200;
+        stack       4000;
+
+        codel <start>   sInitModule() yield ether;
+    };
 
     /* ---Services declaration--- */
     function ListDevices() {
@@ -63,7 +79,7 @@ component bass {
         codel <start>      startAcquire(local in device, local in sampleRate,
                                local in nFramesPerChunk, local in nChunksOnPort,
                                inout ::ids, port out Audio) yield exec, ether;
-        async codel <exec> execAcquire(inout ::ids, port out Audio)
+        codel <exec> execAcquire(inout ::ids, port out Audio)
                                yield exec, stop;
         codel <stop>       stopAcquire(inout ::ids) yield ether;
 
@@ -73,5 +89,17 @@ component bass {
     function Stop() {
         doc         "Stop acquisition of audio data";
         interrupts  Acquire;
+    };
+
+    activity DedicatedSocket() {
+        codel <start>           initModule(port out Audio) yield ether, recv;
+        codel <recv>      Transfer(port out Audio) yield pause::recv, ether;
+
+        task    socket;
+	};
+
+    activity CloseSocket(){
+        codel <start>           closeSocket() yield ether;
+        task socket;
     };
 };

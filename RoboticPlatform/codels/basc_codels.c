@@ -27,19 +27,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+#include "acbasc.h"
 
-#ifndef BASSSTRUCT_IDL
-#define BASSSTRUCT_IDL
-
-module binaudio {
-    struct portStruct {
-        unsigned long       sampleRate;
-        unsigned long       nChunksOnPort;
-        unsigned long       nFramesPerChunk;
-        unsigned long long  lastFrameIndex;
-        sequence<long>      left;
-        sequence<long>      right;
-    };
-};
-
-#endif /* BASSSTRUCT_IDL */
+#include "basc_c_types.h"
