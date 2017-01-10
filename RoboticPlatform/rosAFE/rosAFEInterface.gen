@@ -1,0 +1,15 @@
+#include "rosAFEStruct.idl"
+
+interface rosAFEInterface {
+
+    port out rosAFE::dataObjSt dataObj;
+
+    port out rosAFE::TimeDomainSignalPortStruct inputProcPort;
+    port multiple out rosAFE::TimeDomainSignalPortStruct preProcPort;
+    port multiple out rosAFE::TimeFrequencySignalPortStruct gammatonePort;
+    port multiple out rosAFE::TimeFrequencySignalPortStruct ihcPort;
+    port multiple out rosAFE::TimeFrequencySignalPortStruct ildPort;
+    port multiple out rosAFE::TimeFrequencySignalPortStruct ratemapPort;
+    port multiple out rosAFE::CrossCorrelationSignalPortStruct crossCorrelationPort;
+};
+

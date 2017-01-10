@@ -1,0 +1,26 @@
+noinst_LIBRARIES = libprocessors.a
+
+libprocessors_a_SOURCES = Processor.hpp
+libprocessors_a_SOURCES += Processor.cpp
+libprocessors_a_SOURCES += TDSProcessor.hpp
+libprocessors_a_SOURCES += TFSProcessor.hpp
+libprocessors_a_SOURCES += ProcessorVector.hpp
+libprocessors_a_SOURCES += inputProc.hpp
+libprocessors_a_SOURCES += inputProc.cpp
+libprocessors_a_SOURCES += preProc.hpp
+libprocessors_a_SOURCES += preProc.cpp
+libprocessors_a_SOURCES += gammatoneProc.hpp
+libprocessors_a_SOURCES += gammatoneProc.cpp
+libprocessors_a_SOURCES += ihcProc.hpp
+libprocessors_a_SOURCES += ihcProc.cpp
+libprocessors_a_SOURCES += windowBasedProcs.hpp
+libprocessors_a_SOURCES += windowBasedProcs.cpp
+libprocessors_a_SOURCES += ildProc.hpp
+libprocessors_a_SOURCES += ildProc.cpp
+libprocessors_a_SOURCES += ratemap.hpp
+libprocessors_a_SOURCES += ratemap.cpp
+libprocessors_a_SOURCES += LAGProcessor.hpp
+libprocessors_a_SOURCES += windowBasedLAGProcs.hpp
+libprocessors_a_SOURCES += windowBasedLAGProcs.cpp
+libprocessors_a_SOURCES += crossCorrelation.hpp
+libprocessors_a_SOURCES += crossCorrelation.cpp

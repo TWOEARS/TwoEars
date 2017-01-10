@@ -1,0 +1,319 @@
+#pragma require "bass-genom3 >= 1.0"
+#include "bass/bassInterface.gen"
+#include "rosAFEInterface.gen"
+
+component rosAFE {
+    version         "1.0";
+    lang            "c";
+    email	    "musabini@isir.upmc.fr";
+    require         "genom3 >= 2.99.26";
+    uses            bassInterface;
+    provides        rosAFEInterface;
+
+    native inputProcessors;
+    native preProcessors;
+    native gammatoneProcessors;
+    native ihcProcessors;
+    native ildProcessors;
+    native ratemapProcessors;
+    native crossCorrelationProcessors;
+
+    native flagMap;
+
+    ids {
+	rosAFE::infos infos;
+
+	inputProcessors inputProcessorsSt;
+	preProcessors preProcessorsSt;
+	gammatoneProcessors gammatoneProcessorsSt;
+	ihcProcessors ihcProcessorsSt;
+	ildProcessors ildProcessorsSt;
+	ratemapProcessors ratemapProcessorsSt;
+	crossCorrelationProcessors crossCorrelationProcessorsSt;
+	// itdProcessors itdProcessorsSt;
+
+	flagMap flagMapSt;
+	flagMap newDataMapSt;
+    };
+
+    exception e_noData, e_noMemory, e_existsAlready, e_noSuchProcessor, e_noSuchParameter, e_noUpperDependencie, e_badIndexParam, e_badNewValue;
+
+    task init {
+	codel <start> initIDS( out ::ids ) yield ether;
+    };
+
+    task input {
+	period      150ms;
+    };
+
+    task preProc {
+        period      50ms;
+    };
+
+    task gammatoneProc {
+        period      50ms;
+    };
+
+    task ihcProc {
+        period      50ms;
+    };
+
+    task ildProc {
+        period      50ms;
+    };
+
+    task ratemapProc {
+        period      50ms;
+    };
+
+    task crossCorrelationProc {
+        period      50ms;
+    };
+
+    activity InputProc(
+      in string name = "input" : "The name of this activity",
+      in unsigned long nFramesPerBlock = 12000 : "Blocks size in frames",
+      in double bufferSize_s_port = 1 : "Buffer size in seconds",
+      in double bufferSize_s_getSignal = 1 : "Buffer size in seconds"
+      ) {
+        doc         "Gets consecutive blocks of audio data from bass.";
+        task        input;
+        interrupts  InputProc;  // Only one audio input can exist
+
+        codel <start>   	startInputProc( local in name, local in nFramesPerBlock, local in bufferSize_s_port, local in bufferSize_s_getSignal, inout inputProcessorsSt,
+                            		port in Audio, out infos, port out inputProcPort ) yield waitExec;
+	
+	// The state Machine, start
+        codel <waitExec>    	waitExecInputProc( local in nFramesPerBlock, port in Audio ) yield pause::waitExec, exec, stop;
+        codel <exec>    	execInputProc( local in name, inout inputProcessorsSt ) yield waitRelease, stop;
+        codel <waitRelease>    	waitReleaseInputProc( local in name, inout flagMapSt ) yield pause::waitRelease, release, stop;
+        codel <release>    	releaseInputProc( local in name, inout inputProcessorsSt, out newDataMapSt, port out inputProcPort ) yield pause::waitExec, stop;
+	// The state Machine, end
+
+        codel <stop>    	stopInputProc( local in name, inout inputProcessorsSt, inout flagMapSt, inout newDataMapSt ) yield ether;
+
+        throw   e_noData, e_noMemory, e_existsAlready;
+    };
+
+    activity PreProc (
+      in string name = "preProc" : "The name of this preProc",
+      in string upperDepName = "input" : "The name of the upper dependencie",
+      in boolean pp_bRemoveDC = FALSE : "Flag to activate DC-removal filter",
+      in double pp_cutoffHzDC =  20 : "Cutoff frequency (Hz) of DC-removal high-pass filter",
+      in boolean pp_bPreEmphasis = FALSE : "Flag to activate the pre-emphasis high-pass filter",
+      in double pp_coefPreEmphasis =  0.97 : "Coefficient for pre-emphasis compensation (usually between 0.9 and 1)",
+      in boolean pp_bNormalizeRMS = FALSE : "Flag for activating automatic gain control",
+      in double pp_intTimeSecRMS =  0.5 : "Time constant (s) for automatic gain control",
+      in boolean pp_bLevelScaling = FALSE : "Flag to apply level scaling to the given reference",
+      in double pp_refSPLdB =  100 : "Reference dB SPL value to correspond to input signal RMS value of 1",
+      in boolean pp_bMiddleEarFiltering = FALSE : "Flag to apply middle ear filtering",
+      in string pp_middleEarModel =  "jepsen" : "Middle ear filter model (jepsen or lopezpoveda)",
+      in boolean pp_bUnityComp = FALSE : "Compensation to have maximum of unity gain for middle ear filter (automatically true for Gammatone and false for drnl filterbanks)"
+      ) {
+        doc         "Prior to computing any of the supported auditory representations, the input signal can be pre-processed with one of the following elements: 1. Direct current (DC) bias removal 2. Pre-emphasis 3. Root mean square (RMS) normalization [1] 4. Level scaling to a pre-defiend sound pressure level (SPL) reference 5. Middle ear filtering [2]";
+        task        		preProc;
+	validate    		existsAlready ( local in name, local in upperDepName, in ::ids );
+
+        codel <start>   	startPreProc( local in name, local in upperDepName, inout preProcessorsSt, inout flagMapSt, inout newDataMapSt, inout inputProcessorsSt, in infos, port out preProcPort, /* Arguments Of processor*/ local in pp_bRemoveDC, local in pp_cutoffHzDC, local in pp_bPreEmphasis, local in pp_coefPreEmphasis, local in pp_bNormalizeRMS, local in pp_intTimeSecRMS, local in pp_bLevelScaling, local in pp_refSPLdB, local in pp_bMiddleEarFiltering, local in pp_middleEarModel, local in pp_bUnityComp ) yield waitExec, stop;
+	
+	// The state Machine, start
+        codel <waitExec>    	waitExec ( local in name, local in upperDepName, inout newDataMapSt ) yield pause::waitExec, exec, ether, delete;
+        codel <exec>    	execPreProc ( local in name, local in upperDepName, inout ::ids, out flagMapSt ) yield waitRelease;
+        codel <waitRelease>    	waitRelease ( local in name, inout flagMapSt ) yield pause::waitRelease, release, stop;
+        codel <release>    	releasePreProc ( local in name, inout ::ids, out newDataMapSt, port out preProcPort ) yield pause::waitExec, stop;
+	// The state Machine, end
+
+        codel <delete>    	deletePreProc( local in name, inout preProcessorsSt, port out preProcPort ) yield ether;
+        codel <stop>    	stopPreProc( inout preProcessorsSt ) yield ether;
+
+        throw   e_noUpperDependencie, e_existsAlready, e_noSuchProcessor;
+    };
+
+    activity GammatoneProc (
+      in string name = "gammatone" : "The name of this gammatone processor",
+      in string upperDepName = "preProc" : "The name of the upper dependencie",
+      in string fb_type =  "gammatone" : "Filterbank type (''gammatone'' or ''drnl'')",
+      in double fb_lowFreqHz =  80 : "Lowest center frequency (Hz)",
+      in double fb_highFreqHz =  8000 : "Highest center frequency (Hz)",
+      in double fb_nERBs =  1 : "Distance between neighbor filters in ERBs",
+      in unsigned long fb_nChannels =  0 : "Number of channels",
+      in sequence<double> fb_cfHz = {} : "Channels center frequencies (Hz)",
+      in unsigned long fb_nGamma =  4 : "Gammatone rising slope order",
+      in double fb_bwERBs =  1.0180 : "Bandwidth of the filters (ERBs)"
+      ) {
+        doc         "Gammatone auditory filterbank processor. The Gammatone filterbank models the frequency selectivity of the peripheral auditory system according following [1]. It operates on a time-domain signal and returns a time-frequency representation of the signal.";
+        task        gammatoneProc;
+	validate    existsAlready ( local in name, local in upperDepName, in ::ids );
+
+        codel <start>   	startGammatoneProc ( local in name, local in upperDepName, inout gammatoneProcessorsSt, inout flagMapSt, inout newDataMapSt, inout preProcessorsSt, in infos, port out gammatonePort, /* Arguments Of processor*/ local in fb_type, local in fb_lowFreqHz, local in fb_highFreqHz, local in fb_nERBs, local in fb_nChannels, local in fb_cfHz, local in fb_nGamma, local in fb_bwERBs ) yield waitExec, stop;
+	
+	// The state Machine, start
+        codel <waitExec>    	waitExec ( local in name, local in upperDepName, inout newDataMapSt ) yield pause::waitExec, exec, ether, delete;
+        codel <exec>    	execGammatoneProc ( local in name, local in upperDepName, inout ::ids, out flagMapSt ) yield waitRelease;
+        codel <waitRelease>    	waitRelease ( local in name, inout flagMapSt ) yield pause::waitRelease, release, stop;
+        codel <release>    	releaseGammatoneProc ( local in name, inout ::ids, out newDataMapSt, port out gammatonePort ) yield pause::waitExec, stop;
+	// The state Machine, end
+
+        codel <delete>    	deleteGammatoneProc( local in name, inout gammatoneProcessorsSt, port out gammatonePort ) yield ether;
+        codel <stop>    	stopGammatoneProc( inout gammatoneProcessorsSt ) yield ether;
+
+        throw   e_noUpperDependencie, e_existsAlready, e_noSuchProcessor;
+    };
+
+   activity IhcProc (
+      in string name = "ihc" : "The name of this ihc processor",
+      in string upperDepName = "gammatone" : "The name of the upper dependencie",
+      in string ihc_method = "dau" : "Inner hair-cell envelope extraction method"
+      ) {
+        doc         "An inner hair-cell envelope extractor processor.";
+        task        ihcProc;
+	validate    existsAlready ( local in name, local in upperDepName, in ::ids );
+
+        codel <start>   	startIhcProc ( local in name, local in upperDepName, inout ihcProcessorsSt, inout flagMapSt, inout newDataMapSt, inout gammatoneProcessorsSt, in infos, port out ihcPort, /* Arguments Of processor */ local in ihc_method ) yield waitExec, stop;
+	
+	// The state Machine, start
+        codel <waitExec>    	waitExec ( local in name, local in upperDepName, inout newDataMapSt ) yield pause::waitExec, exec, ether, delete;
+        codel <exec>    	execIhcProc ( local in name, local in upperDepName, inout ::ids, out flagMapSt ) yield waitRelease;
+        codel <waitRelease>    	waitRelease ( local in name, inout flagMapSt ) yield pause::waitRelease, release, stop;
+        codel <release>    	releaseIhcProc ( local in name, inout ::ids, out newDataMapSt, port out ihcPort ) yield pause::waitExec, stop;
+	// The state Machine, end
+
+        codel <delete>    	deleteIhcProc ( local in name, inout ihcProcessorsSt, port out ihcPort ) yield ether;
+        codel <stop>    	stopIhcProc ( inout ihcProcessorsSt ) yield ether;
+
+        throw   e_noUpperDependencie, e_existsAlready, e_noSuchProcessor;
+    };
+
+   activity IldProc (
+      in string name = "ild" : "The name of this ild processor",
+      in string upperDepName = "ihc" : "The name of the upper dependencie",
+      in string ild_wname =  "hann" : "Window name",
+      in double ild_wSizeSec =  20E-3 : "Window duration (s)",
+      in double ild_hSizeSec =  10E-3 : "Window step size (s)"
+      ) {
+        doc         "Interaural Level Difference processor. This processor estimates the level difference between the left and the right ear signals for individual frequency channels and time frames by comparing the frame-based energy of the left and the right-ear inner hair cell representations. The value is expressed in dB, and negative values indicate sources on the left-hand side.";
+        task        ildProc;
+	validate    existsAlready ( local in name, local in upperDepName, in ::ids );
+
+        codel <start>   	startIldProc ( local in name, local in upperDepName, inout ildProcessorsSt, inout flagMapSt, inout newDataMapSt, inout ihcProcessorsSt, in infos, port out ildPort, /* Arguments Of processor */ local in ild_wname, local in ild_wSizeSec, local in ild_hSizeSec ) yield waitExec, stop;
+	
+	// The state Machine, start
+        codel <waitExec>    	waitExec ( local in name, local in upperDepName, inout newDataMapSt ) yield pause::waitExec, exec, ether, delete;
+        codel <exec>    	execIldProc ( local in name, local in upperDepName, inout ::ids, out flagMapSt ) yield waitRelease;
+        codel <waitRelease>    	waitRelease ( local in name, inout flagMapSt ) yield pause::waitRelease, release, stop;
+        codel <release>    	releaseIldProc ( local in name, inout ::ids, out newDataMapSt, port out ildPort ) yield pause::waitExec, stop;
+	// The state Machine, end
+
+        codel <delete>    	deleteIldProc ( local in name, inout ildProcessorsSt, port out ildPort ) yield ether;
+        codel <stop>    	stopIldProc ( inout ildProcessorsSt ) yield ether;
+
+        throw   e_noUpperDependencie, e_existsAlready, e_noSuchProcessor;
+    };
+
+   activity RatemapProc (
+      in string name = "ratemap" : "The name of this ratemap processor",
+      in string upperDepName = "ihc" : "The name of the upper dependencie",
+      in string rm_wname =  "hann" : "Window name",
+      in double rm_wSizeSec =  20E-3 : "Window duration (s)",
+      in double rm_hSizeSec =  10E-3 : "Window step size (s)",
+      in string rm_scaling = "power",
+      in double rm_decaySec = 0.008
+      ) {
+        doc         "The ratemap represents a map of auditory nerve firing rates, computed from the inner hair-cell signal representation for individual frequency channels.";
+        task        ratemapProc;
+	validate    existsAlready ( local in name, local in upperDepName, in ::ids );
+
+        codel <start>   	startRatemapProc ( local in name, local in upperDepName, inout ratemapProcessorsSt, inout flagMapSt, inout newDataMapSt, inout ihcProcessorsSt, in infos, port out ratemapPort, /* Arguments Of processor */ local in rm_wname, local in rm_wSizeSec, local in rm_hSizeSec, local in rm_scaling, local in rm_decaySec ) yield waitExec, stop;
+	
+	// The state Machine, start
+        codel <waitExec>    	waitExec ( local in name, local in upperDepName, inout newDataMapSt ) yield pause::waitExec, exec, ether, delete;
+        codel <exec>    	execRatemapProc ( local in name, local in upperDepName, inout ::ids, out flagMapSt ) yield waitRelease;
+        codel <waitRelease>    	waitRelease ( local in name, inout flagMapSt ) yield pause::waitRelease, release, stop;
+        codel <release>    	releaseRatemapProc ( local in name, inout ::ids, out newDataMapSt, port out ratemapPort ) yield pause::waitExec, stop;
+	// The state Machine, end
+
+        codel <delete>    	deleteRatemapProc ( local in name, inout ratemapProcessorsSt, port out ratemapPort ) yield ether;
+        codel <stop>    	stopRatemapProc ( inout ratemapProcessorsSt ) yield ether;
+
+        throw   e_noUpperDependencie, e_existsAlready, e_noSuchProcessor;
+    };
+
+   activity CrossCorrelationProc (
+      in string name = "crosscorrelation" : "The name of this cross correlation processor",
+      in string upperDepName = "ihc" : "The name of the upper dependencie",
+      in double cc_wSizeSec =  20E-3 : "Window duration (s)",
+      in double cc_hSizeSec =  10E-3 : "Window step size (s)",
+      in double cc_maxDelaySec = 0.0011,
+      in string cc_wname =  "hann" : "Window name"
+      ) {
+        doc         "The cross-correlation between the right and left ears is computed from their respective Inner Hair-Cell representations, in the Fourier  domain for given time frames. This is normalized by the auto-correlation sequence at lag zero, and then evaluated for time lags in a given range, resulting in a three-dimensional function of time frame, frequency channel and lag time.";
+        task        crossCorrelationProc;
+	validate    existsAlready ( local in name, local in upperDepName, in ::ids );
+
+        codel <start>   	startCrossCorrelationProc ( local in name, local in upperDepName, inout crossCorrelationProcessorsSt, inout flagMapSt, inout newDataMapSt, inout ihcProcessorsSt, in infos, port out crossCorrelationPort, /* Arguments Of processor */ local in cc_wSizeSec, local in cc_hSizeSec, local in cc_maxDelaySec, local in cc_wname ) yield waitExec, stop;
+	
+	// The state Machine, start
+        codel <waitExec>    	waitExec ( local in name, local in upperDepName, inout newDataMapSt ) yield pause::waitExec, exec, ether, delete;
+        codel <exec>    	execCrossCorrelationProc ( local in name, local in upperDepName, inout ::ids, out flagMapSt ) yield waitRelease;
+        codel <waitRelease>    	waitRelease ( local in name, inout flagMapSt ) yield pause::waitRelease, release, stop;
+        codel <release>    	releaseCrossCorrelationProc ( local in name, inout ::ids, out newDataMapSt, port out crossCorrelationPort ) yield pause::waitExec, stop;
+	// The state Machine, end
+
+        codel <delete>    	deleteCrossCorrelationProc ( local in name, inout crossCorrelationProcessorsSt, port out crossCorrelationPort ) yield ether;
+        codel <stop>    	stopCrossCorrelationProc ( inout crossCorrelationProcessorsSt ) yield ether;
+
+        throw   e_noUpperDependencie, e_existsAlready, e_noSuchProcessor;
+    };
+
+   function getSignals ( out rosAFE::dataObjSt signals ) {
+	doc         "Returns the output signals.";
+
+	codel	 getSignal( out signals, in ::ids );
+
+	throw    e_noMemory, e_badIndexParam;
+   };
+
+   function getDependencies (
+	in string nameProc = "nameProc" : "The name of the processor to search the dependencies",
+	out sequence<string> dependencies
+   ) {
+	doc         "Returns the output signals.";
+
+	codel	 getDependencie( local in nameProc, out dependencies, in ::ids );
+
+	throw    e_noMemory, e_noSuchProcessor;
+   };
+
+   function getParameters ( out rosAFE::parameters parameters ) {
+	doc      "Returns all parameter informations for each running processor.";
+
+	codel    getParameters( in ::ids, out parameters );
+
+	throw    e_noMemory;
+    };
+
+    function modifyParameter (
+	in string nameProc = "nameProc" : "The name of the processor to change the parameter",
+	in string nameParam = "nameParam" : "The name of the parameter to be changed",
+	in string newValue = "newValue" : "The new value of the parameter to be changed"
+	) {
+	doc     "Modifies the parameter of a processor";
+
+	codel 	modifyParameter( local in nameProc, local in nameParam, local in newValue, in ::ids );
+
+	throw   e_noMemory, e_noSuchProcessor, e_noSuchParameter, e_badNewValue;
+    };
+
+    function removeProcessor ( in string name = "name" : "The name of the processor to delete" ) {
+	doc      "Removes the flags of this processor";
+
+	codel 	removeProcessor( local in name, inout flagMapSt, inout newDataMapSt );
+
+	throw e_noSuchProcessor;
+    };
+
+    function Stop() {
+        doc         "Stop all";
+        interrupts  InputProc, PreProc, GammatoneProc, IhcProc, IldProc, RatemapProc, CrossCorrelationProc;
+    };
+};

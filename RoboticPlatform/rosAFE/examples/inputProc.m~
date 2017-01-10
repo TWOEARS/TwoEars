@@ -1,0 +1,56 @@
+%%
+clear all; close all; clc;
+p=0.15;
+%%
+[ bass, rosAFE ] = initRosAFE();
+
+%% Acquiring Audio
+sampleRate = 44100;
+bufferSize_s_bass = 1;
+nFramesPerChunk = 2205;
+nChunksOnPort = sampleRate * bufferSize_s_bass / nFramesPerChunk;
+inputDevice = 'hw:2,0';
+
+acquire = bass.Acquire('-a', inputDevice, sampleRate, nFramesPerChunk, nChunksOnPort);
+pause(0.25);
+if ( strcmp(acquire.status,'error') )
+   error(strcat('Error',acquire.exception.ex));
+end
+
+%% Connecting rosAFE to BASS
+connection = rosAFE.connect_port('Audio', 'bass/Audio');
+pause(p);
+if ( strcmp(connection.status,'error') )
+    error(strcat('Error',connection.exception.ex));
+end
+
+bufferSize_s_rosAFE_port = 1;
+bufferSize_s_rosAFE_getSignal = 1;
+bufferSize_s_matlab = 10;
+
+%% Ading processors
+inputName = 'input';
+thisProc = rosAFE.InputProc('-a', inputName, 12000, bufferSize_s_rosAFE_port, bufferSize_s_rosAFE_getSignal );
+pause(p);
+
+%%
+exLastFrameIndex = 0;
+sig_l = TimeDomainSignal.construct(sampleRate, bufferSize_s_matlab, ...
+                            'input', 'Ear Signal', 'left');
+sig_r = TimeDomainSignal.construct(sampleRate, bufferSize_s_matlab, ...
+                            'input', 'Ear Signal', 'right');
+                        
+lostFrames = 0;
+inputOut = rosAFE.inputProcPort();
+
+gotFrames = inputOut.inputProcPort.lastFrameIndex - exLastFrameIndex;
+exLastFrameIndex = inputOut.inputProcPort.lastFrameIndex;
+if ( gotFrames > inputOut.inputProcPort.framesOnPort )
+    lostFrames = gotFrames - inputOut.inputProcPort.framesOnPort;
+    gotFrames = gotFrames - lostFrames;
+end
+
+left = cell2mat(inputOut.inputProcPort.left.data);
+sig_l.appendChunk( left );
+right = cell2mat(inputOut.inputProcPort.right.data);
+

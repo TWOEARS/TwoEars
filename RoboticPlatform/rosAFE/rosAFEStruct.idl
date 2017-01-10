@@ -1,0 +1,140 @@
+#ifndef ROSAFESTRUCT_IDL
+#define ROSAFESTRUCT_IDL
+
+module rosAFE {	
+
+    struct infos {
+       unsigned long sampleRate;
+       double bufferSize_s_port;
+       double bufferSize_s_getSignal;
+    };
+
+    struct signalOneD
+    {
+        sequence<double>       	    data;
+    };
+
+    struct signalND
+    {
+        sequence<signalOneD >       dataN;
+    };
+
+    struct signalNxND
+    {
+        sequence<signalND >       dataNxN;
+    };
+
+    struct TimeDomainSignalPortStruct {
+        unsigned long 			sampleRate;
+        unsigned long long    		lastFrameIndex;
+        unsigned long long    		framesOnPort;
+        signalOneD	      		left;
+        signalOneD	      		right;
+    };
+
+    struct TimeFrequencySignalPortStruct {
+        unsigned long 			sampleRate;
+        unsigned long long    		lastFrameIndex;
+        unsigned long long    		framesOnPort;
+        unsigned long         		numberOfChannels;
+        signalND      	      		left;
+        signalND              		right;
+    };
+
+    struct CrossCorrelationSignalPortStruct {
+        unsigned long 			sampleRate;
+        unsigned long long    		lastFrameIndex;
+        unsigned long long    		framesOnPort;
+        unsigned long long    		numberOfLags;
+        unsigned long         		numberOfChannels;
+        signalNxND      	      	left;
+    };
+
+    struct inputProcsParametres {
+      string name;
+      boolean in_doNormalize;
+      unsigned long long in_normalizeValue;
+    };
+
+    struct preProcsParametres {
+      string name;
+      boolean pp_bRemoveDC;
+      double pp_cutoffHzDC;
+      boolean pp_bPreEmphasis;
+      double pp_coefPreEmphasis;
+      boolean pp_bNormalizeRMS;
+      double pp_intTimeSecRMS;
+      boolean pp_bLevelScaling;
+      double pp_refSPLdB;
+      boolean pp_bMiddleEarFiltering;
+      string pp_middleEarModel;
+      boolean pp_bUnityComp;
+    };
+
+    struct gammatoneProcsParametres {
+      string name;
+      string fb_type;
+      double fb_lowFreqHz;
+      double fb_highFreqHz;
+      double fb_nERBs;
+      unsigned long fb_nChannels;
+      sequence<double> fb_cfHz;
+      unsigned long fb_nGamma;
+      double fb_bwERBs;
+    };
+
+    struct ihcProcsParametres {
+      string name;
+      string ihc_method;
+    };
+
+    struct ildProcsParametres {
+      string name;
+      string ild_wname;
+      double ild_wSizeSec;
+      double ild_hSizeSec;
+    };
+
+    struct ratemapProcsParametres {
+      string name;
+      string rm_wname;
+      double rm_wSizeSec;
+      double rm_hSizeSec;
+      string rm_scaling;
+      double rm_decaySec;
+    };
+
+    struct crossCorrelationParametres {
+      string name;
+      string cc_wname;
+      double cc_wSizeSec;
+      double cc_hSizeSec;
+      double cc_maxDelaySec;
+      sequence<double> cc_lags;
+    };
+
+    struct parameters {
+      sequence<inputProcsParametres> 		input;
+      sequence<preProcsParametres>      	preProc;
+      sequence<gammatoneProcsParametres>        gammatone;
+      sequence<ihcProcsParametres>      	ihc;
+      sequence<ildProcsParametres>      	ild;
+      sequence<ratemapProcsParametres>      	ratemap;
+      sequence<crossCorrelationParametres>      crossCorrelation;
+    };
+
+    struct dataObjSt {
+      sequence<TimeDomainSignalPortStruct> 		input;
+      sequence<TimeDomainSignalPortStruct>      	preProc;
+      sequence<TimeFrequencySignalPortStruct>        	gammatone;
+      sequence<TimeFrequencySignalPortStruct>      	ihc;
+      sequence<TimeFrequencySignalPortStruct>      	ild;
+      sequence<TimeFrequencySignalPortStruct>      	ratemap;
+      sequence<CrossCorrelationSignalPortStruct>      	crossCorrelation;
+    };
+};
+
+
+
+#endif /* ROSAFESTRUCT_IDL */
+
