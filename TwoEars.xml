@@ -11,5 +11,5 @@ startTwoEars('Config.xml'). -->
     <TwoEarsPart sub="API_MO" startup="SOFAstart">sofa</TwoEarsPart>
     <TwoEarsPart startup="startAuditoryFrontEnd">auditory-front-end</TwoEarsPart>
     <TwoEarsPart startup="startBlackboardSystem">blackboard-system</TwoEarsPart>
-    <TwoEarsPart startup="startAMLTTP">identification-training</TwoEarsPart>
+    <TwoEarsPart startup="startAMLTTP">machine-learning-training</TwoEarsPart>
 </requirements>
