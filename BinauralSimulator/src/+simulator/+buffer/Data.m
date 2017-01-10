@@ -79,7 +79,7 @@ classdef (Abstract) Data < simulator.buffer.Base
       % kept.
       
       % read audio data from file
-      [obj.data, fsorig] = audioread(xml.dbGetFile(filename));
+      [obj.data, fsorig] = audioread(db.getFile(filename));
       % optional resampling
       if nargin > 2
         isargpositivescalar(fs);
@@ -113,6 +113,10 @@ classdef (Abstract) Data < simulator.buffer.Base
       end
 
       tmp = obj.getData();
+      % check if the buffer was empty
+      if isempty(tmp)
+        error('Buffer seems to be empty!');
+      end
 
       audiowrite(filename, tmp./max(abs(tmp(:))), fs);  % normalize data
 

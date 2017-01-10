@@ -47,7 +47,7 @@ if nargout>1, doLabels=true; else doLabels=false; end
 nFiles = numel(audioFiles);
 % Get information about all signals
 for ii = 1:nFiles
-    info(ii) = audioinfo(xml.dbGetFile(audioFiles{ii}));
+    info(ii) = audioinfo(db.getFile(audioFiles{ii}));
 end
 signals = cell([nFiles 1]);
 if ~isempty( parser.Results.Length )
@@ -62,7 +62,7 @@ for ii = 1:nFiles
         sigLength(ii) = round(info(ii).Duration*fsDesired) + 2*nZeros;
     end
     % Read ii-th signal, usingthe same precission as the original file
-    [currSig,fs] = audioread(xml.dbGetFile(audioFiles{ii}),'double');
+    [currSig,fs] = audioread(db.getFile(audioFiles{ii}),'double');
     % Mono downsampling and resampling, if required
     currSig = forceMono(resample(currSig,fsDesired,fs),downmixMethod);
     % Add zeros at the end to match longest signal

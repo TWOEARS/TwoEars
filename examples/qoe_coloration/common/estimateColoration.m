@@ -30,7 +30,7 @@ for ii = 1:length(sourceFiles)
     humanLabels = readHumanLabels(humanLabelFiles{ii});
 
     % === Read audio source material
-    sourceMaterial = audioread(xml.dbGetFile(sourceFiles{ii}));
+    sourceMaterial = audioread(db.getFile(sourceFiles{ii}));
 
     % === Estimate reference
     sim.Sources{1}.IRDataset = simulator.DirectionalIR(humanLabels{1,1});

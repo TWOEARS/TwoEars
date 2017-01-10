@@ -1,6 +1,5 @@
 %% Object-oriented implementation of Two!Ears Auditory Front-End processing
 %
-
 % This Demo scripts presents the object-oriented implementation of the Two!Ears
 % Auditory Front-End cue/feature extraction. It is intended as a demo at that stage,
 % and not a working copy, as important feature are not implemented fully
@@ -26,9 +25,11 @@ clc
 path = fileparts(mfilename('fullpath')); 
 run([path filesep '..' filesep 'startAuditoryFrontEnd.m'])
 
+% Audio path
+audioPath = fullfile(fileparts(mfilename('fullpath')),'Test_signals');
 
 % Load a signal
-load('Test_signals/AFE_earSignals_16kHz');
+load([audioPath,filesep,'AFE_earSignals_16kHz']);
 
 
 %% 1- Basic advantages of object-oriented approach: 

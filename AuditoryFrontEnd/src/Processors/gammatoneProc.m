@@ -11,7 +11,9 @@ classdef gammatoneProc < Processor
 %       bwERBs     - Bandwidth of the filters in ERBs (see [1])
 %       lowFreqHz  - Requested center frequency of lowest channel (Hz)
 %       highFreqHz - Requested approximate center frequency of highest channel (Hz)
-%
+%       bAlign     - Use phase-aligned filters
+%       delaySec   - Time delay in seconds
+% 
 %   There are three different ways of setting up a vector of channel center frequencies
 %   (cfHz) when instantiating this processor:
 %       1- By providing the lower and upper center frequencies (lowFreqHz and highFreqHz),
@@ -35,6 +37,8 @@ classdef gammatoneProc < Processor
         bwERBs          % Bandwidth of the filters in ERBs
         lowFreqHz       % Lowest center frequency used at instantiation
         highFreqHz      % Highest center frequency used at instantiation
+        bAlign          % Use phase-aligned filters
+        delaySec        % Time delay in seconds
     end
     
     properties (GetAccess = private)
@@ -200,8 +204,12 @@ classdef gammatoneProc < Processor
                 
             end
             
+            % Calculate filter bandwidth in Hertz
+            bwHz = pObj.parameters.fb_bwERBs * (24.7 + 0.108 * centerFreq);
+            
+            % Map bandwidth to time delay in seconds
+            pObj.parameters.map('fb_delaySec') = 3./(2*pi*bwHz);
         end
-        
     end
     
     methods (Hidden = true)
@@ -241,6 +249,14 @@ classdef gammatoneProc < Processor
             highFreqHz = pObj.parameters.map('fb_highFreqHz');
         end
         
+        function bAlign = get.bAlign(pObj)
+            bAlign = pObj.parameters.map('fb_bAlign');
+        end
+        
+        function delaySec = get.delaySec(pObj)
+            delaySec = pObj.parameters.map('fb_delaySec');
+        end
+        
     end
     
     
@@ -253,7 +269,7 @@ classdef gammatoneProc < Processor
             cfHz = pObj.parameters.map('fb_cfHz');
             n = pObj.parameters.map('fb_nGamma');
             bw = pObj.parameters.map('fb_bwERBs');
-            bAlign = false; %pObj.parameters.map('bAlign');
+            bAlign = pObj.parameters.map('fb_bAlign');
             nFilter = numel(cfHz);
             
             % Preallocate memory by instantiating last filter
@@ -287,7 +303,6 @@ classdef gammatoneProc < Processor
             % defaultValues : Parameter default values
             %  descriptions : Parameter descriptions
             
-            
             names = {'fb_type',...
                     'fb_lowFreqHz',...
                     'fb_highFreqHz',...
@@ -295,7 +310,9 @@ classdef gammatoneProc < Processor
                     'fb_nChannels',...
                     'fb_cfHz',...
                     'fb_nGamma',...
-                    'fb_bwERBs'};
+                    'fb_bwERBs',...
+                    'fb_bAlign',...
+                    'fb_delaySec'};
             
             descriptions = {'Filterbank type (''gammatone'' or ''drnl'')',...
                     'Lowest center frequency (Hz)',...
@@ -304,7 +321,9 @@ classdef gammatoneProc < Processor
                     'Number of channels',...
                     'Channels center frequencies (Hz)',...
                     'Gammatone rising slope order',...
-                    'Bandwidth of the filters (ERBs)'};
+                    'Bandwidth of the filters (ERBs)',...
+                    'Create phase-aligned filters',...
+                    'Time delay in seconds'};
             
             defaultValues = {'gammatone',...
                             80,...
@@ -313,7 +332,9 @@ classdef gammatoneProc < Processor
                             [],...
                             [],...
                             4,...
-                            1.018};
+                            1.018,...
+                            false,...
+                            []};
                 
         end
         

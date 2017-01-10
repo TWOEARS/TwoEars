@@ -11,6 +11,7 @@ classdef Blackboard < handle
         currentSoundTimeIdx = 0;        % the current "sound time". 
                                         % Has to be set when a new signal
                                         % chunk arrives
+        energyThreshold = 0;            % For detecting a valid frame
     end
     
     methods
@@ -31,7 +32,7 @@ classdef Blackboard < handle
         %% Set currentSoundTimeIdx
         function obj = setSoundTimeIdx( obj, newSoundTimeIdx )
             if newSoundTimeIdx <= obj.currentSoundTimeIdx
-                error( 'time has to be monotonically increasing.' );
+                warning( 'BB:tNotIncreasing', 'time should be monotonically increasing.' );
             end
             obj.currentSoundTimeIdx = newSoundTimeIdx;
         end
@@ -72,6 +73,26 @@ classdef Blackboard < handle
         end
         
         
+        %% delete data on blackboard
+        %   [dataLabel]:	data category to be deleted. If not given, all data is erased
+        %   [tmIdx]:	    Array of time indexes requested.
+        %                   if not given, all time indexes available are used
+        function deleteData( obj, dataLabel, tmIdx )
+            if nargin < 2
+                obj.data = containers.Map( 'KeyType', 'double', 'ValueType', 'any' );
+                return;
+            end
+            if nargin < 3
+                tmIdx = sort( cell2mat( keys( obj.data ) ) );
+            end
+            for sndTmIdx = tmIdx
+                if ~isfield( obj.data(sndTmIdx), dataLabel ), continue; end;
+                dtmp = obj.data(sndTmIdx);
+                dtmp = rmfield( dtmp, dataLabel );
+                obj.data(sndTmIdx) = dtmp;
+            end
+        end
+        
         %% list labels of data on blackboard
         %   [reqSndTimeIdxs]:	Array of time indexes requested.
         %                       if not given, all time indexes available are used
@@ -96,6 +117,7 @@ classdef Blackboard < handle
             k = 1;
             requestedData = [];
             for sndTmIdx = reqSndTimeIdxs
+                if ~isKey( obj.data, sndTmIdx ), continue; end;
                 if ~isfield( obj.data(sndTmIdx), dataLabel ), continue; end;
                 requestedData(k).sndTmIdx = sndTmIdx;
                 dtmp = obj.data(sndTmIdx);
@@ -138,6 +160,10 @@ classdef Blackboard < handle
             sndTimeIdxs = sort( cell2mat( keys( obj.data ) ) );
             sndTimeIdxs = sndTimeIdxs( sndTimeIdxs(end) - sndTimeIdxs <= blockSize_s );
             requestedData = obj.getData( dataLabel, sndTimeIdxs );
+        end
+        
+        function setEnergyThreshold(obj, energyThreshold)
+            obj.energyThreshold = energyThreshold;
         end
         
     end

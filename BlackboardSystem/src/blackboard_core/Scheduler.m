@@ -1,7 +1,8 @@
 classdef Scheduler < handle
     
     properties (SetAccess = {?BlackboardSystem})
-        monitor;          % Blackboard monitor
+        monitor;        % Blackboard monitor
+        visualiser;     % For visualising blackboard activities
     end
     
     
@@ -10,8 +11,16 @@ classdef Scheduler < handle
     end
     
     methods
-        function obj = Scheduler(monitor)
+        function obj = Scheduler(monitor, visualiser)
             obj.monitor = monitor;
+            if nargin > 1
+                obj.visualiser = visualiser;
+            end
+        end
+        
+        %% Set visualiser
+        function setVisualiser(obj, visualiser)
+            obj.visualiser = visualiser;
         end
         
         %% utility function for printing the obj
@@ -60,7 +69,17 @@ classdef Scheduler < handle
                         exctdKsi = ai;
                         obj.monitor.executing = obj.monitor.agenda(exctdKsi);
                         obj.monitor.agenda(exctdKsi) = []; % take out of agenda before executing
+                        if ~isempty(obj.visualiser)
+                            ksLabel = class(nextKsi.ks);
+                            obj.visualiser.addKS(ksLabel); % draw starts
+                            t = tic;
+                        end
                         nextKsi.ks.execute();
+                        if ~isempty(obj.visualiser)
+                            dur = toc(t);
+                            nextKsi.ks.visualise();
+                            obj.visualiser.setKsDuration(ksLabel, dur); % draw stops
+                        end
                         break;
                     elseif ~waitForExec
                         cantExctKsis(end+1) = ai;

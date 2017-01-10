@@ -1,4 +1,4 @@
-clear;
+clear
 close all
 clc
 
@@ -6,14 +6,17 @@ clc
 %% LOAD SIGNAL
 % 
 % 
+% Audio path
+audioPath = fullfile(fileparts(mfilename('fullpath')),'Test_signals');
+
 % Load anechoic signal
-load('Test_signals/DEMO_Speech_Anechoic');
+load([audioPath,filesep,'DEMO_Speech_Anechoic']);
 
 % Create a data object based on the ear signals
 dObj1 = dataObject(earSignals(1:22494,:),fsHz);
 
-% Load erverberant signal
-load('Test_signals/DEMO_Speech_Room_D');
+% Load reverberant signal
+load([audioPath,filesep,'DEMO_Speech_Room_D']);
 
 % Create a data object based on the ear signals
 dObj2 = dataObject(earSignals(1:22494,:),fsHz);
@@ -35,9 +38,9 @@ fb_nChannels  = 32;
 ihc_method    = 'dau';
 
 % Parameters of crosscorrelation processor
-cc_wSizeSec  = 0.02;
-cc_hSizeSec  = 0.01;
-cc_wname     = 'hann';
+cc_wSizeSec   = 0.02;
+cc_hSizeSec   = 0.01;
+cc_wname      = 'hann';
 
 % Summary of parameters 
 par = genParStruct('fb_type',fb_type,'fb_lowFreqHz',fb_lowFreqHz,...

@@ -132,3 +132,14 @@ title(sprintf('Input-output characteristics of  DRNL filterbank\nfor on-frequenc
 legendCell=cellstr(num2str(toneFrequency', '%-dHz'));
 legend(legendCell, 'Location', 'NorthWest');
 
+
+figure;
+plot(leveldBSPL, ioFunctionMatrix, '-x', 'LineWidth', 1.5, 'MarkerSize', 10);
+grid on
+set(gca, 'FontSize', 14);
+xlabel('Input signal level (dB SPL)');
+ylabel('Output (dB re 1 m/s)');
+title(sprintf('Input-output characteristics of a basilar membrane model\n(Dual-Resonance Non-Linear filterbank)\nfor on-frequency stimulation at various Characteristic Frequencies'));
+legendCell=cellstr(num2str(toneFrequency', '%-dHz'));
+legend(legendCell, 'Location', 'NorthWest');
+

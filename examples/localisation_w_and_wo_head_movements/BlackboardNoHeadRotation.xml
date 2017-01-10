@@ -4,9 +4,11 @@
     <dataConnection Type="AuditoryFrontEndKS"/>
 
     <KS Name="loc" Type="GmmLocationKS"/>
-    <KS Name="conf" Type="ConfusionKS">
-        <!-- Disable confusion solving (== no head rotation) -->
-        <Param Type="int">0</Param>
+    <KS Name="locDec" Type="LocalisationDecisionKS">
+        <Param Type="int">0</Param><!-- disable head rotation -->
+    </KS>
+    <KS Name="rot" Type="HeadRotationKS">
+        <Param Type="ref">robotConnect</Param>
     </KS>
 
     <Connection Mode="replaceOld" Event="AgendaEmpty">
@@ -19,7 +21,11 @@
     </Connection>
     <Connection Mode="add">
         <source>loc</source>
-        <sink>conf</sink>
+        <sink>locDec</sink>
+    </Connection>
+    <Connection Mode="replaceOld" Event="RotateHead">
+        <source>locDec</source>
+        <sink>rot</sink>
     </Connection>
 
 </blackboardsystem>

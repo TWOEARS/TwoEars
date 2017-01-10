@@ -4,6 +4,11 @@ function setupPartConfig( configFileName )
 
 pathsToBeAdded = {};
 startupFuncs = {};
+
+if not(exist('TwoEarsPaths.xml','file')) 
+    error('No file "TwoEarsPaths.xml" found. (See "TwoEarsPaths_Example.xml")'); 
+end
+
 for k = 1:length(reposNeeded)
     % Get path where TwoEarsPaths.xml is stored in order to handle relative
     % pathes

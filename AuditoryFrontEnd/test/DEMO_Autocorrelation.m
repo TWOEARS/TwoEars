@@ -1,4 +1,4 @@
-clear;
+clear
 close all
 clc
 
@@ -6,8 +6,11 @@ clc
 %% LOAD SIGNAL
 % 
 % 
+% Audio path
+audioPath = fullfile(fileparts(mfilename('fullpath')),'Test_signals');
+
 % Load a signal
-load('Test_signals/AFE_earSignals_16kHz');
+load([audioPath,filesep,'AFE_earSignals_16kHz']);
 
 % Create a data object based on parts of the right ear signal
 dObj = dataObject(earSignals(1:20E3,2),fsHz);
@@ -29,11 +32,11 @@ fb_nChannels  = 16;
 ihc_method    = 'dau';
 
 % Parameters of autocorrelation processor
-ac_wSizeSec  = 0.02;
-ac_hSizeSec  = 0.01;
-ac_clipAlpha = 0.0;
-ac_K         = 2;
-ac_wname     = 'hann';
+ac_wSizeSec   = 0.02;
+ac_hSizeSec   = 0.01;
+ac_clipAlpha  = 0.0;
+ac_K          = 2;
+ac_wname      = 'hann';
 
 % Summary of parameters 
 par = genParStruct('fb_type',fb_type,'fb_lowFreqHz',fb_lowFreqHz,...

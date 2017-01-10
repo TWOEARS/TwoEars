@@ -11,9 +11,8 @@
         <Param Type="int">80</Param>                 <!-- lowFreq  -->
         <Param Type="int">5</Param>                  <!-- azRes    -->
     </KS>
-    <KS Name="conf" Type="ConfusionKS">
-        <!-- Disable confusion solving (== no head rotation) -->
-        <Param Type="int">0</Param>
+    <KS Name="dec" Type="LocalisationDecisionKS">
+        <Param Type="int">0</Param><!-- disable head rotation -->
     </KS>
 
     <Connection Mode="replaceOld" Event="AgendaEmpty">
@@ -26,7 +25,7 @@
     </Connection>
     <Connection Mode="add">
         <source>loc</source>
-        <sink>conf</sink>
+        <sink>dec</sink>
     </Connection>
 
 </blackboardsystem>

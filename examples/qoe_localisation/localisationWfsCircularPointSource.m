@@ -61,7 +61,7 @@ for ii = 1:size(humanLabels, 1)
     bbs.run();
 
     % Evaluate localization results
-    predictedAzimuths = bbs.blackboard.getData('perceivedAzimuths');
+    predictedAzimuths = bbs.blackboard.getData('locationHypothesis');
     [predictedAzimuth(ii), localisationError(ii)] = ...
         evaluateLocalisationResults(predictedAzimuths, physicalAzimuth(ii));
     predictedAzimuth(ii) = predictedAzimuth(ii) + headRotationOffset;

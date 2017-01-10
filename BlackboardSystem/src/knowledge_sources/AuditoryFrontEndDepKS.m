@@ -2,7 +2,7 @@ classdef AuditoryFrontEndDepKS < AbstractKS
     % TODO: add description
 
     %% -----------------------------------------------------------------------------------
-    properties (SetAccess = private)
+    properties (SetAccess = {?DataProcs.BlackboardKsWrapper})
         requests;       
         reqHashs;
         lastBlockEnd;
@@ -59,7 +59,7 @@ classdef AuditoryFrontEndDepKS < AbstractKS
             signalStream = obj.blackboard.signals(obj.reqHashs{sigId});
             backOffset = obj.blackboard.currentSoundTimeIdx - blockTimes(2);
             if backOffset < 0
-                error( 'Requesting blocks ending in the future is not possible.' );
+                warning( 'BBS:badBlockTimeRequest', 'Requesting blocks ending in the future.' );
             end
             blockLen = blockTimes(2) - blockTimes(1);
             if ~iscell(signalStream), signalStream = {signalStream}; end

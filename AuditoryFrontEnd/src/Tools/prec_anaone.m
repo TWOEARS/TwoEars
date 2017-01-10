@@ -25,12 +25,17 @@ function [xLgS,xLgL,lag,B,ac]=prec_anaone(xb,Fs,cfHz,maxLag,ac)
 % B         : relative lag amplitude according to Eq. 2
 % ac       	: cumulative autocorrelation 
 
-Fms=Fs./1000; % Sampling frequency based on milliseconds
-% lags=round(10.*Fms); % number of lags for autocorrelation process 
-lags=maxLag; % number of lags for autocorrelation process 
-MainPeakWidth=0.75.*Fms; % max main peak width to determine minimum lag
+% DEPENDENT FUNCTIONS:
+% prec_de_conv.m    = deconvolution
+% prec_rev_conv.m   = convolution with reversed IR
+% prec_peakratio.m  = determines relative lead/lag ratio from autorcorrelation function
+% prec_reconHW.m    = reconstruction of full wave from halfwave rectified signal
+% calcXCorr.m       = Cross-correlation calculation
 
-    
+Fms=Fs./1000; % Sampling frequency based on milliseconds
+lags=maxLag; % number of lags for autocorrelation process 
+
+MainPeakWidth=floor(0.75.*Fms); % max main peak width to determine minimum lag
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -38,33 +43,27 @@ MainPeakWidth=0.75.*Fms; % max main peak width to determine minimum lag
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% % auditory filterbank from AMT toolbox
-% [xb,midFreq]=auditoryfilterbank(x,Fs,'flow',100,'fhigh',1400);
-
-
 if 0 % set 1 for Halfwave Correction and, 0 for no halfwave rectification with correction
 % Halfwave rectification and then correction
-for n=1:length(cfHz) % loop over all auditory bands
-    index=find(xb(:,n)<0); % find values below zero
-    xb(index,n)=0; % set these values to zero (halfwave rectification)
-    
-    % reconstruct halfwave based on center frequency of auditory band
-    % see Eq. 6 and Fig. 8
-    xb(:,n)=prec_reconHW(xb(:,n),Fs,cfHz(n)); 
-end % of for    
+    for n=1:length(cfHz) % loop over all auditory bands
+        index=find(xb(:,n)<0); % find values below zero
+        xb(index,n)=0; % set these values to zero (halfwave rectification)
+
+        % reconstruct halfwave based on center frequency of auditory band
+        % see Eq. 6 and Fig. 8
+        xb(:,n)=prec_reconHW(xb(:,n),Fs,cfHz(n)); 
+    end % of for    
 end 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Lag Removal (Section II.B)
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
 if nargin==5 % previous ac is given -> go with cummulative autocorrelation function
-% if isempty(ac) % go with cummulative autocorrelation function
     % Determine autocorrelation function for lag detection, see Eq. A2
     for n=1:length(cfHz) % loop over all auditory bands
-%         xba(n,:)=xcorr(xb(:,n),xb(:,n),lags)';
         xba(n,:)=calcXCorr(xb(:,n),xb(:,n),lags)';
         ac(n,:)=ac(n,:)+xba(n,:)./(max([cfHz(n) 100]));
         xba(n,:)=ac(n,:);%.^0.5;
@@ -72,12 +71,10 @@ if nargin==5 % previous ac is given -> go with cummulative autocorrelation funct
 else % new model instantiation   
     % Determine autocorrelation function for lag detection, see Eq. A2
     for n=1:length(cfHz) % loop over all auditory bands
-%         xba(n,:)=xcorr(xb(:,n),xb(:,n),lags)';
         xba(n,:)=calcXCorr(xb(:,n),xb(:,n),lags)';
         ac(n,:)=xba(n,:)./(max([cfHz(n) 100]));
     end
 end 
-
 
 % BEGIN amplitude normalization across auditory bands
 % see Eqs. 7 and 8

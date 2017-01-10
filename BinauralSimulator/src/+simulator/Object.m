@@ -152,11 +152,11 @@ classdef Object < simulator.vision.Meta & xml.MetaObject
       % By default, this function does nothing. It can be overloaded in sub-
       % classes in order to implement custom initialization functionality.
     end
-    function refresh(obj, T)
+    function refresh(obj, sim)
       % refresh properties with finite-speed modification
       %
       % Parameters:
-      %   T: time difference in seconds @type double
+      %   sim: simulator object @type double
       %
       % Properties with finite-speed modification speed will change over time to
       % its target value. This functions refreshes this properties to a new
@@ -166,6 +166,7 @@ classdef Object < simulator.vision.Meta & xml.MetaObject
       if nargin < 2
         return;
       end
+      T = sim.BlockSize/sim.SampleRate;
       obj.PositionDynamic = obj.PositionDynamic.refresh(T);
       obj.UnitXDynamic = obj.UnitXDynamic.refresh(T);
     end

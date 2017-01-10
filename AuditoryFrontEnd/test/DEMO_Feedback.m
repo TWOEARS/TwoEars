@@ -3,9 +3,9 @@
 % This script demonstrates feedback capabilities by computing the ratemap of a pure sine
 % wave with an auditory filterbank of filters of increasing bandwidth 
 
-clear;
-close all;
-
+clear
+close all
+clc
 
 % Request and parameters for feature extraction
 request = {'ratemap'};
@@ -24,6 +24,7 @@ f = 1000;       % Frequency of the pure tone (Hz)
 fsHz = 16000;   % Sampling frequency (Hz)
 T = 5;          % Duration (s)
 
+
 %% Signal
 
 % Generate a pure sine wave
@@ -33,8 +34,6 @@ data = 0.5*sin(2*pi*f*t);
 % Number of chunks in the signal
 n_chunks = floor(size(data,1)/chunkSize);
 
-% Zero-pad the signal for online vs. offline direct comparison
-% data = [data;zeros(n_chunks*chunkSize-size(data,1),1)];
 
 %% Manager instantiation
 

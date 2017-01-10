@@ -1,12 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <blackboardsystem>
 
-    <dataConnection Type="AuditoryFrontEndKS"/>
-        
-    <KS Name="loc" Type="GmmLocationKS"/>
-    <KS Name="conf" Type="ConfusionKS">
-        <!-- Disable confusion solving (== no head rotation) -->
+    <dataConnection Type="AuditoryFrontEndKS">
+       <Param Type="double">16000</Param>
+    </dataConnection>
+
+    <KS Name="loc" Type="GmmLocationKS">
+        <!-- Use MCT-DIFFUSE for full 360 localisation -->
+        <Param Type="char">MCT-DIFFUSE</Param>
+    </KS>
+    <KS Name="dec" Type="LocalisationDecisionKS">
+        <!-- set to 1 to enable confusion solving (== head rotation) -->
         <Param Type="int">0</Param>
+    </KS>
+    <KS Name="rot" Type="HeadRotationKS">
+        <Param Type="ref">robotConnect</Param>
     </KS>
 
     <Connection Mode="replaceOld" Event="AgendaEmpty">
@@ -19,7 +27,11 @@
     </Connection>
     <Connection Mode="add">
         <source>loc</source>
-        <sink>conf</sink>
+        <sink>dec</sink>
+    </Connection>
+    <Connection Mode="replaceOld" Event="RotateHead">
+        <source>dec</source>
+        <sink>rot</sink>
     </Connection>
 
 </blackboardsystem>

@@ -1,4 +1,4 @@
-clear;
+clear
 close all
 clc
 
@@ -6,8 +6,11 @@ clc
 %% LOAD SIGNAL
 % 
 % 
+% Audio path
+audioPath = fullfile(fileparts(mfilename('fullpath')),'Test_signals');
+
 % Load a signal
-load('Test_signals/AFE_earSignals_16kHz');
+load([audioPath,filesep,'AFE_earSignals_16kHz']);
 
 % Create a data object based on parts of the right ear signal
 dObj = dataObject(earSignals(1:22494,2),fsHz);

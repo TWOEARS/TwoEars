@@ -12,9 +12,6 @@ classdef GmmLocationKS < AuditoryFrontEndDepKS
         blockSize                   % The size of one data block that
                                     % should be processed by this KS in
                                     % [s].
-        energyThreshold = 2E-3;     % ratemap energy threshold (cuberoot 
-                                    % compression) for detecting active 
-                                    % frames
     end
 
     methods
@@ -52,6 +49,8 @@ classdef GmmLocationKS < AuditoryFrontEndDepKS
             requests{1}.params = param;
             requests{2}.name = 'ild';
             requests{2}.params = param;
+            requests{3}.name = 'ratemap';
+            requests{3}.params = param;
             obj = obj@AuditoryFrontEndDepKS(requests);
             obj.blockSize = 0.5;
             obj.invocationMaxFrequency_Hz = 10;
@@ -62,7 +61,7 @@ classdef GmmLocationKS < AuditoryFrontEndDepKS
             strModels = fullfile(obj.dataPath, sprintf('GMM_%s_itd-ild_%ddeg_%dchannels_%dmix_Norm.mat', preset, azRes, nChannels, nMix));
             
             % Load localisation models
-            load(xml.dbGetFile(strModels));
+            load(db.getFile(strModels));
             obj.GMMs = C.gmmFinal;
             obj.normFactors = C.featNorm;
             obj.angles = C.azimuths;
@@ -83,7 +82,12 @@ classdef GmmLocationKS < AuditoryFrontEndDepKS
         function execute(obj)
             itd = obj.getNextSignalBlock( 1, obj.blockSize, obj.blockSize, false );
             ild = obj.getNextSignalBlock( 2, obj.blockSize, obj.blockSize, false );
-
+            ratemap = obj.getNextSignalBlock( 3, obj.blockSize, obj.blockSize, false );
+            ratemap = (ratemap{1} + ratemap{2}) ./ 2;
+            frameEnergy = mean(ratemap,2);
+            %fprintf('%E\n', frameEnergy);
+            inactiveFrames = frameEnergy < obj.blackboard.energyThreshold;
+            
             % Compute posterior distributions for each frequency channel and time frame
             nFrames = size(ild,1);
             nAzimuths = numel(obj.angles);
@@ -108,9 +112,15 @@ classdef GmmLocationKS < AuditoryFrontEndDepKS
                 post(:,:,c) = post(:,:,c) ./ repmat(sum(post(:,:,c),2),[1 size(post(:,:,c),2) 1]);
             end
 
+            % Random probabilities for inactive frames
+            randProbs = randn(nFrames,nAzimuths).*0.01 + 1/nAzimuths;
+            
             % Average posterior distributions over frequency
             prob_AF = exp(squeeze(nanSum(log(post),3)));
 
+            % Set inactive frames to random probabilities
+            prob_AF(inactiveFrames,:) = randProbs(inactiveFrames,:);
+                
             % Normalise each frame such that probabilities sum up to one
             prob_AFN = prob_AF ./ repmat(sum(prob_AF,2),[1 nAzimuths]);
 
@@ -120,7 +130,7 @@ classdef GmmLocationKS < AuditoryFrontEndDepKS
             % Create a new location hypothesis
             currentHeadOrientation = obj.blackboard.getLastData('headOrientation').data;
             aziHyp = SourcesAzimuthsDistributionHypothesis( ...
-                currentHeadOrientation, obj.angles, prob_AFN_F);
+                currentHeadOrientation, obj.angles(:), prob_AFN_F(:));
             obj.blackboard.addData( ...
                 'sourcesAzimuthsDistributionHypotheses', aziHyp, false, obj.trigger.tmIdx);
             notify(obj, 'KsFiredEvent', BlackboardEventData( obj.trigger.tmIdx ));

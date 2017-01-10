@@ -29,7 +29,7 @@ function [humanLabels, stats] = readHumanLabels(labelFile)
 narginchk(1,1);
 
 % Get labelFile
-labelFile = xml.dbGetFile(labelFile);
+labelFile = db.getFile(labelFile);
 % Use readtext to get entries from file
 [humanLabels, tmp]= readtext(labelFile, ',', '#', '{}', '');
 stats.rows = size(humanLabels,1);

@@ -6,8 +6,8 @@ classdef SourcesAzimuthsDistributionHypothesis < Hypothesis
         sourcesDistribution;           % Posterior distribution of possible sources
         azimuths;                      % Relative azimuths (x-axis of sourcesDistribution)
         headOrientation;               % Head orientation angle
-        seenByConfusionKS = false;
-        seenByConfusionSolvingKS = false;
+        seenByLocalisationDecisionKS = false;
+        seenByHeadRotationKS = false;
     end
 
     methods
@@ -17,11 +17,11 @@ classdef SourcesAzimuthsDistributionHypothesis < Hypothesis
             obj.azimuths = azimuths;
             obj.sourcesDistribution = sourcesDistribution;
         end
-        function obj = setSeenByConfusionKS(obj)
-            obj.seenByConfusionKS = true;
+        function obj = setSeenByHeadRotationKS(obj)
+            obj.seenByHeadRotationKS = true;
         end
-        function obj = setSeenByConfusionSolvingKS(obj)
-            obj.seenByConfusionSolvingKS = true;
+        function obj = setSeenByLocalisationDecisionKS(obj)
+            obj.seenByLocalisationDecisionKS = true;
         end
     end
 

@@ -21,8 +21,8 @@ classdef (Abstract) MetaObject < hgsetget
       % Parameters:
       %   xmlfile: name of xmlfile @type char[]
       %
-      % See also: xml.dbOpenXML xml.dbValidate xml.MetaObject.XML
-      theNode = xml.dbOpenXML(xmlfile);
+      % See also: xml.open xml.validate xml.MetaObject.XML
+      theNode = xml.open(xmlfile);
       obj.XML(theNode);
     end
     function XML(obj, xmlnode)
@@ -122,7 +122,7 @@ classdef (Abstract) MetaObject < hgsetget
           case 'char'
             Constructor = @(x)char(x);
           case 'dbfile'
-            Constructor = @(x)xml.dbGetFile(x);
+            Constructor = @(x)db.getFile(x);
           case 'cell'
             Constructor = @(x)strsplit(x, ' ');
           case 'logical'

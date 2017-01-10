@@ -17,5 +17,5 @@ bbs.setRobotConnect(sim);
 bbs.buildFromXml(blackboardConfig);
 bbs.run();
 % Evaluate localization results
-predictedAzimuths = bbs.blackboard.getData('perceivedAzimuths');
-phi = evaluateLocalisationResults(predictedAzimuths);
+locationHypotheses = bbs.blackboard.getLastData('locationHypothesis');
+phi = locationHypotheses.data.azimuth;

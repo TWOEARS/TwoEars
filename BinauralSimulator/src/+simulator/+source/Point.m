@@ -12,15 +12,6 @@ classdef Point < simulator.source.Base & dynamicprops
     end
   end
 
-  %% refreshing
-  methods
-    function refresh(obj, T)
-      if nargin == 2
-        obj.refresh@simulator.source.Base(T);
-      end
-    end
-  end
-
   %% Distance correction for 3D-2D case
   methods
 %     function correctDistance(obj, RefPosition)

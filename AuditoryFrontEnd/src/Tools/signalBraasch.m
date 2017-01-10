@@ -1,4 +1,4 @@
-function out=signal(Fs,mode,len,f,bw,id,LT,at,dc);
+function out=signalBraasch(Fs,mode,len,f,bw,id,LT,at,dc);
 
 %Y=SIGNAL(Fs,mode,len,f,bw,itd,LT,at,dc,pw)
 %generates a Signal for ITD/ILD-Experiments.

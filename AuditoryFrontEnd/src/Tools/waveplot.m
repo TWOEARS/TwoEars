@@ -63,6 +63,9 @@ nYLabels = 8;
 % Determine size of input
 [nSamples,nChannels] = size(data);
 
+% We can never have more labels than channels
+nYLabels = min(nYLabels,nChannels);
+
 if exist('xAxis','var')
     % Ensure that x is a row vector
     xAxis = xAxis(:)';
@@ -104,7 +107,7 @@ n = max(5 * zoom * data(:,nChannels)/m+nChannels * 10);
 hold on;
 
 % Loop over number of channels
-for ii = nChannels : -1 : 1,
+for ii = nChannels : -1 : 1
    plot(xAxis,5 * zoom * data(:,ii)'/m+ii * 10,'k')
 end
 
@@ -112,11 +115,18 @@ hold off;
  
 % Find the spacing for the y-axis which evenly divides the y-axis
 set(gca,'ytick',linspace(1,nChannels,nYLabels) * 10);
-set(gca,'yticklabel',round(interp1(1:nChannels,yAxis,linspace(1,nChannels,nYLabels))));
+if nChannels > 1
+    set(gca,'yticklabel',round(interp1(1:nChannels,yAxis,linspace(1,nChannels,nYLabels))));
+else
+    set(gca,'yticklabel',round(yAxis));
+end
 
 xlabel(strX)
 ylabel(strY)
 
 % Set axis limits
 xlim([xAxis(1) xAxis(end)]);
-ylim([0 n]);
+
+if nChannels > 1
+    ylim([0 n]);
+end

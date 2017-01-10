@@ -26,16 +26,17 @@ nAz = numel(azimuths);
 % Identify front-back confusion from distribution1
 distribution1 = distribution1(:);
 distribution2 = distribution2(:);
-[pIdx1,pa] = findAllPeaks([0; distribution1; 0]);
+[pIdx1,pa] = findAllPeaks([distribution1(end); distribution1; distribution1(1)]);
 pIdx1 = pIdx1 - 1;
 pIdx1 = pIdx1(pa > threshold);
 [fbIdx1, fbAz1] = find_front_back_idx(azimuths, pIdx1);
 
 % Identify front-back confusion from distribution2
-[pIdx2,pa] = findAllPeaks([0; distribution2; 0]);
+[pIdx2,pa] = findAllPeaks([distribution2(end); distribution2; distribution2(1)]);
 pIdx2 = pIdx2 - 1;
 pIdx2 = pIdx2(pa > threshold);
 [fbIdx2, fbAz2] = find_front_back_idx(azimuths, pIdx2);
+
 
 % Check if any front-back confusion from distribution1 should be removed
 srcAz = [];

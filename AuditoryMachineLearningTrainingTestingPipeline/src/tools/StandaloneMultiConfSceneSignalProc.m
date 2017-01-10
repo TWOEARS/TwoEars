@@ -3,8 +3,6 @@ classdef StandaloneMultiConfSceneSignalProc < simulator.RobotInterface
     %% -----------------------------------------------------------------------------------
     properties (SetAccess=private)
         data;
-        binauralSim;
-        sceneConfBinauralSim;
         multiConfBinauralSim;
         targetSourceFiles;
         targetWav;
@@ -18,17 +16,26 @@ classdef StandaloneMultiConfSceneSignalProc < simulator.RobotInterface
     
     %% -----------------------------------------------------------------------------------
     methods
-        function obj = StandaloneMultiConfSceneSignalProc( )
-            obj.binauralSim = dataProcs.IdSimConvRoomWrapper();
-            obj.sceneConfBinauralSim = dataProcs.SceneEarSignalProc( obj.binauralSim );
-            obj.multiConfBinauralSim = dataProcs.MultiConfigurationsEarSignalProc( obj.sceneConfBinauralSim );
+        function obj = StandaloneMultiConfSceneSignalProc( varargin )
             obj.currentEarSoutPos = 1;
+            ip = inputParser;
+            ip.addOptional( 'hrir', ...
+                            'impulse_responses/qu_kemar_anechoic/QU_KEMAR_anechoic_3m.sofa' );
+            ip.addOptional( 'fs', 44100 );
+            ip.parse( varargin{:} );
+            sceneConfBinauralSim = DataProcs.SceneEarSignalProc( ...
+                                           DataProcs.IdSimConvRoomWrapper( ...
+                                             ip.Results.hrir, ip.Results.fs ) );
+            obj.multiConfBinauralSim = DataProcs.MultiSceneCfgsIdProcWrapper( ...
+                                   sceneConfBinauralSim, sceneConfBinauralSim );
+            obj.multiConfBinauralSim.init();
+            obj.SampleRate = ip.Results.fs;
         end
         %% ----------------------------------------------------------------
         
         function setupData( obj, flist )
-            obj.data = core.IdentTrainPipeData();
-            obj.data.loadWavFileList( flist );
+            obj.data = Core.IdentTrainPipeData();
+            obj.data.loadFileList( flist );
         end
         %% ----------------------------------------------------------------
         
@@ -53,7 +60,7 @@ classdef StandaloneMultiConfSceneSignalProc < simulator.RobotInterface
                 if ~isempty( targetSrcFlist )
                     wavs = readFileList( targetSrcFlist );
                 else
-                    wavs = obj.data(:,:,'wavFileName');
+                    wavs = obj.data(:,'fileName');
                 end
                 classes = cellfun( @IdEvalFrame.readEventClass, wavs, 'UniformOutput', false);
                 targetWavs = {};
@@ -142,6 +149,13 @@ classdef StandaloneMultiConfSceneSignalProc < simulator.RobotInterface
             obj.currentEarSoutPos = 1;
         end
         %% ----------------------------------------------------------------
+
+        function setPreprocessedScene( obj, sceneEarSignalProcCacheFile )
+            eo = load( sceneEarSignalProcCacheFile, 'earSout' );
+            obj.earSout = eo.earSout;
+            obj.currentEarSoutPos = 1;
+        end
+        %% ----------------------------------------------------------------
         
         function onOffsets = getOnOffsets( obj )
             onOffsets = obj.targetOnOffs;
@@ -171,7 +185,7 @@ classdef StandaloneMultiConfSceneSignalProc < simulator.RobotInterface
     methods
         function azimuth = getCurrentHeadOrientation(obj)
             azimuth = 0;
-            warning( 'TODO' );
+%             warning( 'TODO' );
         end
         %% ----------------------------------------------------------------
         

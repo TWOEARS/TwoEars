@@ -5,6 +5,7 @@ classdef IdTruthPlotKS < AuditoryFrontEndDepKS
         subplots;
         labels;
         onOffsets;
+        ylim_timSignal;
     end
 
     methods
@@ -21,6 +22,7 @@ classdef IdTruthPlotKS < AuditoryFrontEndDepKS
             obj.labels = labels;
             obj.onOffsets = onOffsets;
             obj.invocationMaxFrequency_Hz = 2;
+            obj.ylim_timSignal = [];
         end
 
         function delete(obj)
@@ -29,6 +31,10 @@ classdef IdTruthPlotKS < AuditoryFrontEndDepKS
         function [b, wait] = canExecute(obj)
             b = true;
             wait = false;
+        end
+        
+        function setYLimTimeSignal(obj, ylim)
+            obj.ylim_timSignal = ylim;
         end
 
         function execute(obj)
@@ -41,6 +47,9 @@ classdef IdTruthPlotKS < AuditoryFrontEndDepKS
 %            figure( obj.fig );
             timeSig{1}.plot( obj.subplots(1), ...
                 genParStruct('fsize_label',8,'fsize_title',8,'fsize_axes',8) );
+            if ~isempty(obj.ylim_timSignal)
+                set( gca, 'YLim', obj.ylim_timSignal );
+            end
             set( gca, 'XTick', [] );
             plotIdentificationScene( obj.subplots(2), ...
                 obj.labels, obj.onOffsets, idHyps, timeRange );

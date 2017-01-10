@@ -14,7 +14,7 @@ if exist('TwoEarsPaths.xml', 'file') == 2
   switch eleList.getLength
     case 0
     case 1
-      xml.dbPath( char( eleList.item(0).getFirstChild.getData ) );
+      db.path( char( eleList.item(0).getFirstChild.getData ) );
     otherwise
       warning(['%s: Found more than one entry for ''data'' in the ', ...
       '''TwoEarsPaths.xml''.'], upper(mfilename));

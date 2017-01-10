@@ -1,4 +1,4 @@
-function semaphoreCell = setfilesemaphore(fileList, semaphoreMode)
+function semaphoreCell = setfilesemaphore(fileList, varargin)
 %SETFILESEMAPHORE  Set semaphore for exclusive file access.
 %   SEMAPHORE = SETFILESEMAPHORE(FILENAME) sets a semaphore to get
 %   exclusive access on file FILENAME. The semaphore is realized by generating
@@ -36,15 +36,23 @@ function semaphoreCell = setfilesemaphore(fileList, semaphoreMode)
 %
 %   Markus Buehren
 %   Last modified 20.07.2014
+%   Modified by Ivo Trowitzsch, 2016
 %
 %   See also REMOVEFILESEMAPHORE.
 
 % Todo: What about system time differences between the local machine and
 % the machine where the temporary directory lies?
 
+ip = inputParser;
+ip.addOptional( 'semaphoreMode', 'set always' );
+ip.addOptional( 'semaphoreOldTime', inf );
+ip.parse( varargin{:} );
+
+semaphoreMode = ip.Results.semaphoreMode;
+semaphoreOldTime = ip.Results.semaphoreOldTime; % other semaphore files are deleted if found longer than this time
+semaphoreOldTime2 = semaphoreOldTime * 3; % other semaphore files are deleted if older than this time
+
 % set parameters (all times in seconds)
-semaphoreOldTime    = inf;   % other semaphore files are deleted if found longer than this time
-semaphoreOldTime2   = inf;   % other semaphore files are deleted if older than this time
 fixedWaitTime       = 0.02; % wait after generating semaphore to check if access is exclusive
 checkAgainWaitTime  = 0.02; % wait before checking again if semaphore files are already existing
 retryWaitTime       = 0.4;  % random wait time after removing own semaphore file again 
@@ -91,16 +99,19 @@ for fileNr = 1:nOfFiles
   
   % get current file name
   fileName = fileList{fileNr};
+  [fp,fn,fe] = fileparts( fileName );
+  if isempty( fp ), fp = '.'; end
+  semaFileName = [fp filesep calcDataHash( [fn fe] )]; % avoid problems with too long filenames
   
   % check if given file is itself a semaphore file
-  if ~isempty(regexp(fileName, '\.semaphore\.\w+\.\d+\.mat$', 'once'))
+  if ~isempty(regexp(semaFileName, '\.semaphore\.\w+\.\d+\.mat$', 'once'))
     %disp('Warning: Trying to generate a semaphore file for a semaphore file!! Will be ignored.');
     semaphoreCell{fileNr, 1} = '';
     continue
   end
   
   % generate semaphore file pattern of current file
-  semaphorePattern     = [fileName, '.semaphore.*.mat'];
+  semaphorePattern     = [semaFileName, '.semaphore.*.mat'];
   semaphorePatternPath = fileparts(semaphorePattern);
   
   % initialize arrays
@@ -185,7 +196,7 @@ for fileNr = 1:nOfFiles
             oldSemaphoreFilesToIgnore{end+1} = currSemaphoreFileName; %#ok
 
             if 0
-              disp(textwrap2(sprintf(['Ignoring old semaphore of file %s ',...
+              disp(textwrap2(sprintf(['\nIgnoring old semaphore of file %s ',...
                                   '(maybe not removed correctly).'], fileName)));
             end
             
@@ -219,7 +230,7 @@ for fileNr = 1:nOfFiles
               
               if checkAgainWaitTime > 100
                   checkAgainWaitTime = checkAgainWaitTime + 0.99;
-                  fprintf('Respecting semaphore file %s for %d minutes now.\n', ...
+                  fprintf('\nRespecting semaphore file %s for %d minutes now.\n', ...
                       currSemaphoreFileName,...
                       ceil((mbtime - semaphoreStartWaitTimes(currSemaphoreIndex))/60));
               end
@@ -235,7 +246,7 @@ for fileNr = 1:nOfFiles
               
               % add file to ignore list
               oldSemaphoreFilesToIgnore{end+1} = currSemaphoreFileName; %#ok
-              disp(textwrap2(sprintf('Ignoring old semaphore of file %s (maybe not removed correctly).', ...
+              disp(textwrap2(sprintf('\nIgnoring old semaphore of file %s (maybe not removed correctly).', ...
                                      fileName)));
               
               if debugMode
@@ -255,7 +266,7 @@ for fileNr = 1:nOfFiles
       % display info
       if anySemaphoreExisting && displayWaitInfo && ...
           (mbtime - startWaitTime) >= waitInfoTime
-        disp(textwrap2(sprintf('Waiting for semaphore(s) of file %s to disappear.', fileName)));
+        disp(textwrap2(sprintf('\nWaiting for semaphore(s) of file %s to disappear.', fileName)));
         displayWaitInfo = false;
       end
       
@@ -263,9 +274,9 @@ for fileNr = 1:nOfFiles
     
     if debugMode
       if anySemaphoreExisting
-        fprintf('Semaphore file found that must be respected (%s).\n', datestr(now));
+        fprintf('\nSemaphore file found that must be respected (%s).\n', datestr(now));
       else
-        fprintf('No semaphore file found that must be respected (%s).\n', datestr(now));
+        fprintf('\nNo semaphore file found that must be respected (%s).\n', datestr(now));
       end
     end
 
@@ -278,7 +289,7 @@ for fileNr = 1:nOfFiles
       for attemptNr = 1:10
         % build semaphore file name
         [randomNr, randomStr] = generaterandomnumber; %#ok
-        newSemaphoreFileName = [fileName, '.semaphore.', hostname, '.', randomStr, '.mat'];
+        newSemaphoreFileName = [semaFileName, '.semaphore.', hostname, '.', randomStr, '.mat'];
         
         lasterror('reset');
         try

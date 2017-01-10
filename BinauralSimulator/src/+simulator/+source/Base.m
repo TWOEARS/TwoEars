@@ -32,7 +32,7 @@ classdef (Abstract) Base < simulator.Object
     % the source. This should be a n-channel *.wav file. All other Renderers
     % will ignore this property
     %
-    % See also: simulator.xml.dbGetFile()
+    % See also: db.getFile()
     % @type DirectionalIR
     % @default simulator.DirectionalIR()
     IRDataset = simulator.DirectionalIR();
@@ -57,7 +57,7 @@ classdef (Abstract) Base < simulator.Object
       obj.addXMLAttribute('IRDataset',  ...
         'simulator.DirectionalIR', ...
         'IRs', ...
-        @(x) simulator.DirectionalIR(xml.dbGetFile(x)));
+        @(x) simulator.DirectionalIR(db.getFile(x)));
     end
   end
 
@@ -67,6 +67,34 @@ classdef (Abstract) Base < simulator.Object
         obj.errormsg(...
           'Number of outputs of obj.AudioBuffer does not match obj.RequiredChannels!');
       end
+    end
+    function refresh(obj, sim)    
+      obj.refresh@simulator.Object(sim);
+
+      [left, right, torso] = obj.getHeadLimits();
+
+      headAzimuth = sim.getCurrentHeadOrientation();
+      if headAzimuth > left || headAzimuth < right
+        error(['head-above-torso azimuth (%2.2f deg) out of bounds', ...
+          ' (%2.2f:%2.2f deg)!'], headAzimuth, right,left);
+      end
+      [~, ~, torsoAzimuth] = sim.getCurrentRobotPosition();
+      if ~isnan(torso) && abs(torsoAzimuth - torso) >= 1E-5
+        warning(['The specified torso azimuth (%2.2f deg) of the simulator' ...
+          ' does not match the available torso azimuth of the IR Dataset.' ...
+          ' The torso azimuth will be set to %2.2f deg. The resulting head' ...
+          ' azimuth in world coordinates is now %2.2f deg'], torsoAzimuth, ...
+          torso, mod(headAzimuth + torso, 360));
+        % rotate Sink around z-axis
+        sim.Sinks.rotateAroundAxis([0; 0; 1], torso - torsoAzimuth)
+        % set torso azimuth
+        sim.TorsoAzimuth = mod(torso , 360);
+      end
+    end
+    function [left, right, torso] = getHeadLimits(obj)
+      left = obj.IRDataset.maxHeadLeft;
+      right = obj.IRDataset.maxHeadRight;
+      torso = obj.IRDataset.TorsoAzimuth;
     end
   end
 

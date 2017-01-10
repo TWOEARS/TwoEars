@@ -89,9 +89,16 @@ classdef circVBufArrayInterface < handle
             l = max( 0, obj.cbuf.lst - obj.cbuf.fst + 1 );
         end
             
-        function s = size( obj )
-            s = size(obj.cbuf.dat);
-            s(1) = length( obj );
+        function s = size( obj, dim )
+            if nargin < 2
+                s = size(obj.cbuf.dat);
+                s(1) = length( obj );
+            else
+                s = size(obj.cbuf.dat, dim);
+                if dim == 1
+                    s(1) = length( obj );
+                end
+            end
         end
         
         function n = numel( obj )

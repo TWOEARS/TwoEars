@@ -6,6 +6,11 @@ classdef BlackboardSystem < handle
         scheduler;
         robotConnect;
         dataConnect;
+        
+        % ksVisualisers = containers.Map; % for visualising KSs
+        locVis;     % for visualising localisation
+        afeVis;     % for visualising AFE
+        genderVis;     % for visualising gender recognition
     end
 
     methods
@@ -18,15 +23,43 @@ classdef BlackboardSystem < handle
             obj.scheduler = Scheduler( obj.blackboardMonitor );
         end
 
+        function setEnergyThreshold(obj, energyThreshold)
+            obj.blackboard.setEnergyThreshold(energyThreshold);
+        end
+        
+        % Set blackboard visualiser
+        function setVisualiser(obj, visualiser)
+            obj.scheduler.setVisualiser(visualiser);
+        end
+        
+%         % Add a visualiser for a KS
+%         function addKsVisualiser(obj, ksName, vis)
+%             obj.ksVisualisers(ksName) = vis;
+%         end
+%         
+%         % Set KS visualisers
+%         function setKsVisualisers(obj, ksVisualisers)
+%             obj.ksVisualisers = ksVisualisers;
+%         end
+        
+        function setLocVis(obj, locVis)
+            obj.locVis = locVis;
+        end
+        
+        function setAfeVis(obj, afeVis)
+            obj.afeVis = afeVis;
+        end
+        
+        function setGenderVis(obj, genderVis)
+            obj.genderVis = genderVis;
+        end
+        
         function setRobotConnect( obj, robotConnect )
             obj.robotConnect = robotConnect;
         end
 
-        function setDataConnect( obj, connectorClassName, dataFs )
-            dataConnectArgs = {obj.robotConnect};
-            if nargin > 2 
-                dataConnectArgs{end+1} = dataFs; 
-            end
+        function setDataConnect( obj, connectorClassName, varargin )
+            dataConnectArgs = [{obj.robotConnect} varargin];
             % Connect to the Two!Ears Auditory Front-End module
             obj.dataConnect = obj.createKS( connectorClassName, dataConnectArgs );
         end
@@ -213,7 +246,7 @@ classdef BlackboardSystem < handle
 
         %% System Execution
         function run( obj )
-            while ~obj.robotConnect.isFinished()
+            while obj.robotConnect.isActive()
                 obj.scheduler.processAgenda();
                 notify( obj.scheduler, 'AgendaEmpty' );
             end

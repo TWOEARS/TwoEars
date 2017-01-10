@@ -19,31 +19,17 @@ for direction = sourceAngles
     sim.rotateHead(0, 'absolute');
     sim.ReInit = true;
 
-    % GmtkLocationKS with head rotation for confusion solving
-    bbs = BlackboardSystem(0);
-    bbs.setRobotConnect(sim);
-    bbs.buildFromXml('Blackboard.xml');
-    bbs.run();
-    % Evaluate localization results
-    predictedAzimuths = bbs.blackboard.getData('perceivedAzimuths');
-    [predictedAzimuth1, localisationError1] = ...
-        evaluateLocalisationResults(predictedAzimuths, direction);
-    %displayLocalisationResults(predictedAzimuths, direction)
+    % GmmLocationKS with head rotation
+    phi1 = estimateAzimuth(sim, 'Blackboard.xml');
 
     % Reset binaural simulation
     sim.rotateHead(0, 'absolute');
     sim.ReInit = true;
 
-    % GmtkLocationKS without head rotation and confusion solving
-    bbs = BlackboardSystem(0);
-    bbs.setRobotConnect(sim);
-    bbs.buildFromXml('BlackboardNoHeadRotation.xml');
-    bbs.run();
-    predictedAzimuths = bbs.blackboard.getData('perceivedAzimuths');
-    [predictedAzimuth2, localisationError2] = ...
-        evaluateLocalisationResults(predictedAzimuths, direction);
+    % GmmLocationKS without head rotation
+    phi2 = estimateAzimuth(sim, 'BlackboardNoHeadRotation.xml');
 
-    printLocalisationTableColumn(direction, predictedAzimuth1, predictedAzimuth2);
+    printLocalisationTableColumn(direction, phi1, phi2);
 
 end
 

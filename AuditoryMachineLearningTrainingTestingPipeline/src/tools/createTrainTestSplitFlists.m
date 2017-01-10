@@ -1,6 +1,6 @@
 function createTrainTestSplitFlists( inputFlist, outputName, baseDir, nFolds, oneFoldForTrain )
 
-if nargin < 4, oneFoldForTrain = false; end;
+if nargin < 5, oneFoldForTrain = false; end;
 
 allData = core.IdentTrainPipeData();
 allData.loadWavFileList( inputFlist );

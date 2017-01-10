@@ -21,7 +21,7 @@ function [fileNames,nFiles] = readFileList(fileList)
 narginchk(1,1);
 
 % Reading the file list
-fileList = xml.dbGetFile(fileList);
+fileList = db.getFile(fileList);
 fid = fopen(fileList);
 tmp = textscan(fid, '%s');
 fileNames = tmp{1};

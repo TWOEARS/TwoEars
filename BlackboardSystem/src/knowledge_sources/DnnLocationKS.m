@@ -15,9 +15,6 @@ classdef DnnLocationKS < AuditoryFrontEndDepKS
         blockSize                   % The size of one data block that
                                     % should be processed by this KS in
                                     % [s].
-        energyThreshold = 2E-3;     % ratemap energy threshold (cuberoot 
-                                    % compression) for detecting active 
-                                    % frames
         freqRange;                  % Frequency range to be considered
         channels = [];              % Frequency channels to be used
     end
@@ -44,6 +41,7 @@ classdef DnnLocationKS < AuditoryFrontEndDepKS
             end
             nChannels = 32;
             param = genParStruct(...
+                'pp_bBinauralRMS', true, ...
                 'fb_type', 'gammatone', ...
                 'fb_lowFreqHz', defaultFreqRange(1), ...
                 'fb_highFreqHz', defaultFreqRange(2), ...
@@ -53,8 +51,9 @@ classdef DnnLocationKS < AuditoryFrontEndDepKS
                 'ild_hSizeSec', 10E-3, ...
                 'rm_wSizeSec', 20E-3, ...
                 'rm_hSizeSec', 10E-3, ...
-                'rm_scaling', 'power', ...
+                'rm_scaling', 'magnitude', ...
                 'rm_decaySec', 8E-3, ...
+                'rm_wname', 'hann', ...
                 'cc_wSizeSec', 20E-3, ...
                 'cc_hSizeSec', 10E-3, ...
                 'cc_wname', 'hann');
@@ -62,13 +61,15 @@ classdef DnnLocationKS < AuditoryFrontEndDepKS
             requests{1}.params = param;
             requests{2}.name = 'ild';
             requests{2}.params = param;
+            requests{3}.name = 'ratemap';
+            requests{3}.params = param;
             obj = obj@AuditoryFrontEndDepKS(requests);
             obj.blockSize = 0.5;
             obj.invocationMaxFrequency_Hz = 10;
             obj.nChannels = nChannels;
             obj.freqRange = freqRange;
             
-            % Load localiastion DNNs
+            % Load localisation DNNs
             obj.DNNs = cell(nChannels, 1);
             obj.normFactors = cell(nChannels, 1);
 
@@ -78,11 +79,12 @@ classdef DnnLocationKS < AuditoryFrontEndDepKS
                     '%s/LearnedDNNs_%s_ild-cc_%ddeg_%dchannels/DNN_%s_%ddeg_%dchannels_channel%d_%dlayers.mat', ...
                     obj.dataPath, preset, azRes, nChannels, preset, azRes, nChannels, c, nHiddenLayers);
                 % Load localisation module
-                load(xml.dbGetFile(strModels));
+                load(db.getFile(strModels));
                 obj.DNNs{c} = C.NNs;
                 obj.normFactors{c} = C.normFactors;
             end
             obj.angles = C.azimuths;
+            
         end
 
 
@@ -93,12 +95,16 @@ classdef DnnLocationKS < AuditoryFrontEndDepKS
             
             % Execute KS if a sufficient amount of data for one block has
             % been gathered
-            bExecute = obj.hasEnoughNewSignal( obj.blockSize );
+            bExecute = obj.blackboard.currentSoundTimeIdx > obj.blockSize;
+            % allow overlapped executions
+            % bExecute = obj.hasEnoughNewSignal( obj.blockSize );
             bWait = false;
         end
-
+        
         function execute(obj)
-            cc = obj.getNextSignalBlock( 1, obj.blockSize, obj.blockSize, false );
+            % Get binaural features.
+            cc = obj.getSignalBlock( 1, ...
+                [obj.trigger.tmIdx-obj.blockSize obj.trigger.tmIdx], false );
             nlags = size(cc,3);
             if nlags > 37 % 37 lags when sampled at 16kHz
                 error('DnnLocationKS: requires sampling rate to be 16kHz (set in AuditoryFrontEndKS)');
@@ -106,14 +112,21 @@ classdef DnnLocationKS < AuditoryFrontEndDepKS
             idx = ceil(nlags/2);
             mlag = 16; % only use -1 ms to 1 ms
             cc = cc(:,:,idx-mlag:idx+mlag);
-            ild = obj.getNextSignalBlock( 2, obj.blockSize, obj.blockSize, false );
+            ild = obj.getSignalBlock( 2, ...
+                [obj.trigger.tmIdx-obj.blockSize obj.trigger.tmIdx], false );
+            ratemap = obj.getSignalBlock( 3, ...
+                [obj.trigger.tmIdx-obj.blockSize obj.trigger.tmIdx], false );
+            ratemap = (ratemap{1} + ratemap{2}) ./ 2;
+            frameEnergy = mean(ratemap,2);
+            %fprintf('%E\n', frameEnergy);
+            inactiveFrames = frameEnergy < obj.blackboard.energyThreshold;
 
             % Only consider those channels within obj.freqRange
             if isempty(obj.channels)
                 afe = obj.getAFEdata;
                 obj.channels = find(afe(1).cfHz >= obj.freqRange(1) & afe(1).cfHz <= obj.freqRange(2));
             end
-            
+
             % Compute posterior distributions for each frequency channel and time frame
             [nFrames] = size(ild,1);
             nAzimuths = numel(obj.angles);
@@ -136,23 +149,69 @@ classdef DnnLocationKS < AuditoryFrontEndDepKS
                 obj.DNNs{ch}.testing = 0;
             end
 
-            % Average posterior distributions over frequency
-            prob_AF = exp(squeeze(nanSum(log(post),3)));
+            % Only process valid frames
+            % post = post(validFrames, :, :);
+            
+            % Get segregation mask
+            segHyp = obj.blackboard.getData( ...
+                'sourceSegregationHypothesis', obj.trigger.tmIdx);
+            
+            % Random probabilities for inactive frames
+            randProbs = randn(nFrames,nAzimuths).*0.01 + 1/nAzimuths;
+            
+            if isempty(segHyp) 
+                % Average posterior distributions over frequency
+                prob_AF = exp(squeeze(nanSum(log(post),3)));
 
+                % Set inactive frames to random probabilities
+                prob_AF(inactiveFrames,:) = randProbs(inactiveFrames,:);
+                
+                % Normalise each frame such that probabilities sum up to one
+                prob_AFN = prob_AF ./ repmat(sum(prob_AF,2),[1 nAzimuths]);
+                
+                % Average posterior distributions over time
+                prob_AFN_F = nanMean(prob_AFN, 1);
 
-            % Normalise each frame such that probabilities sum up to one
-            prob_AFN = prob_AF ./ repmat(sum(prob_AF,2),[1 nAzimuths]);
+            else
+                mask = segHyp.data.mask;
+                %mask = mask(:, validFrames);
+                
+                % Integrate over time-frequency by applying the mask
+                mask2 = reshape(mask', size(mask,2), 1, size(mask,1));
 
-            % Average posterior distributions over time
-            prob_AFN_F = nanMean(prob_AFN, 1);
+                % Integrate probabilities across all frequency channel
+                prob_AF = exp(squeeze(nanSum(bsxfun(@times,log(post),mask2),3)));
+
+                % Set inactive frames to random probabilities
+                prob_AF(inactiveFrames,:) = randProbs(inactiveFrames,:);
+                
+                % Normalize such that probabilities sum up to one for each frame
+                prob_AFN = transpose(prob_AF ./ repmat(sum(prob_AF,2),[1 nAzimuths]));
+
+                % Integrate across all frames
+                %prob_AFN_F = nanmean(prob_AFN,2);
+                mask3 = sum(mask);
+                prob_AFN_F = nanSum(bsxfun(@times,prob_AFN,mask3./sum(mask3)),2);
+            
+%                 % Add segmentation hypothesis to the blackboard for
+%                 % SegmentIdentityKS. SourceSegregationHypothesis uses masks
+%                 % of [nChannels x nFrames]. SegmentationHypothesis uses 
+%                 % masks of [nFrames x nChannels]
+%                 [~,idx] = max(prob_AFN_F(:));
+%                 segHyp = SegmentationHypothesis(segHyp.data.source, ...
+%                     'SoundSource', mask', segHyp.data.cfHz, segHyp.data.hopSize, obj.angles(idx));
+%                 obj.blackboard.addData('segmentationHypotheses', ...
+%                     segHyp, false, obj.trigger.tmIdx);
+            end
 
             % Create a new location hypothesis
             currentHeadOrientation = obj.blackboard.getLastData('headOrientation').data;
             aziHyp = SourcesAzimuthsDistributionHypothesis( ...
-                currentHeadOrientation, obj.angles, prob_AFN_F);
+                currentHeadOrientation, obj.angles(:), prob_AFN_F(:));
             obj.blackboard.addData( ...
                 'sourcesAzimuthsDistributionHypotheses', aziHyp, false, obj.trigger.tmIdx);
             notify(obj, 'KsFiredEvent', BlackboardEventData( obj.trigger.tmIdx ));
+            
         end
 
     end

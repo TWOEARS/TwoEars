@@ -2,7 +2,7 @@ classdef PropertyDescription
   % class which connects MATLAB object property with XML-descriptions for 
   % XML-parsing and auto-configuration.
   %
-  % See also: MetaObject xmlread
+  % See also: xml.MetaObject xmlread
   
   properties (SetAccess=private)
     % name of xml-attribute

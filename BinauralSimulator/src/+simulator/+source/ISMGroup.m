@@ -10,12 +10,9 @@ classdef ISMGroup < simulator.source.GroupBase
       obj.Room.initSubSources(obj);
     end
     
-    function refresh(obj, T)
-      if nargin==2
-        obj.refresh@simulator.source.GroupBase(T);
-      else
-        obj.refresh@simulator.source.GroupBase();
-      end
+    function refresh(obj, sim)
+      
+      obj.refresh@simulator.source.GroupBase(sim);
       
       obj.Room.refreshSubSources(obj);
       

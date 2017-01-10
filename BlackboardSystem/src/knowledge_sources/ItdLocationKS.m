@@ -62,7 +62,7 @@ classdef ItdLocationKS < AuditoryFrontEndDepKS
             icObj = afeData(3);
             ic = icObj.getSignalBlock(obj.blocksizeSec, obj.timeSinceTrigger);
             % Load lookup table
-            lookupTable = load(xml.dbGetFile(fullfile(obj.dataPath, 'default_lookup.mat')));
+            lookupTable = load(db.getFile(fullfile(obj.dataPath, 'default_lookup.mat')));
             % Convert ITDs to azimuth angles
             phi = obj.itdToAngle(itd',lookupTable);
             % Calculate the median over time for every frequency channel of the azimuth

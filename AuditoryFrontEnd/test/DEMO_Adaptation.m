@@ -6,8 +6,11 @@ clc
 %% LOAD SIGNAL
 % 
 % 
+% Audio path
+audioPath = fullfile(fileparts(mfilename('fullpath')),'Test_signals');
+
 % Load a signal
-load('Test_signals/AFE_earSignals_16kHz');
+load([audioPath,filesep,'AFE_earSignals_16kHz']);
 
 % Create a data object based on parts of the right ear signal
 dObj = dataObject(earSignals(1:22495,2),fsHz);
@@ -25,9 +28,12 @@ fb_lowFreqHz  = 80;
 fb_highFreqHz = 8000;
 fb_nChannels  = 16;  
 
+adpt_model = 'adt_vandorpschuitman';
+
 % Summary of parameters 
 par = genParStruct('fb_type',fb_type,'fb_lowFreqHz',fb_lowFreqHz,...
-                   'fb_highFreqHz',fb_highFreqHz,'fb_nChannels',fb_nChannels);
+                   'fb_highFreqHz',fb_highFreqHz,'fb_nChannels',fb_nChannels, ...
+                   'adpt_model', adpt_model);
                
 
 %% PERFORM PROCESSING
@@ -51,9 +57,9 @@ wavPlotDS   = 3; % Down-sampling factor
 p = genParStruct('wavPlotZoom',wavPlotZoom,'wavPlotDS',wavPlotDS);
 
 % Plot innerhaircell signal
-dObj.innerhaircell{1}.plot([])
+dObj.innerhaircell{1}.plot([]);
 title('IHC signal')
 
 % Plot adaptation signal
-dObj.adaptation{1}.plot([],p)
+dObj.adaptation{1}.plot([],p);
 

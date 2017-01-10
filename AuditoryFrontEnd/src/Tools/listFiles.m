@@ -30,9 +30,9 @@ function [ stFileList ] = listFiles(szCurDir, szFileMask, iRecursionDepth)
 
 %-------------------------------------------------------------------------%
 % Check input arguments.
-error(nargchk(0,3,nargin));
+narginchk(0,3);
 % Check output arguments.
-error(nargoutchk(0,1,nargout));
+nargoutchk(0,1);
 %-------------------------------------------------------------------------%
 
 %-------------------------------------------------------------------------%
@@ -44,7 +44,7 @@ if( (nargin<3) || (isempty(iRecursionDepth)) ), iRecursionDepth =   4; end
 %-------------------------------------------------------------------------%
 
 stFileList = dir( fullfile( szCurDir, szFileMask ) );
-stFileList = stFileList( find( ~[stFileList.isdir] ) );
+stFileList = stFileList(  ~[stFileList.isdir]  );
 for( k = [ 1 : length(stFileList) ] )
   stFileList(k).name = fullfile( szCurDir, stFileList(k).name );
 end
@@ -56,7 +56,7 @@ if( (iRecursionDepth > 0) || (iRecursionDepth == -1) )
 
     % Get a list of all existing sub-directories (exclusive '.' and '..').
     stSubDirs = dir( szCurDir );
-    stSubDirs = stSubDirs( find( [stSubDirs.isdir] ) );
+    stSubDirs = stSubDirs(  [stSubDirs.isdir]  );
     if( ~isempty(stSubDirs) )
         if( strcmp(stSubDirs(1).name,  '.') ), stSubDirs(1) = []; end
         if( strcmp(stSubDirs(1).name, '..') ), stSubDirs(1) = []; end

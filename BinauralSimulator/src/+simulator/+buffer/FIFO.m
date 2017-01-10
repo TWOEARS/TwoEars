@@ -43,7 +43,7 @@ classdef FIFO < simulator.buffer.Data
         elseif length > size(obj.data,1)
           obj.data = [];
         else
-          obj.data(1:length,:) = [];
+          obj.data = obj.data(length+1:end,:);
         end
       end
     end

@@ -270,13 +270,13 @@ classdef filterObj < handle
             % Processing
             if fObj.CascadeOrder == 1
                 % Then apply the filter only once
-                [out,fObj.States] = filter(fObj.b,fObj.a,data,fObj.States);
+                [out,fObj.States] = filter(fObj.b,fObj.a,data,fObj.States,1);
                 
             else
                 % Then cascade the filter
                 out = data;
                 for ii = 1:fObj.CascadeOrder
-                    [out,fObj.States(:,:,ii)] = filter(fObj.b,fObj.a,out,fObj.States(:,:,ii));
+                    [out,fObj.States(:,:,ii)] = filter(fObj.b,fObj.a,out,fObj.States(:,:,ii),1);
                 end
             end
             

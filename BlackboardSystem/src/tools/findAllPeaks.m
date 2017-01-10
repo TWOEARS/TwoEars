@@ -63,17 +63,17 @@ dx=x(2:end)-x(1:end-1);
 r=find(dx>0);
 f=find(dx<0);
 
-if length(r)>0 & length(f)>0    % we must have at least one rise and one fall
+if ~isempty(r) && ~isempty(f)    % we must have at least one rise and one fall
     dr=r;
     dr(2:end)=r(2:end)-r(1:end-1);
-    rc=repmat(1,nx,1);
+    rc=ones(nx,1);
     rc(r+1)=1-dr;
     rc(1)=0;
     rs=cumsum(rc); % = time since the last rise
     
     df=f;
     df(2:end)=f(2:end)-f(1:end-1);
-    fc=repmat(1,nx,1);
+    fc=ones(nx,1);
     fc(f+1)=1-df;
     fc(1)=0;
     fs=cumsum(fc); % = time since the last fall

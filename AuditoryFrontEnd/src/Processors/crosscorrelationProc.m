@@ -156,10 +156,9 @@ classdef crosscorrelationProc < Processor
             end
 
             else
-            out = zeros(max(1,nFrames),nChannels,maxLag*2+1);
+            out = zeros(max(0,nFrames),nChannels,maxLag*2+1);
                 % Use Tobias mex code for framing
                 for jj = 1:nChannels
-
                     % Framing
                     frames_L = frameData(in_l(:,jj),pObj.wSize,pObj.hSize,pObj.win,false);
                     frames_R = frameData(in_r(:,jj),pObj.wSize,pObj.hSize,pObj.win,false);

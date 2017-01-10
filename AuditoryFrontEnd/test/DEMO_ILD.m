@@ -1,4 +1,4 @@
-clear;
+clear
 close all
 clc
 
@@ -6,8 +6,11 @@ clc
 %% LOAD SIGNAL
 % 
 % 
+% Audio path
+audioPath = fullfile(fileparts(mfilename('fullpath')),'Test_signals');
+
 % Load a signal
-load('Test_signals/AFE_earSignals_16kHz');
+load([audioPath,filesep,'AFE_earSignals_16kHz']);
 
 % Create a data object based on the ear signals
 dObj = dataObject(earSignals(1:22494,:),fsHz);
@@ -28,16 +31,16 @@ fb_nChannels  = 32;
 % Parameters of innerhaircell processor
 ihc_method    = 'dau';
 
-% Parameters of crosscorrelation processor
-cc_wSizeSec  = 0.02;
-cc_hSizeSec  = 0.01;
-cc_wname     = 'hann';
+% Parameters of ILD processor
+ild_wSizeSec  = 0.02;
+ild_hSizeSec  = 0.01;
+ild_wname     = 'hann';
 
 % Summary of parameters 
 par = genParStruct('fb_type',fb_type,'fb_lowFreqHz',fb_lowFreqHz,...
                    'fb_highFreqHz',fb_highFreqHz,'fb_nChannels',fb_nChannels,...
-                   'ihc_method',ihc_method,'cc_wSizeSec',cc_wSizeSec,...
-                   'cc_hSizeSec',cc_hSizeSec,'cc_wname',cc_wname); 
+                   'ihc_method',ihc_method,'ild_wSizeSec',ild_wSizeSec,...
+                   'cc_hSizeSec',ild_hSizeSec,'cc_wname',ild_wname); 
                
                
 %% PERFORM PROCESSING

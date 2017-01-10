@@ -64,6 +64,11 @@ classdef gaborProc < Processor
             %OUTPUT ARGUMENT:
             %    out : Processor output for that chunk
             
+            if isempty( in )
+                out = [];
+                return;
+            end
+            
             % Maximum ratemap power
             max_pow = max(in(:));
             

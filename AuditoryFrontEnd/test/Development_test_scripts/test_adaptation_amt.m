@@ -45,6 +45,11 @@ x = (0:length(inputSignal)-1)/fs;
 param_struct = [];
 dObj = dataObject(inputSignal, fs);
 request = 'adaptation';
+adpt_model = 'adt_vandorpschuitman';
+
+% % Summary of parameters 
+param_struct = genParStruct('adpt_model', adpt_model);
+
 mObj = manager(dObj);               % Manager instance
 out = mObj.addProcessor(request, param_struct);
 

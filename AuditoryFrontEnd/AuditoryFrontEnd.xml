@@ -5,5 +5,5 @@
      startTwoEars('AuditoryFrontEnd.xml'); -->
 
 <requirements>
-    <TwoEarsPart startup="startAuditoryFrontEnd">auditory-front-end</TwoEarsPart>
+    <TwoEarsPart branch="Precedence_model_modification" startup="startAuditoryFrontEnd">auditory-front-end</TwoEarsPart>
 </requirements>

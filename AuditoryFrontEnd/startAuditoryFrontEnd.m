@@ -3,7 +3,19 @@
 % yourself the Matlab workspace, if that is necessary.
 
 basePath = fileparts(mfilename('fullpath'));
-addpath(genpath(fullfile(basePath, 'src')))
-addpath(genpath(fullfile(basePath, 'test')))
+
+newPathes = { fullfile(basePath, 'src'), ...
+              fullfile(basePath, 'src/Filters'), ...
+              fullfile(basePath, 'src/Parameter_handling'), ...
+              fullfile(basePath, 'src/Processors'), ...
+              fullfile(basePath, 'src/Signals'), ...
+              fullfile(basePath, 'src/Tools'), ...
+              fullfile(basePath, 'test')};
+loadedPathes = strsplit( path, pathsep );
+isNewPathIncluded = cellfun( @(np)(any( strcmp( np, loadedPathes ) )), newPathes );
+newPathes = newPathes(~isNewPathIncluded);
+if ~isempty( newPathes )
+    addpath( newPathes{:} );
+end
 
 clear basePath

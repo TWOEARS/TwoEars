@@ -741,7 +741,10 @@ classdef manager < handle
                 if ~isempty(dep_list)
                     if size(mObj.Processors,2)==2
                         if isempty(mObj.Processors{n_proc+n_new_proc,2})
-                            out{1} = mObj.Processors{n_proc+n_new_proc,1}.Output{1};
+%                             out{1} = mObj.Processors{n_proc+n_new_proc,1}.Output{1};
+                            % Modify to handle cases where one binaural
+                            % processor has multiple outputs (precedence)
+                            out = mObj.Processors{n_proc+n_new_proc,1}.Output;
                         else
                             out{1,1} = mObj.Processors{n_proc+n_new_proc,1}.Output{1};
                             out{1,2} = mObj.Processors{n_proc+n_new_proc,2}.Output{1};

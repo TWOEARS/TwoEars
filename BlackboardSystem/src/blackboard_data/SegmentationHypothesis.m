@@ -19,11 +19,14 @@ classdef SegmentationHypothesis < Hypothesis
                                     % 'background'.
         softMask                    % Probabilistic segmentation mask 
                                     % associated with this sound source.
+        cfHz                        % center frequencies of the mask
+        hopSize                     % Hop size or sampling rate of the mask
+        refAzm                      % relative azm of source this hypothesis is based on
     end
     
     methods
         function obj = SegmentationHypothesis(sourceIdentifier, type, ...
-                softMask)
+                softMask, cfHz, hopSize, refAzm)
             % SEGMENTATIONHYPOTHESIS This constructor function is used to
             %   generate a new segmentation hypothesis on the blackboard.
             %
@@ -38,19 +41,19 @@ classdef SegmentationHypothesis < Hypothesis
             %       is the number of filterbank channels.
             
             % Check inputs
-            p = inputParser();
-            
-            p.addRequired('sourceIdentifier', @isstr);
-            p.addRequired('type', @(x) any(validatestring(x, ...
-                {'Background', 'SoundSource'})));
-            p.addRequired('softMask', @(x) validateattributes(x, ...
-                {'numeric'}, {'real', '2d', '>=', 0, '<=', 1}));
-            p.parse(sourceIdentifier, type, softMask);
+            validatestring( type, {'Background', 'SoundSource'} );
+            validateattributes( softMask, {'numeric'}, {'real', '2d', '>=', 0, '<=', 1} );
+            validateattributes( cfHz, {'numeric'}, {'real', '>', 0} );
+            validateattributes( hopSize, {'numeric'}, {'real', 'scalar', '>', 0} );
+            validateattributes( refAzm, {'numeric'}, {'real', 'scalar', '>=' -360, '<=', 360} );
             
             % Add parameters to object properties
-            obj.sourceIdentifier = p.Results.sourceIdentifier;
-            obj.type = p.Results.type;
-            obj.softMask = p.Results.softMask;
+            obj.sourceIdentifier = sourceIdentifier;
+            obj.type = type;
+            obj.softMask = softMask;
+            obj.cfHz = cfHz;
+            obj.hopSize = hopSize;
+            obj.refAzm = refAzm;
         end
     end
 end
