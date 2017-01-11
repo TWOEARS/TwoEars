@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<blackboardsystem>
+
+    <dataConnection Type="AuditoryFrontEndKS"/>
+
+    <KS Name="loc" Type="GmmLocationKS"/>
+    <KS Name="dec" Type="LocalisationDecisionKS">
+        <Param Type="int">1</Param><!-- enable head rotation -->
+    </KS>
+    <KS Name="rot" Type="HeadRotationKS">
+        <Param Type="ref">robotConnect</Param>
+    </KS>
+
+    <Connection Mode="replaceOld" Event="AgendaEmpty">
+        <source>scheduler</source>
+        <sink>dataConnect</sink>
+    </Connection>
+    <Connection Mode="replaceOld">
+        <source>dataConnect</source>
+        <sink>loc</sink>
+    </Connection>
+    <Connection Mode="add">
+        <source>loc</source>
+        <sink>dec</sink>
+    </Connection>
+    <Connection Mode="add" Event="RotateHead">
+        <source>dec</source>
+        <sink>rot</sink>
+    </Connection>
+
+</blackboardsystem>
