@@ -9,18 +9,18 @@ classdef (Abstract) Base
     %% --------------------------------------------------------------------
     methods
         
-        function obj = Base( yTrue, yPred, datapointInfo )
-            if nargin < 2
-                error( ['Subclass of PerformanceMeasures.Base must call superconstructor ',...
-                        'and pass yTrue and yPred.'] );
-            end
+        function obj = Base( yTrue, yPred, iw, datapointInfo, testSetIdData )
             if nargin < 3
-                dpiarg = {};
-            else
-                dpiarg = {datapointInfo};
+                iw = ones( size( yTrue ) );
+            end
+            if nargin < 4
+                datapointInfo = struct.empty;
+            end
+            if nargin < 5
+                testSetIdData = [];
             end
             [obj, obj.performance, obj.datapointInfo] = ...
-                obj.calcPerformance( yTrue, yPred, dpiarg{:} );
+                    obj.calcPerformance( yTrue, yPred, iw, datapointInfo, testSetIdData );
         end
         % -----------------------------------------------------------------
     
@@ -31,7 +31,7 @@ classdef (Abstract) Base
     
         function po = strapOffDpi( obj )
             po = obj;
-            po.datapointInfo = [];
+            po.datapointInfo = struct.empty;
         end
         % -----------------------------------------------------------------
     
@@ -77,11 +77,58 @@ classdef (Abstract) Base
         end
         % -----------------------------------------------------------------
 
+        function [blockAnnotations, yp, yt] = getBacfDpi( obj, bacfIdx, bacfSubidx )
+            allDpi = obj.datapointInfo;
+            currentFileDpiIdxs = find( allDpi.fileIdxs == bacfIdx );
+            currentFileBacfSubIdxs = allDpi.bacfIdxs(currentFileDpiIdxs);
+            currentBacfDpiIdxs = currentFileDpiIdxs(currentFileBacfSubIdxs == bacfSubidx);
+            currentBacfUsedIdxs = allDpi.bIdxs(currentBacfDpiIdxs);
+            bacfile = load( allDpi.blockAnnotsCacheFiles{bacfIdx}{bacfSubidx}, 'blockAnnotations');
+            blockAnnotations = bacfile.blockAnnotations(currentBacfUsedIdxs);
+            yp = allDpi.yPred(currentBacfDpiIdxs);
+            yt = allDpi.yTrue(currentBacfDpiIdxs);
+        end
+        % -----------------------------------------------------------------
+    
+        function [dpiext, compiled] = makeDatapointInfoStats( obj, fieldname, compiledPerfField )
+            if isempty( obj.datapointInfo ), dpiext = []; return; end
+            if ~isfield( obj.datapointInfo, fieldname )
+                error( '%s is not a field of datapointInfo', fieldname );
+            end
+            if nargin < 3, compiledPerfField = 'performance'; end
+            uniqueDpiFieldElems = unique( obj.datapointInfo.(fieldname) );
+            for ii = 1 : numel( uniqueDpiFieldElems )
+                if iscell( uniqueDpiFieldElems )
+                    udfe = uniqueDpiFieldElems{ii};
+                    udfeIdxs = strcmp( obj.datapointInfo.(fieldname), ...
+                                       udfe );
+                else
+                    udfe = uniqueDpiFieldElems(ii);
+                    udfeIdxs = obj.datapointInfo.(fieldname) == udfe;
+                end
+                for fn = fieldnames( obj.datapointInfo )'
+                    if any( size( obj.datapointInfo.(fn{1}) ) ~= size( udfeIdxs ) )
+                        iiDatapointInfo.(fn{1}) = obj.datapointInfo.(fn{1});
+                        continue
+                    end
+                    iiDatapointInfo.(fn{1}) = obj.datapointInfo.(fn{1})(udfeIdxs);
+                end
+                classInfo = metaclass( obj );
+                dpiext(ii) = feval( classInfo.Name, iiDatapointInfo.yTrue, ...
+                                                    iiDatapointInfo.yPred,...
+                                                    iiDatapointInfo.iw,...
+                                                    iiDatapointInfo );
+                compiled{ii,1} = udfe;
+                compiled{ii,2} = dpiext(ii).(compiledPerfField);
+            end
+        end
+        % -----------------------------------------------------------------
+
     end
 
     %% --------------------------------------------------------------------
     methods (Abstract)
-        [obj, performance, dpi] = calcPerformance( obj, yTrue, yPred, dpiarg )
+        [obj, performance, dpi] = calcPerformance( obj, yTrue, yPred, iw, dpi, testSetIdData )
         b = eqPm( obj, otherPm )
         b = gtPm( obj, otherPm )
         s = char( obj )

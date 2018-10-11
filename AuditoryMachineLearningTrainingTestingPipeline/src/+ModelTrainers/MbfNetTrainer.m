@@ -29,7 +29,7 @@ classdef MbfNetTrainer < ModelTrainers.Base & Parameterized
         end
         %% ----------------------------------------------------------------
 
-        function buildModel( obj, x, y )
+        function buildModel( obj, x, y, iw )
 %             glmOpts.weights = obj.setDataWeights( y );
             obj.model = Models.MbfNetModel();
             xScaled = obj.model.scale2zeroMeanUnitVar( x, 'saveScalingFactors' );

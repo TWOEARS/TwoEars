@@ -25,7 +25,7 @@ classdef BMFATrainer < ModelTrainers.Base & Parameterized
         end
         %% ----------------------------------------------------------------
 
-        function buildModel( obj, x, y )
+        function buildModel( obj, x, y, iw )
             obj.model = Models.BMFAModel();
             xScaled = obj.model.scale2zeroMeanUnitVar( x, 'saveScalingFactors' );
             gmmOpts.mfaK = obj.nComp;

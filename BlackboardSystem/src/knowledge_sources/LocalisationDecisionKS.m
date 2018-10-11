@@ -62,14 +62,14 @@ classdef LocalisationDecisionKS < AbstractKS
                 prevHyp = obj.blackboard.getData( ...
                     'locationHypothesis', obj.prevTimeIdx).data;
                 headRotation = wrapTo180(aziHyp.headOrientation-prevHyp.headOrientation);
-                prevPost = prevHyp.sourcesPosteriors;
+                prevPost = prevHyp.sourcesDistribution;
                 currPost = aziHyp.sourcesDistribution;
                 if sum(currPost > obj.postThreshold) > 0
                     if headRotation ~= 0
                         % Only if the new location hypothesis contains strong
                         % directional sources, do the removal
                         [prevPost,currPost] = removeFrontBackConfusion(...
-                            prevHyp.sourceAzimuths, prevPost, ...
+                            prevHyp.azimuths, prevPost, ...
                             currPost, headRotation);
                         % Changed int16 to round here, which seems to cause problem
                         % with circshift in the next line
@@ -126,7 +126,7 @@ classdef LocalisationDecisionKS < AbstractKS
             if obj.bSolveConfusion
                 % Generates location hypotheses if posterior distribution > threshold
                 % Assume a confusion when more than 1 valid location
-                if sum(ploc.sourcesPosteriors > obj.postThreshold) > 1 ...
+                if sum(ploc.sourcesDistribution > obj.postThreshold) > 1 ...
                         || (ploc.relativeAzimuth > 150 && ploc.relativeAzimuth < 210)
                     bRotateHead = true;
                 end
@@ -147,7 +147,7 @@ classdef LocalisationDecisionKS < AbstractKS
                 ploc = obj.blackboard.getData( ...
                 'locationHypothesis', obj.trigger.tmIdx).data;
                 obj.blackboardSystem.locVis.setPosteriors(...
-                    ploc.sourceAzimuths+ploc.headOrientation, ploc.sourcesPosteriors);
+                    ploc.azimuths+ploc.headOrientation, ploc.sourcesDistribution);
             end
         end
     end

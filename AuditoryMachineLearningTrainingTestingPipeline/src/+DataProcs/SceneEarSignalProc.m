@@ -166,26 +166,22 @@ classdef SceneEarSignalProc < DataProcs.IdProcWrapper
                              splitAzms{ii}, obj.annotsOut.srcAzms.t, 'next', 'extrap' ) );
             end
 
-            obj.annotsOut.srcEnergy = struct( 't', {[]} );
-            for ss = 1 : numSrcs
-                [energy1, tEnergy] = DataProcs.SceneEarSignalProc.runningEnergy( ...
-                                                     obj.getDataFs(), ...
-                                                     double(splitEarSignals{ss}(:,1)), ...
-                                                     20e-3, 10e-3 );
-                [energy2, ~] = DataProcs.SceneEarSignalProc.runningEnergy( ...
-                                                     obj.getDataFs(), ...
-                                                     double(splitEarSignals{ss}(:,2)), ...
-                                                     20e-3, 10e-3 );
-                if numel( tEnergy ) > numel( obj.annotsOut.srcEnergy.t )
-                    obj.annotsOut.srcEnergy.t = single( tEnergy );
-                end
-                obj.annotsOut.srcEnergy.srcEnergy(:,ss) = ...
-                          arrayfun( @(e1,e2)( {single( [e1,e2] )} ), energy1', energy2' );
-            end
-            
+%             obj.annotsOut.srcEnergy = struct( 't', {[]} );
+%             obj.annotsOut.srcEnergy_db = struct( 't', {[]} );
+%             for ss = 1 : numSrcs
+%                 obj.annotsOut.srcEnergy = obj.annotateNrj( splitEarSignals{ss}, ...
+%                                                            obj.annotsOut.srcEnergy, ss,...
+%                                                            'srcEnergy', false );
+%                 obj.annotsOut.srcEnergy_db = obj.annotateNrj( splitEarSignals{ss}, ...
+%                                                            obj.annotsOut.srcEnergy_db, ss,...
+%                                                            'srcEnergy_db' );
+%             end
+%             
             obj.earSout = zeros( mixLen, 2 );
+            obj.annotsOut.globalSrcEnergy = struct( 't', {[]} );
+            obj.annotsOut.globalSrcEnergy_db = struct( 't', {[]} );
+            q = {[]};
             for srcIdx = 1 : numel( splitEarSignals )
-                srcNsignal = splitEarSignals{srcIdx};
                 srcSidx = obj.sceneConfig.snrRefs(srcIdx);
                 if srcSidx == srcIdx
                     srcNsignal = splitEarSignals{srcSidx};
@@ -195,14 +191,23 @@ classdef SceneEarSignalProc < DataProcs.IdProcWrapper
                                                      obj.getDataFs(), ...
                                                      srcSsignal, ...
                                                     'energy', ...
-                                                     srcNsignal, ...
+                                                     splitEarSignals{srcIdx}, ...
                                                      obj.sceneConfig.SNRs(srcIdx).value );
                 end
                 maxSignalsLen = min( mixLen, length( srcNsignal ) );
                 obj.earSout(1:maxSignalsLen,:) = ...
                     obj.earSout(1:maxSignalsLen,:) + srcNsignal(1:maxSignalsLen,:);
+                [obj.annotsOut.globalSrcEnergy,q{srcIdx}] = obj.annotateNrj( ...
+                                                        srcNsignal(1:maxSignalsLen,:), ...
+                                                        obj.annotsOut.globalSrcEnergy, ...
+                                                        srcIdx,'globalSrcEnergy', false, q{1} );
+                obj.annotsOut.globalSrcEnergy_db = obj.annotateNrj( ...
+                                                     srcNsignal(1:maxSignalsLen,:), ...
+                                                     obj.annotsOut.globalSrcEnergy_db, ...
+                                                            srcIdx,'globalSrcEnergy_db', true, q{1} );
                 fprintf( '.' );
             end
+            obj.annotsOut.globalNrjOffsets.globalNrjOffsets = q;
             if obj.sceneConfig.normalize
                 earSoutRMS = max( rms( obj.earSout ) );
                 obj.earSout = obj.earSout * obj.sceneConfig.normalizeLevel / earSoutRMS;
@@ -220,7 +225,33 @@ classdef SceneEarSignalProc < DataProcs.IdProcWrapper
             obj.annotsOut.mixEnergy.t = single( tEnergy );
             obj.annotsOut.mixEnergy.mixEnergy = single( [energy1',energy2'] );
         end
+        %% ------------------------------------------------------------------------------- 
         
+        function [nrjAnnots,qself] = annotateNrj( obj, signal, nrjAnnots, signalId, annotsName, returnDb, q )
+            [energy1,tEnergy,q1] = DataProcs.SceneEarSignalProc.runningEnergy( ...
+                                                                   obj.getDataFs(), ...
+                                                                   double(signal(:,1)), ...
+                                                                   20e-3, 10e-3 );
+            [energy2,~,q2] = DataProcs.SceneEarSignalProc.runningEnergy( ...
+                                                                   obj.getDataFs(), ...
+                                                                   double(signal(:,2)), ...
+                                                                   20e-3, 10e-3 );
+            qself = 0.5*q1+0.5*q2;   
+            if nargin < 7 || isempty( q ), q = qself; end
+            energy1 = energy1 + (q1 - q);
+            energy2 = energy2 + (q2 - q);
+            if nargin >= 6 && ~returnDb 
+                energy1 = 10.^(energy1./10);
+                energy2 = 10.^(energy2./10);
+            end
+            if numel( tEnergy ) > numel( nrjAnnots.t )
+                nrjAnnots.t = single( tEnergy );
+            end
+            nrjAnnots.(annotsName)(:,signalId) = ...
+                          arrayfun( @(e1,e2)( {single( [e1,e2] )} ), energy1', energy2' );
+        end
+        %% ------------------------------------------------------------------------------- 
+                
     end
 
     %% --------------------------------------------------------------------
@@ -300,7 +331,7 @@ classdef SceneEarSignalProc < DataProcs.IdProcWrapper
         end
         %% ----------------------------------------------------------------
         
-        function [energy, tFramesSec] = runningEnergy( fs, signal, blockSec, stepSec )
+        function [energy, tFramesSec, q] = runningEnergy( fs, signal, blockSec, stepSec )
             blockSize = 2 * round(fs * blockSec / 2);
             stepSize  = round(fs * stepSec);
             frames = frameData(signal,blockSize,stepSize,'rectwin');

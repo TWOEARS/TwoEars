@@ -1,6 +1,15 @@
 function eq = isequalDeepCompare( a, b )
 
-if ~isequal( class( a ), class( b ) ), eq = false; return; end
+if isnumeric( a ) && islogical( b )
+    b = feval( class( a ), b );
+elseif isnumeric( b ) && islogical( a )
+    a = feval( class( b ), a );
+end
+
+if ~isequal( class( a ), class( b ) )
+    eq = false; 
+    return; 
+end
 
 if isa( a, 'struct' )
     na = numel( a );
@@ -8,7 +17,10 @@ if isa( a, 'struct' )
     if na ~= nb, eq = false; return; end
     sortedFieldnamesA = sort( fieldnames( a ) );
     sortedFieldnamesB = sort( fieldnames( b ) );
-    if ~isequal( sortedFieldnamesA, sortedFieldnamesB ), eq = false; return; end
+    if ~isequal( sortedFieldnamesA, sortedFieldnamesB )
+        eq = false; 
+        return; 
+    end
     for nn = 1 : na
         for ff = 1 : length( sortedFieldnamesA )
             if ~isequalDeepCompare( a(nn).(sortedFieldnamesA{ff}), ...
@@ -22,7 +34,10 @@ elseif iscell( a )
     nb = numel( b );
     if na ~= nb, eq = false; return; end
     for nn = 1 : na
-        if ~isequalDeepCompare( a{nn}, b{nn} ), eq = false; return; end
+        if ~isequalDeepCompare( a{nn}, b{nn} )
+            eq = false; 
+            return; 
+        end
     end
 % elseif isobject( a ) % only compares public (readable) properties
 %     na = numel( a );
@@ -40,7 +55,10 @@ elseif iscell( a )
 %         end
 %     end
 else
-    if ~isequal( a, b ), eq = false; return; end
+    if ~isequal( a, b )
+        eq = false; 
+        return; 
+    end
 end
 
 eq = true;

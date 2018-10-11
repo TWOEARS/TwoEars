@@ -38,8 +38,9 @@ url = [dburl, '/', filename];
 if nargin == 3 && bVerbose
   fprintf('Downloading file %s\n', url);
 end
-[~, status] = urlwrite(url, outfile);
-if ~status
+try
+  websave(outfile, url, weboptions('Timeout',Inf));
+catch
   warning('Download failed (url=%s), trying alternative database...', url);
   % try with alternative URL of database
   url = [dbalturl, '/', filename];
@@ -47,8 +48,9 @@ if ~status
   if nargin == 3 && bVerbose
     fprintf('Downloading file %s\n', url);
   end
-  [~, status] = urlwrite(url, outfile);
-  if ~status
+  try
+    websave(outfile, url, weboptions('Timeout',Inf));
+  catch
     error('Download also failed with alternative database (url=%s)', url);
   end
 end

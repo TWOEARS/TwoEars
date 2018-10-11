@@ -8,7 +8,7 @@ classdef EnergyDependentLabeler < LabelCreators.Base
     
     %% -----------------------------------------------------------------------------------
     methods (Abstract)
-        y = labelEnergeticBlock( obj, blockAnnotations )
+        [y, ysi] = labelEnergeticBlock( obj, blockAnnotations )
     end
 
     %% -----------------------------------------------------------------------------------
@@ -35,17 +35,18 @@ classdef EnergyDependentLabeler < LabelCreators.Base
             outputDeps = getInternOutputDependencies@LabelCreators.Base( obj );
             outputDeps.sourcesMinEnergy = obj.sourcesMinEnergy;
             outputDeps.sourceIds = obj.sourceIds;
-            outputDeps.v = 1;
+            outputDeps.v = 2;
         end
         %% -------------------------------------------------------------------------------
 
-        function y = label( obj, blockAnnotations )
+        function [y, ysi] = label( obj, blockAnnotations )
             rejectBlock = LabelCreators.EnergyDependentLabeler.isEnergyTooLow( ...
                                   blockAnnotations, obj.sourceIds, obj.sourcesMinEnergy );
             if rejectBlock
                 y = NaN;
+                ysi = {};
             else
-                y = obj.labelEnergeticBlock( blockAnnotations );
+                [y, ysi] = obj.labelEnergeticBlock( blockAnnotations );
             end
         end
         %% -------------------------------------------------------------------------------

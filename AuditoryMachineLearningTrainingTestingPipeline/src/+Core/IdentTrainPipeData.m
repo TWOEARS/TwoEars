@@ -43,7 +43,7 @@ classdef IdentTrainPipeData < handle
                 if isa( fileSubScript, 'char' )
                     if all( fileSubScript == ':' )
                         fIdx = 1 : length( obj.data );
-                    elseif strcmp( fileSubScript, 'fileLabel' )
+                    elseif strcmpi( fileSubScript, 'fileLabel' )
                         dataElemFieldIdxPos = 3;
                         labels = S.subs{1,2};
                         if iscell( labels ) && cellfun( @iscell, labels )
@@ -86,9 +86,30 @@ classdef IdentTrainPipeData < handle
                         end
                         varargout{1:nargout} = ...
                                     vertcat( obj.data(fIdx).(dSubScript)(xyIdx,:,:,:,:) );
-                    elseif any( strcmp( dSubScript, {'fileName','blockAnnotsCacheFile'} ) )
+                    elseif any( strcmpi( dSubScript, {'fileName','blockAnnotsCacheFile'} ) )
                         varargout{1:nargout} = { obj.data(fIdx).(dSubScript) }';
-                    elseif strcmp( dSubScript, 'pointwiseFileIdxs' )
+                    elseif any( strcmpi( dSubScript, {'blockAnnotations'} ) )
+                        isEmpty_bas_bb = arrayfun( @(c)(isempty(c.blockAnnotations)), obj.data(fIdx) );
+                        for bb = find( isEmpty_bas_bb )
+                            bas_bb = [];
+                            bacfIdxs = obj.data(bb).bacfIdxs;
+                            bacfs = obj.data(bb).blockAnnotsCacheFile;
+                            for mm = 1 : numel( bacfs )
+                                bIdxs = obj.data(bb).bIdxs(bacfIdxs==mm);
+                                bacf = load( bacfs{mm}, 'blockAnnotations' );
+                                bas_ = bacf.blockAnnotations(bIdxs);
+                                bas_ = Core.IdentTrainPipeDataElem.addPPtoBas( ...
+                                                     bas_, obj.data(bb).y(bacfIdxs==mm) );
+                                if isempty( bas_bb )
+                                    bas_bb = bas_;
+                                else
+                                    bas_bb = vertcat( bas_bb, bas_ );
+                                end
+                            end
+                            obj.data(bb).blockAnnotations = bas_bb;
+                        end
+                        varargout{1:nargout} = vertcat( obj.data(fIdx).blockAnnotations );
+                    elseif strcmpi( dSubScript, 'pointwiseFileIdxs' )
                         out = [];
                         for ff = fIdx
                             out = [out; repmat( ff, size( obj.data(ff).x, 1 ), 1 )];

@@ -51,7 +51,7 @@ classdef GlmGroupLambdaSelectTrainer < ModelTrainers.Base & Parameterized
         end
         
         %% BUILD MODEL
-        function buildModel(self, ~, ~)
+        function buildModel(self, ~, ~, ~)
             verboseFprintf(self, '\nRun on full trainSet...\n');
             % run core trainer once to determine the lambda path
             self.trainer_core = ModelTrainers.GlmGroupTrainer( ...

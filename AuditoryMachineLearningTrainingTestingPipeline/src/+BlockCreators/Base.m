@@ -53,8 +53,9 @@ classdef Base < Core.IdProcInterface
         %% ------------------------------------------------------------------------------- 
 
         % override of Core.IdProcInterface's method
-        function fileProcessed = hasFileAlreadyBeenProcessed( ~, ~ )
+        function [fileProcessed,cacheDir] = hasFileAlreadyBeenProcessed( ~, ~ )
             fileProcessed = false;
+            cacheDir = [];
         end
         %% -------------------------------------------------------------------------------
         
@@ -130,11 +131,12 @@ classdef Base < Core.IdProcInterface
         %% -------------------------------------------------------------------------------
         function processInternal( obj, varargin )
             obj.inputProc.sceneId = obj.sceneId;
-            in = obj.loadInputData( obj.curWavFilepath, 'afeData', 'annotations' );
             if nargin < 2  || any( strcmpi( 'afeBlocks', varargin ) )
+                in = obj.loadInputData( obj.curWavFilepath, 'afeData', 'annotations' );
                 [obj.blockAnnotations,obj.afeBlocks] = ...
                                                obj.blockify( in.afeData, in.annotations );
             else
+                in = obj.loadInputData( obj.curWavFilepath, 'annotations' );
                 obj.blockAnnotations = obj.blockify( in.afeData, in.annotations );
             end                
         end

@@ -44,12 +44,19 @@ classdef MultiSceneCfgsIdProcWrapper < DataProcs.IdProcWrapper
         %% ----------------------------------------------------------------
 
         % override of Core.IdProcInterface's method
-        function fileProcessed = hasFileAlreadyBeenProcessed( obj, wavFilepath )
+        function [fileProcessed,cacheDirs] = hasFileAlreadyBeenProcessed( obj, wavFilepath )
             fileProcessed = true;
+            if nargout > 1
+                cacheDirs = cell( numel( obj.sceneConfigurations ), 1 );
+            end
             for ii = 1 : numel( obj.sceneConfigurations )
                 obj.sceneProc.setSceneConfig( obj.sceneConfigurations(ii) );
                 obj.wrappedProcs{1}.sceneId = ii;
-                processed = obj.wrappedProcs{1}.hasFileAlreadyBeenProcessed( wavFilepath );
+                if nargout > 1
+                    [processed,cacheDirs{ii}] = obj.wrappedProcs{1}.hasFileAlreadyBeenProcessed( wavFilepath );
+                else
+                    processed = obj.wrappedProcs{1}.hasFileAlreadyBeenProcessed( wavFilepath );
+                end
                 fileProcessed = fileProcessed && processed;
                 % not stopping early because hasFileAlreadyBeenProcessed triggers cache
                 % directory creation

@@ -118,9 +118,17 @@ classdef (Abstract) IdProcInterface < handle
         end
         %% -------------------------------------------------------------------------------
 
-        function fileProcessed = hasFileAlreadyBeenProcessed( obj, wavFilepath )
+        function [fileProcessed,cacheDir] = hasFileAlreadyBeenProcessed( obj, wavFilepath )
             if isempty( wavFilepath ), fileProcessed = false; return; end
-            fileProcessed = exist( obj.getOutputFilepath( wavFilepath ), 'file' );
+            cacheFile = obj.getOutputFilepath( wavFilepath );
+            if obj.forceCacheRewrite
+                fileProcessed = false;
+            else
+                fileProcessed = exist( cacheFile, 'file' );
+            end
+            if nargout > 1
+                cacheDir = fileparts( cacheFile );
+            end
         end
         %% -------------------------------------------------------------------------------
         
@@ -222,6 +230,22 @@ classdef (Abstract) IdProcInterface < handle
         
     end
     
+    %% --------------------------------------------------------------------
+    methods (Static)
+
+        function b = forceCacheRewrite( newValue )
+            persistent fcrw;
+            if isempty( fcrw )
+                fcrw = false;
+            end
+            if nargin > 0 
+                fcrw = newValue;
+            else
+                b = fcrw;
+            end
+        end
+                
+    end
     %% -----------------------------------------------------------------------------------
     methods (Abstract)
         process( obj, wavFilepath )

@@ -2,8 +2,8 @@ classdef LocationHypothesis < Hypothesis
     % class LocationHypothesis represents the source location
 
     properties (SetAccess = private)
-        sourcesPosteriors;             % Posterior distribution of source azimuths, relative to head orientation
-        sourceAzimuths;                % Relative azimuths corresponding to sourcesPosteriors
+        sourcesDistribution;           % Posterior distribution of source azimuths, relative to head orientation
+        azimuths ;                     % Relative azimuths corresponding to sourcesPosteriors
         headOrientation;               % Head orientation angle
         
         azimuth;                       % Most likely source azimuth
@@ -12,8 +12,8 @@ classdef LocationHypothesis < Hypothesis
 
     methods
         function obj = LocationHypothesis(headOrientation, sourceAzimuths, sourcesPosteriors)
-            obj.sourceAzimuths = sourceAzimuths;
-            obj.sourcesPosteriors = sourcesPosteriors;
+            obj.azimuths = sourceAzimuths;
+            obj.sourcesDistribution = sourcesPosteriors;
             obj.headOrientation = wrapTo360(headOrientation);
             
             [posterior,idx] = max(sourcesPosteriors);

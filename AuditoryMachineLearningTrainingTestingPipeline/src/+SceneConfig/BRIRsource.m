@@ -1,12 +1,18 @@
 classdef BRIRsource < SceneConfig.SourceBase & Parameterized
 
     %% -----------------------------------------------------------------------------------
+
     properties
         brirFName;
         speakerId;
     end
-
     %% -----------------------------------------------------------------------------------
+    
+    properties (SetAccess = protected)
+        azimuth;
+    end
+%% -----------------------------------------------------------------------------------
+
     methods
         
         function obj = BRIRsource( brirFName, varargin )
@@ -27,7 +33,24 @@ classdef BRIRsource < SceneConfig.SourceBase & Parameterized
                 strcmp( obj1.brirFName(f1SepIdxs(end-1):end), obj2.brirFName(f2SepIdxs(end-1):end) );
         end
         %% -------------------------------------------------------------------------------
-                
+
+        function calcAzimuth( obj, brirHeadOrientIdx )
+            brirSofa = SOFAload( db.getFile( obj.brirFName ), 'nodata' );
+            headOrientIdx = ceil( brirHeadOrientIdx * size( brirSofa.ListenerView, 1 ));
+            headOrientation = SOFAconvertCoordinates( ...
+                brirSofa.ListenerView(headOrientIdx,:),'cartesian','spherical' );
+            if isempty( obj.speakerId )
+                sid = 1;
+            else
+                sid = obj.speakerId;
+            end
+            brirSrcPos = SOFAconvertCoordinates( ...
+                        brirSofa.EmitterPosition(sid,:) - brirSofa.ListenerPosition, ...
+                                                                'cartesian','spherical' );
+            obj.azimuth = brirSrcPos(1) - headOrientation(1);
+        end
+        %% -------------------------------------------------------------------------------
     end
+    %% -----------------------------------------------------------------------------------
     
 end

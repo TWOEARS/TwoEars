@@ -32,12 +32,14 @@ classdef AzmDistributionLabeler < LabelCreators.EnergyDependentLabeler
         end
         %% -------------------------------------------------------------------------------
         
-        function y = labelEnergeticBlock( obj, blockAnnotations )
+        function [y, ysi] = labelEnergeticBlock( obj, blockAnnotations )
             srcAzms = blockAnnotations.srcAzms(obj.sourceIds,:);
             srcAzmIdxs = LabelCreators.AzmDistributionLabeler.azimToIndex( ...
                             srcAzms, obj.angularResolution, obj.nAngles );
             y = zeros( 1, obj.nAngles );
             y(srcAzmIdxs) = 1;
+            [~,srcAzmIdxsOrder] = sort( srcAzmIdxs );
+            ysi = {srcAzmIdxsOrder}; % TODO what if sourceIds ~= ':'?
         end
         
     end
@@ -47,7 +49,7 @@ classdef AzmDistributionLabeler < LabelCreators.EnergyDependentLabeler
         %% -----------------------------------------------------------------------------------
         function outputDeps = getLabelInternOutputDependencies( obj )
             outputDeps.angularResolution = obj.angularResolution;
-            outputDeps.v = 1;
+            outputDeps.v = 2;
         end   
     end
     %% -----------------------------------------------------------------------------------

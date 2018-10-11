@@ -85,8 +85,12 @@ classdef ParallelRequestsAFEmodule < DataProcs.IdProcWrapper
             [tmpOut, outFilepath] = ...
                  loadProcessedData@Core.IdProcInterface( obj, wavFilepath, 'indivFiles' );
             obj.indivFiles = tmpOut.indivFiles;
+            if nargin == 3 && strcmpi( varargin{1}, 'indivFiles' )
+                out = tmpOut;
+                return;
+            end
             try
-                out = obj.getOutput;
+                out = obj.getOutput( varargin{:} );
             catch err
                 if strcmp( 'AMLTTP:dataprocs:cacheFileCorrupt', err.identifier )
                     error( 'AMLTTP:dataprocs:cacheFileCorrupt', ...
@@ -94,6 +98,17 @@ classdef ParallelRequestsAFEmodule < DataProcs.IdProcWrapper
                 else
                     rethrow( err );
                 end
+            end
+        end
+        %% -------------------------------------------------------------------------------
+
+        % override of Core.IdProcInterface's method
+        function [fileProcessed,cacheDirs] = hasFileAlreadyBeenProcessed( obj, wavFilepath )
+            fileProcessed = ...
+                     hasFileAlreadyBeenProcessed@Core.IdProcInterface( obj, wavFilepath );
+            if nargout > 1
+                obj.loadProcessedData( wavFilepath, 'indivFiles' );
+                cacheDirs = cellfun( @fileparts, obj.indivFiles, 'UniformOutput', false );
             end
         end
         %% -------------------------------------------------------------------------------
@@ -130,7 +145,12 @@ classdef ParallelRequestsAFEmodule < DataProcs.IdProcWrapper
         % override of Core.IdProcInterface's method
         function out = getOutput( obj, varargin )
             out.afeData = containers.Map( 'KeyType', 'int32', 'ValueType', 'any' );
-            [~,ia,ic] = unique( obj.indivFiles );
+            if nargin < 2 || any( strcmpi( 'afeData', varargin ) )
+                [~,ia,ic] = unique( obj.indivFiles );
+            else
+                ia = 1;
+                ic = 1;
+            end
             for ii = ia'
                 if ~exist( obj.indivFiles{ii}, 'file' )
                     error( 'AMLTTP:dataprocs:cacheFileCorrupt', '%s not found.', obj.indivFiles{ii} );
@@ -138,9 +158,11 @@ classdef ParallelRequestsAFEmodule < DataProcs.IdProcWrapper
                 tmp = load( obj.indivFiles{ii}, 'afeData', 'annotations' );
                 out.afeData(ii) = tmp.afeData(1);
             end
-            for ii = 1 : numel( obj.indivFiles )
-                if any( ii == ia ), continue; end
-                out.afeData(ii) = out.afeData(ia(ic(ii)));
+            if nargin < 2 || any( strcmpi( 'afeData', varargin ) )
+                for ii = 1 : numel( obj.indivFiles )
+                    if any( ii == ia ), continue; end
+                    out.afeData(ii) = out.afeData(ia(ic(ii)));
+                end
             end
             out.annotations = tmp.annotations; % if individual AFE modules produced
                                                % individual annotations, they would have

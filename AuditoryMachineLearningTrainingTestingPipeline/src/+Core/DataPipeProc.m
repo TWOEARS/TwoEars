@@ -42,7 +42,7 @@ classdef DataPipeProc < handle
         end
         %% ----------------------------------------------------------------
 
-        function checkDataFiles( obj, otherOverlay )
+        function cacheDirs = checkDataFiles( obj, otherOverlay )
             fprintf( '\nChecking file list: %s\n%s\n', ...
                      obj.dataFileProcessor.procName, ...
                      repmat( '=', 1, 20 + numel( obj.dataFileProcessor.procName ) ) );
@@ -64,8 +64,13 @@ classdef DataPipeProc < handle
                     obj.dataFileProcessor.getSingleProcessCacheAccess();
                     DataProcs.MultiSceneCfgsIdProcWrapper.doEarlyHasProcessedStop( true, false );
                 end
-                fileHasBeenProcessed = ...
-                    obj.dataFileProcessor.hasFileAlreadyBeenProcessed( dataFile.fileName );
+                if nargout > 0 && ~exist( 'cacheDirs', 'var' )
+                    [fileHasBeenProcessed,cacheDirs] = ...
+                        obj.dataFileProcessor.hasFileAlreadyBeenProcessed( dataFile.fileName );
+                else
+                    fileHasBeenProcessed = ...
+                        obj.dataFileProcessor.hasFileAlreadyBeenProcessed( dataFile.fileName );
+                end
                 if ii == 1
                     DataProcs.MultiSceneCfgsIdProcWrapper.doEarlyHasProcessedStop( true, true );
                     obj.dataFileProcessor.saveCacheDirectory();

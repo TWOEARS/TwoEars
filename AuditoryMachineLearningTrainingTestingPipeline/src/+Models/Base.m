@@ -49,53 +49,64 @@ classdef (Abstract) Base < handle
     methods (Static)
         
         function perf = getPerformance( model, testSet, perfMeasure, ...
-                                        maxDataSize, balMaxData, getDatapointInfo )
+                                        maxDataSize, dataSelector, importanceWeighter, ...
+                                        getDatapointInfo )
             if isempty( testSet )
                 warning( 'There is no testset to test on.' ); 
                 perf = 0;
                 return;
             end
-            if nargin < 4, maxDataSize = inf; end
-            if nargin < 5, balMaxData = false; end
-            if nargin < 6, getDatapointInfo = 'noInfo'; end
+            if nargin < 4  || isempty( maxDataSize )
+                maxDataSize = inf; 
+            end
+            if nargin < 5  || isempty( dataSelector )
+                dataSelector = DataSelectors.IgnorantSelector(); 
+            end
+            dataSelector.connectData( testSet );
+            if nargin < 6  || isempty( importanceWeighter )
+                importanceWeighter = ImportanceWeighters.IgnorantWeighter(); 
+            end
+            importanceWeighter.connectData( testSet );
+            if nargin < 7  || isempty( getDatapointInfo )
+                getDatapointInfo = false; 
+            end
             x = testSet(:,'x');
             yTrue = testSet(:,'y');
+            sampleIds = (1:numel( yTrue ))';
             nanXidxs = any( isnan( x ), 2 );
             infXidxs = any( isinf( x ), 2 );
             if any( nanXidxs ) || any( infXidxs ) 
                 warning( 'There are NaNs or INFs in the data -- throwing those vectors away!' );
                 x(nanXidxs | infXidxs,:) = [];
                 yTrue(nanXidxs | infXidxs,:) = [];
+                sampleIds(nanXidxs | infXidxs) = [];
             end
-            throwoutIdxs = [];
-            if numel( yTrue ) > maxDataSize
-                if balMaxData
-                    throwoutIdxs = ModelTrainers.Base.getBalThrowoutIdxs( yTrue, maxDataSize );
-                else
-                    throwoutIdxs = randperm(numel( yTrue ) );
-                    throwoutIdxs(1:maxDataSize) = [];
-                end
-                x(throwoutIdxs,:) = [];
-                yTrue(throwoutIdxs,:) = [];
+            if size( yTrue, 1 ) > maxDataSize
+                selectFilter = dataSelector.getDataSelection( sampleIds, maxDataSize );
+                verboseFprintf( model, dataSelector.verboseOutput );
+                x = x(selectFilter,:);
+                yTrue = yTrue(selectFilter,:);
+                sampleIds = sampleIds(selectFilter);
             end
-            if strcmpi( getDatapointInfo, 'datapointInfo' )
+            iw = importanceWeighter.getImportanceWeights( sampleIds );
+            verboseFprintf( model, importanceWeighter.verboseOutput );
+            if getDatapointInfo
                 dpi.fileIdxs = testSet(:,'pointwiseFileIdxs');
-                dpi.fileIdxs(throwoutIdxs) = [];
+                dpi.fileIdxs = dpi.fileIdxs(sampleIds);
                 ufidxs = unique( dpi.fileIdxs );
                 dpi.blockAnnotsCacheFiles(ufidxs) = testSet(ufidxs,'blockAnnotsCacheFile');
                 dpi.fileNames(ufidxs) = testSet(ufidxs,'fileName');
                 dpi.bIdxs = testSet(:,'bIdxs');
-                dpi.bIdxs(throwoutIdxs) = [];
+                dpi.bIdxs = dpi.bIdxs(sampleIds);
                 dpi.bacfIdxs = testSet(:,'bacfIdxs');
-                dpi.bacfIdxs(throwoutIdxs) = [];
-                dpiarg = {dpi};
+                dpi.bacfIdxs = dpi.bacfIdxs(sampleIds);
             else
-                dpiarg = {};
+                dpi = struct.empty;
             end
             if isempty( x ), error( 'There is no data to test the model.' ); end
             yModel = model.applyModel( x );
             for ii = 1 : size( yModel, 2 )
-                perf(ii) = perfMeasure( yTrue, yModel(:,ii), dpiarg{:} );
+                perf(ii) = perfMeasure( yTrue, yModel(:,ii), iw, dpi, testSet );
             end
         end
         %% ----------------------------------------------------------------

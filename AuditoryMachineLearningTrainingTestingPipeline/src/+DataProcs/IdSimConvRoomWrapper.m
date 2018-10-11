@@ -9,7 +9,6 @@ classdef IdSimConvRoomWrapper < Core.IdProcInterface
         earSout;
         annotsOut;
         srcAzimuth;
-        brirSrcPos;
         outFs;
     end
     
@@ -195,9 +194,6 @@ classdef IdSimConvRoomWrapper < Core.IdProcInterface
                         obj.IRDataset.dir = ...
                               simulator.DirectionalIR( sceneConfig.sources(1).brirFName );
                         warning( 'on', 'all' );
-                        obj.brirSrcPos = SOFAconvertCoordinates( ...
-                            brirSofa.EmitterPosition(1,:) - brirSofa.ListenerPosition, ...
-                                                                'cartesian','spherical' );
                     else
                         warning( 'off', 'all' ); % avoid messy "SOFA experimental" warning
                         obj.IRDataset.dir = simulator.DirectionalIR( ...
@@ -205,16 +201,13 @@ classdef IdSimConvRoomWrapper < Core.IdProcInterface
                                                      sceneConfig.sources(1).speakerId );
                         warning( 'on', 'all' );
                         obj.IRDataset.speakerId = sceneConfig.sources(1).speakerId;
-                        obj.brirSrcPos = SOFAconvertCoordinates( ...
-                          brirSofa.EmitterPosition(sceneConfig.sources(1).speakerId,:) ...
-                                   - brirSofa.ListenerPosition, 'cartesian','spherical' );
                     end
                     obj.IRDataset.isbrir = true;
                     obj.IRDataset.fname = sceneConfig.sources(1).brirFName;
                 end
                 obj.convRoomSim.Sources{1}.IRDataset = obj.IRDataset.dir;
                 obj.convRoomSim.rotateHead( headOrientation(1), 'absolute' );
-                obj.srcAzimuth = obj.brirSrcPos(1) - headOrientation(1);
+                obj.srcAzimuth = sceneConfig.sources(1).azimuth;
             else % ~is diffuse
                 obj.convRoomSim.Sources{1} = simulator.source.Binaural();
                 channelMapping = [1 2];

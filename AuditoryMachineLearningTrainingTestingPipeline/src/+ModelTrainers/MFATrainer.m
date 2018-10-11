@@ -21,7 +21,7 @@ classdef MFATrainer < ModelTrainers.Base & Parameterized
         end
         %% ----------------------------------------------------------------
 
-        function buildModel( obj, x, y )
+        function buildModel( obj, x, y, iw )
             obj.model = Models.MFAModel();
             xScaled = obj.model.scale2zeroMeanUnitVar( x, 'saveScalingFactors' );
             gmmOpts.mfaK = 10;%0.5*size(xScaled,2);

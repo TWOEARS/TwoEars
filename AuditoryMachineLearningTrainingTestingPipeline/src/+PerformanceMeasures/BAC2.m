@@ -8,13 +8,8 @@ classdef BAC2 < PerformanceMeasures.BAC
     %% --------------------------------------------------------------------
     methods
         
-        function obj = BAC2( yTrue, yPred, datapointInfo )
-           if nargin < 3
-                dpiarg = {};
-            else
-                dpiarg = {datapointInfo};
-            end
-            obj = obj@PerformanceMeasures.BAC( yTrue, yPred, dpiarg{:} );
+        function obj = BAC2( yTrue, yPred, varargin )
+            obj = obj@PerformanceMeasures.BAC( yTrue, yPred, varargin{:} );
         end
         % -----------------------------------------------------------------
     
@@ -43,51 +38,14 @@ classdef BAC2 < PerformanceMeasures.BAC
         end
         % -----------------------------------------------------------------
     
-        function [obj, performance, dpi] = calcPerformance( obj, yTrue, yPred, dpi )
-           if nargin < 4
-                dpiarg = {};
-            else
-                dpiarg = {dpi};
-            end
+        function [obj, performance, dpi] = calcPerformance( obj, yTrue, yPred, iw, dpi, ~ )
             [obj, performance, dpi] = ...
-                  calcPerformance@PerformanceMeasures.BAC( obj, yTrue, yPred, dpiarg{:} );
+                  calcPerformance@PerformanceMeasures.BAC( obj, yTrue, yPred, iw, dpi, [] );
             obj.bac = performance;
             performance = 1 - (((1 - obj.sensitivity)^2 + (1 - obj.specificity)^2) / 2)^0.5;
         end
         % -----------------------------------------------------------------
     
-        function [dpiext, compiled] = makeDatapointInfoStats( obj, fieldname, compiledPerfField )
-            if isempty( obj.datapointInfo ), dpiext = []; return; end
-            if ~isfield( obj.datapointInfo, fieldname )
-                error( '%s is not a field of datapointInfo', fieldname );
-            end
-            if nargin < 3, compiledPerfField = 'performance'; end
-            uniqueDpiFieldElems = unique( obj.datapointInfo.(fieldname) );
-            for ii = 1 : numel( uniqueDpiFieldElems )
-                if iscell( uniqueDpiFieldElems )
-                    udfe = uniqueDpiFieldElems{ii};
-                    udfeIdxs = strcmp( obj.datapointInfo.(fieldname), ...
-                                       udfe );
-                else
-                    udfe = uniqueDpiFieldElems(ii);
-                    udfeIdxs = obj.datapointInfo.(fieldname) == udfe;
-                end
-                for fn = fieldnames( obj.datapointInfo )'
-                    if any( size( obj.datapointInfo.(fn{1}) ) ~= size( udfeIdxs ) )
-                        iiDatapointInfo.(fn{1}) = obj.datapointInfo.(fn{1});
-                        continue
-                    end
-                    iiDatapointInfo.(fn{1}) = obj.datapointInfo.(fn{1})(udfeIdxs);
-                end
-                dpiext(ii) = PerformanceMeasures.BAC2( iiDatapointInfo.yTrue, ...
-                                                       iiDatapointInfo.yPred,...
-                                                       iiDatapointInfo );
-                compiled{ii,1} = udfe;
-                compiled{ii,2} = dpiext(ii).(compiledPerfField);
-            end
-        end
-        % -----------------------------------------------------------------
-
     end
 
 end

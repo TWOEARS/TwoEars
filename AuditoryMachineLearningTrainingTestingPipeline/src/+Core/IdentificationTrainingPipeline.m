@@ -113,25 +113,51 @@ classdef IdentificationTrainingPipeline < handle
         %   nGenAssessFolds: number of folds of generalization assessment through
         %                    cross validation (default: 0 - no folds)
         %
-        function modelPath = run( obj, varargin )
+        function [modelPath, model, testPerfresults] = run( obj, varargin )
             ip = inputParser;
             ip.addOptional( 'nGenAssessFolds', 0 );
             ip.addOptional( 'modelPath', ['amlttpRun' buildCurrentTimeString()] );
             ip.addOptional( 'modelName', 'amlttp' );
             ip.addOptional( 'runOption', [] );
+            ip.addOptional( 'startWithProc', 1 );
+            ip.addOptional( 'filterPipeInput', [] );
             ip.addOptional( 'debug', false );
             ip.parse( varargin{:} );
-
+            
             cleaner = onCleanup( @() obj.finish() );
             modelPath = obj.createFilesDir( ip.Results.modelPath );
+            modelFilename = [ip.Results.modelName '.model.mat'];
+            testPerfresults = [];
+            model = [];
             
-            successiveProcFileFilter = [];
-            for ii = length( obj.dataPipeProcs ) : -1 : 1
-                obj.dataPipeProcs{ii}.checkDataFiles( successiveProcFileFilter );
-                successiveProcFileFilter = obj.dataPipeProcs{ii}.fileListOverlay;
+            successiveProcFileFilter = ip.Results.filterPipeInput;
+            gcpMode = strcmpi( ip.Results.runOption, 'getCachePathes' );
+            rwcMode = strcmpi( ip.Results.runOption, 'rewriteCache' );
+            if rwcMode
+                Core.IdProcInterface.forceCacheRewrite( true );
+            else
+                Core.IdProcInterface.forceCacheRewrite( false );
+            end
+            cacheDirs = cell( numel( obj.dataPipeProcs ), 1 );
+            for ii = numel( obj.dataPipeProcs ) : -1 : ip.Results.startWithProc
+                if ~gcpMode
+                    obj.dataPipeProcs{ii}.checkDataFiles( successiveProcFileFilter );
+                else
+                    gcpFileFilter = false( length( obj.data(:) ), 1 );
+                    gcpFileFilter(1) = true;
+                    cacheDirs{ii} = obj.dataPipeProcs{ii}.checkDataFiles( gcpFileFilter );
+                end
+                if ~gcpMode && ~rwcMode
+                    successiveProcFileFilter = obj.dataPipeProcs{ii}.fileListOverlay;
+                end
+            end
+            if gcpMode
+                save( modelFilename, ...
+                      'cacheDirs' );
+                return;
             end
             errs = {};
-            for ii = 1 : length( obj.dataPipeProcs )
+            for ii = ip.Results.startWithProc : numel( obj.dataPipeProcs )
                 if ~ip.Results.debug
                     try
                         obj.dataPipeProcs{ii}.run();
@@ -155,6 +181,7 @@ classdef IdentificationTrainingPipeline < handle
             end
             
             if strcmp(ip.Results.runOption, 'onlyGenCache'), return; end;
+            if rwcMode, return; end;
             
             featureCreator = obj.featureCreator;
             lastDataProcParams = ...
@@ -173,6 +200,12 @@ classdef IdentificationTrainingPipeline < handle
                 featureNames = obj.featureCreator.description;
                 save( 'dataStoreUni.mat', ...
                       'x', 'y', 'featureNames', '-v7.3' );
+                return; 
+            elseif strcmp( ip.Results.runOption, 'dataStoreGT' )
+                bIdxs = obj.data(:,'bIdxs');
+                y = obj.data(:,'y');
+                save( 'dataStoreGT.mat', ...
+                      'bIdxs', 'y', '-v7.3' );
                 return; 
             end;
             
@@ -194,11 +227,10 @@ classdef IdentificationTrainingPipeline < handle
             obj.trainer.run();
             trainTime = toc;
             testTime = nan;
-            testPerfresults = [];
             if ~isempty( obj.testSet )
                 fprintf( '\n==  Testing model on testSet... \n\n' );
                 tic;
-                testPerfresults = obj.trainer.getPerformance( 'datapointInfo' );
+                testPerfresults = obj.trainer.getPerformance( true );
                 testTime = toc;
                 if numel( testPerfresults ) == 1
                     fprintf( ['\n\n===================================\n',...
@@ -213,7 +245,6 @@ classdef IdentificationTrainingPipeline < handle
                 end
             end
             model = obj.trainer.getModel();
-            modelFilename = [ip.Results.modelName '.model.mat'];
             save( modelFilename, ...
                 'model', 'featureCreator', 'blockCreator', ...
                 'testPerfresults', 'trainTime', 'testTime', 'lastDataProcParams' );

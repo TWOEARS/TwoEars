@@ -126,8 +126,8 @@ classdef VisualiserLocalisation < handle
             end
         end
         
-        function obj = plotMarkerAtAngle(obj,angle,hue)
-            if nargin < 3
+        function obj = plotMarkerAtAngle(obj,angle,str,hue)
+            if nargin < 4
                 hue = 100;
             end
             sn = sin(-2*pi*angle/360);
@@ -141,9 +141,7 @@ classdef VisualiserLocalisation < handle
             set(obj.MarkerHandle(2), 'FaceColor', col, ...
                 'XData', x2+15*sin(-linspace(0,2*pi,30)), ...
                 'YData', y2+15*cos(-linspace(0,2*pi,30)));
-            %plot([x1 x2], [y1 y2], 'Color', col, 'LineStyle', '--');
-            %fill(x2+15*sin(-linspace(0,2*pi,30)),y2+15*cos(-linspace(0,2*pi,30)),col,'linestyle','none');
-            %text(x,y,str,'HorizontalAlignment','Center','VerticalAlignment','Middle','fontsize',18,'Color',[1 1 1]);
+            text(x,y,str,'HorizontalAlignment','Center','VerticalAlignment','Middle','fontsize',18,'Color',[1 1 1]);
         end
         
         function obj = setHeadRotation(obj,val)

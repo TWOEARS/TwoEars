@@ -148,7 +148,7 @@ classdef IdCacheDirectory < handle
         end
         %% -------------------------------------------------------------------------------
         
-        function maintenance( obj )
+        function maintenance( obj, deleteEmpties )
             cDirs = dir( [obj.topCacheDirectory filesep 'cache.*'] );
             cacheDirs = cell( 0, 3 );
             fprintf( '-> read cache folders\n' );
@@ -159,7 +159,7 @@ classdef IdCacheDirectory < handle
                     pause;
                 else
                     cdContents = dir( [obj.topCacheDirectory filesep cDirs(ii).name filesep '*.mat'] );
-                    if all( strcmpi( 'cfg.mat', {cdContents.name} ) | strcmpi( 'fdesc.mat', {cdContents.name} ) )
+                    if deleteEmpties && all( strcmpi( 'cfg.mat', {cdContents.name} ) | strcmpi( 'fdesc.mat', {cdContents.name} ) )
                         rmdir( [obj.topCacheDirectory filesep cDirs(ii).name], 's' );
                         fprintf( 'deleting empty cache folder ' );
                     else
@@ -310,11 +310,12 @@ classdef IdCacheDirectory < handle
         end
         %% -------------------------------------------------------------------------------
         
-        function standaloneMaintain( cacheTopDir )
+        function standaloneMaintain( cacheTopDir, deleteEmpties )
+            if nargin < 2, deleteEmpties = true; end
             cache = Core.IdCacheDirectory();
             cache.setCacheTopDir( cacheTopDir );
             cache.loadCacheDirectory();
-            cache.maintenance();
+            cache.maintenance( deleteEmpties );
         end
         %% -------------------------------------------------------------------------------
         

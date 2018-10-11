@@ -27,14 +27,20 @@ if nargin < 2
     compressor = 1;
 end
 if nargin < 3
-    scalor = @(x)(0.5);
+    scalor = 0.5;
 end
 if nargin < 4
     dim = 0;
 end
 if dim == 0
     d = sign(d) .* abs(d).^compressor;
-    dScalor = scalor( d(:) );
+    if isnumeric( scalor )
+        dScalor = scalor;
+    elseif isa( scalor, 'function_handle' )
+        dScalor = scalor( d(:) );
+    else
+        error( 'AMLTTP:unsupportedUsage', 'scalor has to be a number or a function handle to a function that produces a number.' );
+    end
     if isnan( dScalor ), scale = 1;
     else scale = 0.5 / dScalor; end;
     d = d .* repmat( scale, size( d ) );

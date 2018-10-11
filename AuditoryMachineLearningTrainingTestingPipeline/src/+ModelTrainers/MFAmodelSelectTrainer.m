@@ -40,7 +40,7 @@ classdef MFAmodelSelectTrainer < ModelTrainers.Base & Parameterized
         end
         %% ----------------------------------------------------------------
         
-        function buildModel( obj, ~, ~ )
+        function buildModel( obj, ~, ~, ~ )
             comps =  obj.nComp;
             nDims =  obj.nDim;
             for nt=1:numel(nDims)

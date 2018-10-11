@@ -84,9 +84,9 @@ classdef DnnLocKsWrapper < DataProcs.BlackboardKsWrapper
         function afeData = addLocDecisionData( afeData, locDecisionData )
             % assumes location data has been refined by LocalisationDecisionKS
             locFakeAFEsignal = struct();
-            locFakeAFEsignal.Data = locDecisionData.sourcesPosteriors(:)';
+            locFakeAFEsignal.Data = locDecisionData.sourcesDistribution(:)';
             locFakeAFEsignal.Name = 'DnnLocationDistribution';
-            locFakeAFEsignal.azms = locDecisionData.sourceAzimuths(:)';
+            locFakeAFEsignal.azms = locDecisionData.azimuths(:)';
             afeData(afeData.Count+1) = locFakeAFEsignal;
         end
         %% -------------------------------------------------------------------------------

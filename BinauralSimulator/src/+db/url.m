@@ -23,7 +23,7 @@ persistent CachedAltURL;
 if exist('url','var')
   CachedURL=url;
 elseif isempty(CachedURL)
-  CachedURL= 'https://dev.qu.tu-berlin.de/projects/twoears-getdata/repository/raw/';
+  CachedURL= 'https://avtshare01.rz.tu-ilmenau.de/two-ears/database/';
 end
 url=CachedURL;
 
@@ -31,6 +31,6 @@ url=CachedURL;
 if exist('alturl','var')
   CachedAltURL=alturl;
 elseif isempty(CachedAltURL)
-  CachedAltURL= 'https://dev.qu.tu-berlin.de/projects/twoears-database/repository/revisions/master/raw/';
+  CachedAltURL= 'https://dev.qu.tu-berlin.de/projects/twoears-getdata/repository/raw/';
 end
 alturl=CachedAltURL;

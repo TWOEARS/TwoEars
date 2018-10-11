@@ -23,11 +23,14 @@ classdef MultiLabeler < LabelCreators.Base
     %% -----------------------------------------------------------------------------------
     methods (Access = protected)
         
-        function y = label( obj, blockAnnotations )
+        function [y,ysi] = label( obj, blockAnnotations )
             y = [];
+            ysi = {};
             for ii = 1 : numel( obj.individualLabelers )
                 obj.individualLabelers{ii}.labelBlockSize_s = obj.labelBlockSize_s;
-                y = [y, obj.individualLabelers{ii}.label( blockAnnotations )];
+                [yii,ysiii] = obj.individualLabelers{ii}.label( blockAnnotations );
+                y = [y, yii]; %#ok<AGROW>
+                ysi = [ysi, ysiii]; %#ok<AGROW>
             end
         end
         %% -------------------------------------------------------------------------------
@@ -38,7 +41,7 @@ classdef MultiLabeler < LabelCreators.Base
                 outputDeps.(outDepName) = ...
                               obj.individualLabelers{ii}.getLabelInternOutputDependencies;
             end
-            outputDeps.v = 1;
+            outputDeps.v = 2;
         end
         %% -------------------------------------------------------------------------------
         

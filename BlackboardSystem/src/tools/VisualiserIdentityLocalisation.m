@@ -26,7 +26,7 @@ classdef VisualiserIdentityLocalisation < handle
     properties (SetAccess = private)
         ksColourMap = containers.Map; % identity colour map
         idRadiusMap = containers.Map; % identity radius map
-        radiusList = -200:40:200;
+        radiusList = -250:35:200;
         colourList = [0.4660    0.6740    0.1880
                       0.8500    0.3250    0.0980
                       0.0000    0.4470    0.7410
@@ -42,11 +42,11 @@ classdef VisualiserIdentityLocalisation < handle
         NumPosteriors = 72
         drawHandle
         HeadHandle
+        TextHandle
         MarkerHandle
+        MarkerTextHandle
         MarkerHandles
         BarHandle
-        TextHandle
-        TextHandle2
         TextHandles
         idTextHandles
         Hue = 50 % hue in HSV space, default is orangey yellow
@@ -72,6 +72,8 @@ classdef VisualiserIdentityLocalisation < handle
         end
         
         function reset(obj)
+            obj.radiusIndex = 1;
+            obj.colourIndex = 1;
             axes(obj.drawHandle);
             
             obj.ksColourMap = containers.Map;
@@ -84,16 +86,16 @@ classdef VisualiserIdentityLocalisation < handle
             
             % add a grid if required
             if (obj.SHOW_GRID)
-                for i=1:obj.NUM_GRID_LINES
-                    angle_degrees = wrapTo180((i-1)*360/obj.NUM_GRID_LINES);
+                for ii=1:obj.NUM_GRID_LINES
+                    angle_degrees = wrapTo180((ii-1)*360/obj.NUM_GRID_LINES);
                     angle_rad = -2*pi*angle_degrees/360;
                     sn = sin(angle_rad); cs = cos(angle_rad);
                     plot([obj.INNER_RADIUS*sn 520*sn],[obj.INNER_RADIUS*cs 520*cs],'Color',c);
                     text(560*sn,560*cs,num2str(angle_degrees),'HorizontalAlignment','Center','Color',[0.7 0.7 0.7]);
                 end
                 % circles
-                for i=0:4
-                    r=obj.INNER_RADIUS+i*(500-obj.INNER_RADIUS)/4;
+                for ii=0:4
+                    r=obj.INNER_RADIUS+ii*(500-obj.INNER_RADIUS)/4;
                 plot(r*sin(linspace(0,2*pi,50)),r*cos(linspace(0,2*pi,50)),'Color',c);
                 end
             end
@@ -111,49 +113,50 @@ classdef VisualiserIdentityLocalisation < handle
             axis off;
             box on;
             
+            % add probability bars
+            obj.Posteriors = zeros(1,obj.NumPosteriors);
+            obj.Angles = 0:(360/obj.NumPosteriors):359;
+            obj.HeadRotationDegrees = 0;
+            [x,y] = deal(zeros(1,4));
+            for ii=1:obj.NumPosteriors
+                angle_rad1 = -2*pi*(ii-1.5)/obj.NumPosteriors;
+                angle_rad2 = -2*pi*(ii-0.5)/obj.NumPosteriors;
+                
+                sn = sin(angle_rad1); cs = cos(angle_rad1);
+                x(1) = obj.INNER_RADIUS*sn;
+                y(1) = obj.INNER_RADIUS*cs;
+                x(2) = (obj.INNER_RADIUS+obj.OUTER_RADIUS*obj.Posteriors(ii))*sn;
+                y(2) = (obj.INNER_RADIUS+obj.OUTER_RADIUS*obj.Posteriors(ii))*cs;
+                sn = sin(angle_rad2); cs = cos(angle_rad2);
+                x(3) = (obj.INNER_RADIUS+obj.OUTER_RADIUS*obj.Posteriors(ii))*sn;
+                y(3) = (obj.INNER_RADIUS+obj.OUTER_RADIUS*obj.Posteriors(ii))*cs;
+                x(4) = obj.INNER_RADIUS*sn;
+                y(4) = obj.INNER_RADIUS*cs;
+                % obj.BarHandle(i) = plot([x1 x2],[y1 y2],'Color',[1.0 0.6471 0],'LineWidth',obj.LINE_WIDTH);
+                obj.BarHandle(ii) = patch('XData',x,'YData',y,'LineStyle','none');
+            end
+            
             % add markers
             y2 = obj.MARKER_RADIUS;
             y1 = obj.INNER_RADIUS;
             col = [1 1 1];
-            obj.MarkerHandle(1) = plot([y1 y2], [y1 y2], 'Color', col, 'LineStyle', '--');
-            obj.MarkerHandle(2) = fill(15*sin(-linspace(0,2*pi,30)),y2+15*cos(-linspace(0,2*pi,30)),col,'linestyle','none');
-            
+
+            for ii = 1:4
+                obj.MarkerHandle(ii) = fill(15*sin(-linspace(0,2*pi,30)),y2+15*cos(-linspace(0,2*pi,30)),col,'EdgeColor',col);
+                obj.MarkerTextHandle(ii) = text(y1,y2, '', 'Color', col, 'FontSize', 12);
+            end
             obj.TextHandle = text(y1,y2, '', 'Color', col, 'FontSize', 12);
-            obj.TextHandle2 = text(y1,y2, '', 'Color', col, 'FontSize', 12);
             
             for ii=1:55
                 obj.MarkerHandles(ii) = fill(15*sin(-linspace(0,2*pi,30)), ...
                     y2+15*cos(-linspace(0,2*pi,30)), ...
                     col,'linestyle','none');
                 
-                obj.TextHandles(ii) = text(y1,y2, '', 'Color', col, 'FontSize', 14);
+                obj.TextHandles(ii) = text(y1,y2, '', 'Color', col, 'FontSize', 11);
             end
             
             for ii=1:13
-                obj.idTextHandles(ii) = text(y1,y2, '', 'Color', col, 'FontSize', 12);
-            end
-            
-            % add probability bars
-            obj.Posteriors = zeros(1,obj.NumPosteriors);
-            obj.Angles = 0:(360/obj.NumPosteriors):359;
-            obj.HeadRotationDegrees = 0;
-            [x,y] = deal(zeros(1,4));
-            for i=1:obj.NumPosteriors
-                angle_rad1 = -2*pi*(i-1.5)/obj.NumPosteriors;
-                angle_rad2 = -2*pi*(i-0.5)/obj.NumPosteriors;
-                
-                sn = sin(angle_rad1); cs = cos(angle_rad1);
-                x(1) = obj.INNER_RADIUS*sn;
-                y(1) = obj.INNER_RADIUS*cs;
-                x(2) = (obj.INNER_RADIUS+obj.OUTER_RADIUS*obj.Posteriors(i))*sn;
-                y(2) = (obj.INNER_RADIUS+obj.OUTER_RADIUS*obj.Posteriors(i))*cs;
-                sn = sin(angle_rad2); cs = cos(angle_rad2);
-                x(3) = (obj.INNER_RADIUS+obj.OUTER_RADIUS*obj.Posteriors(i))*sn;
-                y(3) = (obj.INNER_RADIUS+obj.OUTER_RADIUS*obj.Posteriors(i))*cs;
-                x(4) = obj.INNER_RADIUS*sn;
-                y(4) = obj.INNER_RADIUS*cs;
-                % obj.BarHandle(i) = plot([x1 x2],[y1 y2],'Color',[1.0 0.6471 0],'LineWidth',obj.LINE_WIDTH);
-                obj.BarHandle(i) = patch('XData',x,'YData',y,'LineStyle','none');
+                obj.idTextHandles(ii) = text(y1, y2, '', 'Color', col, 'FontSize', 11);
             end
             hold off;
             drawnow;
@@ -196,21 +199,25 @@ classdef VisualiserIdentityLocalisation < handle
             end
         end
         
-        function obj = plotMarkerAtAngle(obj,angle,hue)
-            if nargin < 3
+        function obj = plotMarkerAtAngle(obj,idx,angle,str,hue)
+            if nargin < 5
                 hue = 100;
             end
             sn = sin(-2*pi*angle/360);
             cs = cos(-2*pi*angle/360);
-            x2 = obj.MARKER_RADIUS * sn;
-            y2 = obj.MARKER_RADIUS * cs;
-            x1 = obj.INNER_RADIUS * sn;
-            y1 = obj.INNER_RADIUS * cs;
-            col = hsv2rgb(hue/360,0.9,0.6);
-            set(obj.MarkerHandle(1), 'Color', col, 'XData', [x1 x2], 'YData', [y1 y2]);
-             set(obj.MarkerHandle(2), 'FaceColor', col, ...
-                 'XData', x2+15*sin(-linspace(0,2*pi,30)), ...
-                 'YData', y2+15*cos(-linspace(0,2*pi,30)));
+            x2 = (obj.MARKER_RADIUS-20) * sn;
+            y2 = (obj.MARKER_RADIUS-20) * cs;
+            col = obj.getIdentityColor(str);
+            set(obj.MarkerHandle(idx), 'EdgeColor', col, ...
+             'XData', x2+15*sin(-linspace(0,2*pi,30)), ...
+             'YData', y2+15*cos(-linspace(0,2*pi,30)));
+            r = (obj.MARKER_RADIUS+20);
+            str = VisualiserIdentityLocalisation.getShortName(str);
+            set(obj.MarkerTextHandle(idx), ...
+                'Color', col, ...
+                'Position', [r*sn, r*cs], ...
+                'String', str, ...
+                'rotation', angle);
         end
         
         function obj = plotMarkerIdxAtAngle(obj,...
@@ -231,7 +238,12 @@ classdef VisualiserIdentityLocalisation < handle
         
         function obj = plotTextIdxAtAngle(obj, ...
                 idx, label, angle, radiusDelta, color)
-            angle = angle - 4;
+            
+            if angle > 90 && angle <= 270
+                angle = angle + 4;
+            else
+                angle = angle - 4;
+            end
             sn = sin(-2*pi*angle/360);
             cs = cos(-2*pi*angle/360);
             %radiusDelta = obj.getIdentityRadius(label);
@@ -239,8 +251,11 @@ classdef VisualiserIdentityLocalisation < handle
             radiusInner = obj.INNER_RADIUS + radiusDelta;
             x2 = radius * sn;
             y2 = radius * cs;
-            x1 = radiusInner * sn;
-            y1 = radiusInner * cs;
+            
+            if angle > 90 && angle <= 270
+                angle = angle + 180; % let text appear upright
+            end
+            
             set(obj.TextHandles(idx), ...
                 'Color', color, ... % obj.getIdentityColor(label), ...
                 'Position', [x2, y2], ...
@@ -250,8 +265,8 @@ classdef VisualiserIdentityLocalisation < handle
         
         function obj = plotIdTextIdxAtAngle(obj, ...
                 idx, label, prob)
-            x2 = 450;
-            y2 = 590 + obj.getIdentityRadius(label);
+            x2 = 480;
+            y2 = 570 + obj.getIdentityRadius(label);
             set(obj.idTextHandles(idx), ...
                 'Color', obj.getIdentityColor(label), ...
                 'Position', [x2, y2], ...
@@ -326,7 +341,7 @@ classdef VisualiserIdentityLocalisation < handle
             color = [0.9 0.9 0.9];
             
             % first clear handles
-            for ii=1:55
+            for ii=1:numel(obj.MarkerHandles)
                 set(obj.MarkerHandles(ii), 'FaceColor', color, ...
                     'XData', 15*sin(-linspace(0,2*pi,30)), ...
                     'YData', 15*cos(-linspace(0,2*pi,30)));
@@ -339,15 +354,17 @@ classdef VisualiserIdentityLocalisation < handle
             % populate with new info
             for idx = 1:numel(labels)
                 if ds{idx} == 1
-                    radius = obj.getIdentityRadius(labels{idx});
-                    color = obj.getIdentityColor(labels{idx});
+                    label = VisualiserIdentityLocalisation.getShortName(labels{idx});
+                    radius = obj.getIdentityRadius(label);
+                    color = obj.getIdentityColor(label);
+                    theta = locs{idx}+obj.HeadRotationDegrees;
                     
                     obj.plotTextIdxAtAngle(idx, ...
-                        sprintf('%s (%.0f%%)', labels{idx}, probs{idx}*100), ...
-                        locs{idx}+obj.HeadRotationDegrees, radius, color);
+                        sprintf('%.0f%% %s', probs{idx}*100, label), ...
+                        theta, radius, color);
                     
                     obj.plotMarkerIdxAtAngle(idx, ...
-                        locs{idx}+obj.HeadRotationDegrees, ...
+                        theta, ...
                         probs{idx}, ...
                         color,...
                         radius);
@@ -362,7 +379,7 @@ classdef VisualiserIdentityLocalisation < handle
             y1 = obj.INNER_RADIUS;
             color = [0.9 0.9 0.9];
             
-            for ii=1:13
+            for ii=1:numel(obj.idTextHandles)
                 set(obj.idTextHandles(ii), ...
                     'Color', color, ...
                     'Position', [y1, y2], ...
@@ -372,7 +389,7 @@ classdef VisualiserIdentityLocalisation < handle
             for idx = 1:numel(labels)
 %                 if ds{idx} == 1
                     obj.plotIdTextIdxAtAngle(idx, ...
-                        labels{idx}, ...
+                        VisualiserIdentityLocalisation.getShortName(labels{idx}), ...
                         probs{idx});
 %                 end
             end
@@ -387,7 +404,7 @@ classdef VisualiserIdentityLocalisation < handle
             x2 = radius * sn;
             y2 = radius * cs;
             if ischar(numSrcs)
-                str = sprintf('Attended to "%s" source', numSrcs);
+                str = ''; %sprintf('Attended to "%s" source', numSrcs);
             elseif numSrcs > 1
                 str = sprintf('%d sources', numSrcs);
             else
@@ -398,6 +415,20 @@ classdef VisualiserIdentityLocalisation < handle
                 'Position', [x2, y2], ...
                 'FontSize', 17, ...
                 'String', str);
+        end
+    end
+    
+    methods (Static)
+        function newName = getShortName(label)
+            if strcmp(label, 'maleSpeech')
+                newName = 'male';
+            elseif strcmp(label, 'femaleSpeech')
+                newName = 'female';
+            elseif strcmp(label, 'femaleScreammaleScream')
+                newName = 'scream';
+            else
+                newName = label;
+            end
         end
     end
 end

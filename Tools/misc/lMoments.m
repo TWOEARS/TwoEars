@@ -11,13 +11,17 @@ function [L] = lMoments(X,nL,scaleNl2)
 selectNl = nL;
 nL = max( nL );
 
-[rows cols] = size(X);
-if cols == 1 X = X'; end
-n = length(X);
+[nrows,ncols] = size(X);
+if ncols == 1
+    X = X';
+    n = nrows;
+else
+    n = ncols;
+end
 X = sort(X);
 b = zeros(1,nL-1);
 l = zeros(1,nL-1);
-b0 = mean(X);
+b0 = mean(X,2);
 
 for r = 1:nL-1
     Num = prod(repmat(r+1:n,r,1)-repmat([1:r]',1,n-r),1);
@@ -26,10 +30,11 @@ for r = 1:nL-1
 end
 
 tB = [b0 b]';
-B = tB(length(tB):-1:1);
+lenB = size(tB,1);
+B = tB(lenB:-1:1);
 
 for i = 1:nL-1
-    Spc = zeros(length(B)-(i+1),1);
+    Spc = zeros(lenB-(i+1),1);
     Coeff = [Spc ; legendreShiftPoly(i)];
     l(i) = sum((Coeff.*B),1);
 end

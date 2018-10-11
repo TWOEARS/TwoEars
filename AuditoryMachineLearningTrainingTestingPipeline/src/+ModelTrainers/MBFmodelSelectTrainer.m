@@ -40,7 +40,7 @@ classdef MBFmodelSelectTrainer < ModelTrainers.Base & Parameterized
         end
         %% ----------------------------------------------------------------
         
-        function buildModel( obj, ~, ~ )
+        function buildModel( obj, ~, ~, ~ )
              comps =  obj.nComp;
              thrs =  obj.thr;
          for nt=1:numel(thrs)

@@ -41,7 +41,7 @@ classdef GlmGroupTrainer < ModelTrainers.Base & Parameterized
         end
         
         %% BUILD MODEL
-        function buildModel(self, x, y)
+        function buildModel(self, x, y, iw)
             % init
             self.model = Models.GlmGroupModel();
             

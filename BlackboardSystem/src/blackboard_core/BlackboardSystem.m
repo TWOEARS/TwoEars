@@ -11,6 +11,7 @@ classdef BlackboardSystem < handle
         locVis;     % for visualising localisation
         afeVis;     % for visualising AFE
         genderVis;     % for visualising gender recognition
+        emDetVis;   % for visualising emergency detection
     end
 
     methods
@@ -44,6 +45,10 @@ classdef BlackboardSystem < handle
         
         function setLocVis(obj, locVis)
             obj.locVis = locVis;
+        end
+        
+        function setEmDetVis(obj, emDetVis)
+            obj.emDetVis = emDetVis;
         end
         
         function setAfeVis(obj, afeVis)

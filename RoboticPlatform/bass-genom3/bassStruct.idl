@@ -32,6 +32,12 @@
 #define BASSSTRUCT_IDL
 
 module binaudio {
+
+    struct timestamp{
+        unsigned long sec;
+        unsigned long nsec;
+    };
+
     struct portStruct {
         unsigned long       sampleRate;
         unsigned long       nChunksOnPort;
@@ -39,6 +45,7 @@ module binaudio {
         unsigned long long  lastFrameIndex;
         sequence<long>      left;
         sequence<long>      right;
+        timestamp           stamp;
     };
 };
 

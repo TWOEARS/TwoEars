@@ -39,7 +39,7 @@ classdef CVtrainer < ModelTrainers.Base
         end
         %% ----------------------------------------------------------------
         
-        function buildModel( obj, ~, ~ )
+        function buildModel( obj, ~, ~, ~ )
             obj.trainer.setPerformanceMeasure( obj.performanceMeasure );
             obj.createFolds();
             obj.foldsPerformance = ones( obj.nFolds, 1 );
@@ -50,7 +50,7 @@ classdef CVtrainer < ModelTrainers.Base
                 obj.trainer.run();
                 obj.models{ff} = obj.trainer.getModel();
                 obj.foldsPerformance(ff) = double( obj.trainer.getPerformance() );
-                verboseFprintf( obj, 'Done. Performance = %f\n', obj.foldsPerformance(ff) );
+                verboseFprintf( obj, 'Done. Performance = %f\n\n', obj.foldsPerformance(ff) );
                 maxPossiblePerf = mean( obj.foldsPerformance );
                 if (ff < obj.nFolds) && (maxPossiblePerf <= obj.abortPerfMin)
                     break;

@@ -41,9 +41,9 @@ classdef HeadRotationKS < AbstractKS
             % Get the most likely source direction
             ploc = obj.blackboard.getData( ...
                 'locationHypothesis', obj.trigger.tmIdx).data;
-            [post,idx] = max(ploc.sourcesPosteriors);
+            [post,idx] = max(ploc.sourcesDistribution);
             % confHyp.azimuths are relative to the current head orientation
-            azSrc = wrapTo180(ploc.sourceAzimuths(idx));
+            azSrc = wrapTo180(ploc.azimuths(idx));
             
             % We want to turn the head toward the most likely source
             % direction, but if not a strong source, make a random rotation
